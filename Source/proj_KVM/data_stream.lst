@@ -1,0 +1,502 @@
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE DATA_STREAM
+OBJECT MODULE PLACED IN .\data_stream.obj
+COMPILER INVOKED BY: C:\Users\Administrator\AppData\Local\Keil_v5\C51\BIN\C51.EXE ..\Src\data_stream\data_stream.c LARGE
+                    - OMF2 ROM(D16M) OPTIMIZE(9,SIZE) BROWSE NOAREGS INCDIR(..\src\main\;..\src\cpu\;..\src\flash\;..\src\uart\;..\src\swdma\
+                    -;..\src\mstimer\;..\src\i2c\;..\src\spi\;..\src\task_man\;..\src\project\;..\Src\ps2_host;..\Src\console_edid;..\Src\sto
+                    -rage;..\Src\data_stream;..\Src\kvm_control\kvm_hotkey;..\Src\kvm_control\kvm_console;..\Src\kvm_control\kvm_button;..\Sr
+                    -c\kvm_control\kvm_edid;..\Src\kvm_control\kvm_buzzer;..\src\gpio\;..\Src\hardware_ps2;..\Src\usbdc;..\Src\usbdc\usbdc_vi
+                    -rtual;..\Src\usb_std;..\Src\usbhc;..\Src\kvm_control\power_saving;..\Src\usbhc\MSC;..\Src\usbhc\AUDIO;..\Src\usbhc\HUB;.
+                    -.\Src\usbhc\HID;..\Src\usbhc\HID_PARSER;..\Src\usbhc\ROOT_HUB;..\Src\usbdc\usbdc_hub;..\Src\usbdc\usbdc_hid;..\Src\kvm_c
+                    -ontrol\kvm_storage\spi_flash;..\Src\usbdc\usbdc_msc\usb_scsi;..\Src\usbdc\usbdc_msc;..\Src\handler\logitech;..\Src\handl
+                    -er\A4_Tech;..\Src\usbdc\usbdc_vendor;..\Src\hsur;..\Src\extender\core;..\Src\extender\receiver;..\Src\uart_console;..\Sr
+                    -c\kvm_control\km_sync;..\Src\hsur;..\Src\kvm_control\km_log;..\Src\kvm_control\km_api;..\Src\kvm_control\kvm_ir;..\Src\k
+                    -vm_control\kvm_rtc;..\Src\i2c;..\Src\kvm_control\kvm_multiview) STRING(FAR) DEFINE(RuntimeCodeAt0KH,MCU_TYPE_AX68004,KVM
+                    -,HC_TIMEOUT=10000,VHID,HID_PARSER_CORE_KB,HID_PARSER_CORE_MS,API,NO_AUDIO,NO_MSC,NO_EDID,HUART_BAUD=HUART_115K,SYNC,CROS
+                    -S_JUMP_MAP0,VPID_CHANGER,SYNC_KB_HOTKEY,SYNC_MS_HOTKEY,REPEAT_MODE=1,HSUART,MULTIVIEW) VARBANKING DEBUG PRINT(.\data_str
+                    -eam.lst) TABS(2) OBJECT(.\data_stream.obj)
+
+line level    source
+
+   1          /*
+   2           ************************************************************************************
+   3           *     Copyright (c) 2014 ASIX Electronic Corporation      All rights reserved.
+   4           *
+   5           *     This is unpublished proprietary source code of ASIX Electronic Corporation
+   6           *
+   7           *     The copyright notice above does not evidence any actual or intended
+   8           *     publication of such source code.
+   9           ************************************************************************************
+  10           */
+  11           
+  12          /*================================================================================
+  13           * Module Name : data_stream.c
+  14           * Purpose     : handle keyboard & mouse data streaming
+  15           * Author      : Jack Wang
+  16           * Date        :
+  17           * Notes       : None
+  18           * no message
+  19           *
+  20           *================================================================================
+  21           */
+  22          
+  23          /* INCLUDE FILE DECLARATIONS */
+  24          #include <stdio.h>
+  25          #include <string.h>
+  26          
+  27          #include "project_include.h"
+  28          
+  29          #if (SYSETM_DATA_STREAM_CONTROL_ENABLE)  
+  30          /*$GLOBAL DEFINATION DECLARATIONS*/
+  31          /*$GLOBAL CONTANT DECLARATIONS*/
+  32          /*$GLOBAL VARIABLES DECLARATIONS*/ 
+  33          //---------------------------------------------------------------------------------------
+  34          // GENERIC USB QUEUE
+  35          U8_T TASK_DATAST_USB_Virtual_HID_ID;
+  36          //---------------------------------------------------------------------------------------
+  37          /*$STATIC VARIABLE DECLARATIONS  */
+  38          /*$LOCAL SUBPROGRAM DECLARATIONS */
+  39          void TASK_DATAST_USB_Virtual_HID_Output_Handle(void);
+  40          void DATAST_Move_Intr_Buffer(U8_T currentHost,U8_T devinx,U8_T endpidx,U8_T intt_id);
+  41          
+  42          /*
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 2   
+
+  43           * -------------------------------------------------------------------------------
+  44           * void    DATAST_Init(void)
+  45           * Purpose : Initializes the Data stream control 
+  46           *       
+  47           * Params  : none
+  48           * Returns : none
+  49           * Note    : 
+  50           * -------------------------------------------------------------------------------
+  51           */
+  52          void DATAST_Init(void)
+  53          {
+  54   1        //1.Genteric HID device init declartion
+  55   1      #if (PROJECT_USB_GENERIC_HID_ENABLE)
+  56   1        DATAST_Reset_GenericQueue();
+  57   1        TASK_DATAST_PS2_Generic_KB_ActiveFlag = 0;
+  58   1        TASK_DATAST_PS2_Generic_MS_ActiveFlag = 0;
+  59   1      
+  60   1        DATAST_Generic_USB_MS_Report[0] = 0; // the report content is not valid
+  61   1        TASK_DATAST_PS2_Generic_KB_ID  = TASK_Create(TASK_DATAST_PS2_Generic_KB_Output_Handle);
+  62   1        TASK_DATAST_PS2_Generic_MS_ID  = TASK_Create(TASK_DATAST_PS2_Generic_MS_Output_Handle);
+  63   1        TASK_DATAST_PS2_Generic_MS_ID2 = TASK_DATAST_PS2_Generic_MS_ID;
+  64   1      #endif
+  65   1      
+  66   1        //2.Virtual USB device init declartion. 
+  67   1        TASK_DATAST_USB_Virtual_HID_ID = TASK_Create(TASK_DATAST_USB_Virtual_HID_Output_Handle);  
+  68   1      
+  69   1      #if (SYSTEM_TASK_DUMP_SUPPORT)
+              #if (PROJECT_USB_GENERIC_HID_ENABLE)
+                printf("TASK_DATAST_PS2_Generic_KB_ID=%bu\n\r",TASK_DATAST_PS2_Generic_KB_ID);
+                printf("TASK_DATAST_PS2_Generic_MS_ID=%bu\n\r",TASK_DATAST_PS2_Generic_MS_ID);
+              #endif
+                //2.Virtual USB device init declartion.
+                printf("TASK_DATAST_USB_Virtual_HID_ID=%bu\n\r",TASK_DATAST_USB_Virtual_HID_ID);
+              #endif  
+  77   1      } /* End of DATAST_Init */
+  78          
+  79          /***************************************************************************************************/
+  80          /*
+  81          **  Function Name: TASK_DATAST_PS2_Virtual_HID_Output_Handle(void)
+  82          **  Parameter    : 
+  83          **  Description  : 
+  84          **
+  85          **
+  86          */
+  87          void TASK_DATAST_USB_Virtual_HID_Output_Handle(void)
+  88          {
+  89   1        U8_T intt_id,devinx;  
+  90   1        bit  wait_ms_event=0;
+  91   1        U8_T currenthost;
+  92   1        U8_T targethost;
+  93   1        U8_T wp,rp;
+  94   1        U8_T passwait;
+  95   1      #ifndef ONEHID  
+  96   1        U8_T infid,endp_id,endp_addr,endpidx;
+  97   1      #endif  
+  98   1        U8_T hid_inf;
+  99   1      
+ 100   1        targethost = (TASK_Register0 & 0xc0) >> 6;
+ 101   1        hid_inf = TASK_Event & 0x0f;
+ 102   1        intt_id = TASK_Register0 & 0x3f;
+ 103   1        devinx = HC_IntTransfer_Table[intt_id].Used_DeviceID & USBHC_TD_DEVICE_ADDR_MASK;
+ 104   1      
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 3   
+
+ 105   1        //printf("<dp=%bu,%bu>",targethost,TASK_Active_ID);
+ 106   1      #ifdef ONEHID 
+                if ((devinx < USBDC_VHID_DEVINX) || ((USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK) == 0x00)) 
+              #else
+ 109   1        if ((devinx < USBDC_VIRTUAL_DEVINX) || ((USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK) == 0x00)) 
+ 110   1      #endif  
+ 111   1        {
+ 112   2      //DATAST_USB_Virtual_HID_Output_Reset:  
+ 113   2      #ifdef SYNC   
+ 114   2          if (targethost != KVM_CurrentHost)
+ 115   2          { 
+ 116   3            HC_IntTransfer_Table[intt_id].PassControl.SyncRp[targethost] = HC_IntTransfer_Table[intt_id].PassContro
+             -l.Wp;
+ 117   3            HC_IntTransfer_Table[intt_id].PassControl.SyncWp[targethost] = HC_IntTransfer_Table[intt_id].PassContro
+             -l.Wp;      
+ 118   3          }
+ 119   2          else          
+ 120   2      #endif      
+ 121   2          { 
+ 122   3            HC_IntTransfer_Table[intt_id].PassControl.Rp = HC_IntTransfer_Table[intt_id].PassControl.Wp;
+ 123   3            //HC_IntTransfer_Table[intt_id].PassControl.Rp = 0; // check if there is data needed processed
+ 124   3          }     
+ 125   2          goto TASK_DATAST_USB_Virtual_HID_Output_Handle_Exit2;
+ 126   2        }
+ 127   1      
+ 128   1        /* 1.Check Task Ternimate Condition */
+ 129   1      #ifdef SYNC
+ 130   1        passwait = HC_IntTransfer_Table[intt_id].PassControl.SyncState & BIT_MASK[targethost+4];
+ 131   1        if (targethost != KVM_CurrentHost)
+ 132   1        { 
+ 133   2          wp = HC_IntTransfer_Table[intt_id].PassControl.SyncWp[targethost];
+ 134   2          rp = HC_IntTransfer_Table[intt_id].PassControl.SyncRp[targethost];    
+ 135   2        }
+ 136   1          else
+ 137   1        { 
+ 138   2          wp = HC_IntTransfer_Table[intt_id].PassControl.Wp;
+ 139   2          rp = HC_IntTransfer_Table[intt_id].PassControl.Rp;    
+ 140   2        }
+ 141   1      #else 
+                passwait = HC_IntTransfer_Table[intt_id].PassControl.State & PASSTHROUGH_WAIT;
+                wp = HC_IntTransfer_Table[intt_id].PassControl.Wp;
+                rp = HC_IntTransfer_Table[intt_id].PassControl.Rp;    
+              #endif /* #ifdef SYNC */  
+ 146   1        if (rp == wp) // check if there is data needed processed
+ 147   1        {       
+ 148   2          goto TASK_DATAST_USB_Virtual_HID_Output_Handle_Exit2;
+ 149   2        }
+ 150   1        
+ 151   1        if (TASK_USBHC_KVM_Switch_Check_Start_Flag)
+ 152   1        {
+ 153   2          if (TASK_Type != TASK_TYPE_INTERVAL_MS)
+ 154   2            TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_DATAST_USB_Virtual_HID_ID,hid_inf,TASK_Register0,1,1); // now ac
+             -tive the Generic KB Output Handle     
+ 155   2          return;
+ 156   2        }
+ 157   1      
+ 158   1      #if (SYSTEM_EXTENDER_RECEIVER)
+                if ((KVM_CurrentHost == REMOTE_HOST_PORT) && (ExtenderR_Check_Transmitter_Plug_State()==0))
+                {   
+                  goto DATAST_USB_Virtual_HID_Output_Reset;   
+                }
+              #endif /* #if (SYSTEM_EXTENDER_RECEIVER) */
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 4   
+
+ 164   1      
+ 165   1      #if (SYSTEM_EXTENDER_RECEIVER)
+                if (KVM_CurrentHost == REMOTE_HOST_PORT)
+                {
+              #ifdef SYNC   
+                  if (HC_IntTransfer_Table[intt_id].PassControl.SyncState & BIT_MASK[KVM_CurrentHost+4])
+              #else
+                  if (HC_IntTransfer_Table[intt_id].PassControl.State & PASSTHROUGH_WAIT)
+              #endif    
+                  { 
+                    wait_ms_event = 1;
+                  }
+                  else
+                  {
+                    ExtenderR_Interrupt_Transfer_In_Data_Handle(devinx,intt_id,hid_inf);
+                  }
+                  goto TASK_DATAST_USB_Virtual_HID_Output_Handle_Exit2;
+                }
+              #endif /* #if (SYSTEM_EXTENDER_RECEIVER) */
+ 183   1        
+ 184   1      #ifdef SYNC 
+ 185   1        currenthost = targethost; 
+ 186   1      #else 
+                currenthost = KVM_CurrentHost;  
+              #endif  /* #ifdef SYNC   */
+ 189   1        /*@@Check Port Suspend & Wakeup condition */
+ 190   1      #ifdef ONEHID
+                if (USBDC_Check_Upstream_Suspend_State(currenthost,USBDC_VHID_DEVINX))
+              #else 
+ 193   1        if (USBDC_Check_Upstream_Suspend_State(currenthost,devinx))
+ 194   1      #endif      
+ 195   1        {
+ 196   2          wait_ms_event = 1;  
+ 197   2          goto TASK_DATAST_USB_Virtual_HID_Output_Handle_Exit2;
+ 198   2        }
+ 199   1        
+ 200   1        // if buffer has been filled and wait for send to host
+ 201   1      #ifdef ONEHID 
+                if ((USBDC_HID_ENPx_Data_Wait_Flag[USBDC_VHID_KB_ENDP_NUM] & USBDC_UPORT[currenthost]) == 0)
+              #else     
+ 204   1        if (passwait)
+ 205   1      #endif    
+ 206   1        {
+ 207   2          wait_ms_event = 1;    
+ 208   2          goto TASK_DATAST_USB_Virtual_HID_Output_Handle_Exit2;
+ 209   2        }
+ 210   1      
+ 211   1      #ifdef ONEHID 
+                if (USBDC_Device[USBDC_VHID_DEVINX].Feature[currenthost] & FEATURE_RESUME)
+              #else   
+ 214   1        if (USBDC_Device[devinx].Feature[currenthost] & FEATURE_RESUME)
+ 215   1      #endif  
+ 216   1        {
+ 217   2          wait_ms_event = 1;  
+ 218   2          goto TASK_DATAST_USB_Virtual_HID_Output_Handle_Exit2;
+ 219   2        }
+ 220   1      
+ 221   1        /*@@Check address */
+ 222   1      #ifdef ONEHID   
+                if ((USBDC_Device[USBDC_VHID_DEVINX].DevAddr[currenthost] == 0x00) || 
+                  ((USBDC_Device[USBDC_VHID_DEVINX].Feature[currenthost] & (FEATURE_SUSPEND|FEATURE_REMOTE)) == FEATURE_SU
+             -SPEND))  
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 5   
+
+              #else
+ 226   1        if ((USBDC_Device[devinx].DevAddr[currenthost] == 0x00) || 
+ 227   1          ((USBDC_Device[devinx].Feature[currenthost] & (FEATURE_SUSPEND|FEATURE_REMOTE)) == FEATURE_SUSPEND))
+ 228   1      #endif  /* #ifdef ONEHID */ 
+ 229   1        {
+ 230   2      #if (SYSTEM_EXTENDER_RECEIVER)    
+              DATAST_USB_Virtual_HID_Output_Reset:
+              #endif        
+ 233   2      #ifdef SYNC
+ 234   2          HC_IntTransfer_Table[intt_id].PassControl.SyncRp[targethost] = HC_IntTransfer_Table[intt_id].PassControl
+             -.Wp;
+ 235   2          HC_IntTransfer_Table[intt_id].PassControl.SyncWp[targethost] = HC_IntTransfer_Table[intt_id].PassControl
+             -.Wp;
+ 236   2      
+ 237   2          if (targethost == KVM_CurrentHost)
+ 238   2          { 
+ 239   3            HC_IntTransfer_Table[intt_id].PassControl.Rp = HC_IntTransfer_Table[intt_id].PassControl.Wp;      
+ 240   3          }
+ 241   2      #else 
+                  HC_IntTransfer_Table[intt_id].PassControl.Wp = 0;
+                  HC_IntTransfer_Table[intt_id].PassControl.Rp = 0;   
+              #endif /* #ifdef SYNC */
+ 245   2          goto TASK_DATAST_USB_Virtual_HID_Output_Handle_Exit2;   
+ 246   2        }
+ 247   1      
+ 248   1        /* 2.Process HID output */
+ 249   1      #ifdef ONEHID
+                if (USBDC_HID_ENPx_Data_Wait_Flag[USBDC_VHID_KB_ENDP_NUM] & USBDC_UPORT[currenthost])
+                {   
+                  USBDC_HID_ENPx_Data_Wait_Flag[USBDC_VHID_KB_ENDP_NUM] &= ~USBDC_UPORT[currenthost];   
+                #if (SYSTEM_EXTENDER_RECEIVER) && (PROJECT_USB_GENERIC_HID_ENABLE)
+                  if (KVM_CurrentHost != REMOTE_HOST_PORT)      
+                #endif  /* #if (SYSTEM_EXTENDER_RECEIVER) && (PROJECT_USB_GENERIC_HID_ENABLE) */      
+                  {
+                    //USBDC_HAL_Endp_In_Buf_Move(DATAST_Generic_USB_KB_Queue,8,KVM_CurrentHost,USBDC_VHID_DEVINX,USBDC_VHID
+             -_KB_ENDP_NUM);
+                    //USBDC_REGS_Endp_ControlSet(KVM_CurrentHost,USBDC_VHID_DEVINX,USBDC_VHID_KB_ENDP_NUM,DA_CR_BVLD_SET);
+                    DATAST_Move_Intr_Buffer(currenthost,USBDC_VHID_DEVINX,USBDC_VHID_KB_ENDP_NUM,intt_id);
+                    wait_ms_event = 1;
+                  }
+                }
+              #else   
+ 264   1        infid = HC_IntTransfer_Table[intt_id].InterfaceIdx;
+ 265   1        endp_id = HC_IntTransfer_Table[intt_id].EndpIdx & USBHC_PDEV_ENDPIDX_MASK;  
+ 266   1        endp_addr = USB_PDevice[devinx].EndpAddr[infid][endp_id];     
+ 267   1        USBDC_Search_EndpAddr(devinx,endp_addr,&endpidx);
+ 268   1          
+ 269   1        DATAST_Move_Intr_Buffer(currenthost,devinx,endpidx,intt_id);
+ 270   1      #endif /* #ifdef ONEHID */
+ 271   1      
+ 272   1      TASK_DATAST_USB_Virtual_HID_Output_Handle_Exit2:
+ 273   1      #ifdef SYNC
+ 274   1        if (targethost != KVM_CurrentHost)
+ 275   1        { 
+ 276   2          wp = HC_IntTransfer_Table[intt_id].PassControl.SyncWp[targethost];
+ 277   2          rp = HC_IntTransfer_Table[intt_id].PassControl.SyncRp[targethost];
+ 278   2        }
+ 279   1          else
+ 280   1      #endif /* #ifdef SYNC */
+ 281   1        {
+ 282   2          wp = HC_IntTransfer_Table[intt_id].PassControl.Wp;
+ 283   2          rp = HC_IntTransfer_Table[intt_id].PassControl.Rp;
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 6   
+
+ 284   2        } 
+ 285   1        
+ 286   1        if (wp != rp) //There is still needed to handle queue   
+ 287   1        {
+ 288   2          if (wait_ms_event)
+ 289   2          {
+ 290   3            if (TASK_Type != TASK_TYPE_INTERVAL_MS)
+ 291   3            {
+ 292   4              TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_DATAST_USB_Virtual_HID_ID,hid_inf,TASK_Register0,1,1); // now a
+             -ctive the Generic KB Output Handle
+ 293   4            }
+ 294   3          }
+ 295   2          else
+ 296   2          {
+ 297   3            if (TASK_Type == TASK_TYPE_INTERVAL_MS)
+ 298   3            {
+ 299   4              TASK_Destory_Current(); //Now destory this task
+ 300   4            }
+ 301   3            TASK_Active(TASK_TYPE_EVENT,TASK_DATAST_USB_Virtual_HID_ID,hid_inf,TASK_Register0,0,0); // now aticev t
+             -he Virtual HID Output Handle
+ 302   3          }
+ 303   2        }
+ 304   1        else
+ 305   1        {
+ 306   2          TASK_Destory_Current(); //Now destory this task
+ 307   2      #ifdef SYNC       
+ 308   2          HC_IntTransfer_Table[intt_id].PassControl.SyncState &= ~BIT_MASK[targethost];       
+ 309   2      #else   
+                  HC_IntTransfer_Table[intt_id].PassControl.State &= ~PASSTHROUGH_SET;
+              #endif
+ 312   2        }
+ 313   1      }
+ 314          
+ 315          /***************************************************************************************************/
+ 316          /*
+ 317          **  void DATAST_Move_Intr_Buf_Move(U8_T intt_id,U8_T *transmit_buf)
+ 318          **  Parameter    : 
+ 319          **  Description  : 
+ 320          **
+ 321          **
+ 322          */
+ 323          U8_T DATAST_Move_Intr_Buf_Move(U8_T intt_id,U8_T *transmit_buf,U8_T currenthost)
+ 324          {
+ 325   1        U8_T length,index;
+ 326   1        idata U8_T rp;
+ 327   1        
+ 328   1      #ifdef SYNC 
+ 329   1        if (currenthost != KVM_CurrentHost)
+ 330   1          rp = HC_IntTransfer_Table[intt_id].PassControl.SyncRp[currenthost];
+ 331   1        else  
+ 332   1          rp = HC_IntTransfer_Table[intt_id].PassControl.Rp;
+ 333   1      #else 
+                currenthost = KVM_CurrentHost;
+                rp = HC_IntTransfer_Table[intt_id].PassControl.Rp;    
+              #endif /* #ifdef SYNC */
+ 337   1        
+ 338   1        length = HC_IntTransfer_Table[intt_id].PassControl.Buf[rp];
+ 339   1        rp ++;
+ 340   1        if (rp >= HC_IntTransfer_Table[intt_id].PassControl.BufSize)
+ 341   1          rp = 0;
+ 342   1         
+ 343   1        for (index=0;index < length ;index++)
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 7   
+
+ 344   1        {
+ 345   2          transmit_buf[index] = HC_IntTransfer_Table[intt_id].PassControl.Buf[rp];
+ 346   2          rp++;
+ 347   2          if (rp >= HC_IntTransfer_Table[intt_id].PassControl.BufSize)
+ 348   2            rp = 0;
+ 349   2        }
+ 350   1      #ifdef SYNC 
+ 351   1        HC_IntTransfer_Table[intt_id].PassControl.SyncRp[currenthost] = rp; // update the RP pointer  
+ 352   1        if (currenthost == KVM_CurrentHost) 
+ 353   1        { 
+ 354   2          HC_IntTransfer_Table[intt_id].PassControl.Rp = rp; // update the RP pointer         
+ 355   2        } 
+ 356   1      #else 
+                HC_IntTransfer_Table[intt_id].PassControl.Rp = rp; // update the RP pointer 
+              #endif /* #ifdef SYNC */
+ 359   1        
+ 360   1        return length;
+ 361   1      }
+ 362          
+ 363          /***************************************************************************************************/
+ 364          /*
+ 365          **  Function Name: DATAST_Move_Intr_Buffer(U8_T KVM_CurrentHost,U8_T devinx,U8_T endpidx,U8_T intt_id)
+ 366          **  Parameter    : move virtual HID device interrupt tranfer buffer into dc endpoint buffer
+ 367          **  Description  : 
+ 368          **
+ 369          **
+ 370          */   
+ 371          void DATAST_Move_Intr_Buffer(U8_T currentHost,U8_T devinx,U8_T endpidx,U8_T intt_id)
+ 372          {
+ 373   1        U8_T length;
+ 374   1      #if (VIRTUAL_USB_HID_DEBUG)
+                U8_T index;
+              #endif
+ 377   1      
+ 378   1        /* 2-2.Get DC endp Buffer Pointer */
+ 379   1        //get length
+ 380   1        if (USBDC_Check_Endp_Buffer_Valid(currentHost,devinx,endpidx))
+ 381   1        {   
+ 382   2          length = DATAST_Move_Intr_Buf_Move(intt_id,USBDC_EndpBufPtr[currentHost][devinx][endpidx]+OUT_BUF_OFFSET
+             -,currentHost);
+ 383   2          //printf("C:%bu,Dev:%bu,End:%bu,L:%bu,",currentHost,devinx,endpidx);
+ 384   2          //Disp_Str(USBDC_EndpBufPtr[currentHost][devinx][endpidx]+OUT_BUF_OFFSET,length);
+ 385   2          USBDC_EndpBufPtr[currentHost][devinx][endpidx][0] = length;   
+ 386   2          USBDC_REGS_Endp_ControlSet(currentHost,devinx,endpidx,DA_CR_BVLD_SET);  // inform data move
+ 387   2      #ifdef SYNC   
+ 388   2          HC_IntTransfer_Table[intt_id].PassControl.SyncState |= BIT_MASK[currentHost+4];   
+ 389   2      #else   
+                  HC_IntTransfer_Table[intt_id].PassControl.State |= PASSTHROUGH_WAIT;
+              #endif    
+ 392   2          USBDC_Device[devinx].EndpType[endpidx] = intt_id | USB_EP_TYPE_INTR;  // store td & transfer type into D
+             -C    
+ 393   2        }
+ 394   1      
+ 395   1      #if (VIRTUAL_USB_HID_DEBUG)
+                datainq_flag = 1;
+                if (datainq_flag) // content has changed
+                {
+                  printf("HIDQ=[ ");
+                  for (index=0; index < length ; index++)
+                  {
+                    printf("%02x ",(U16_T)p[index]);
+                  }
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 8   
+
+                  printf("]\n\r");
+              
+                }
+              #endif
+ 408   1      }
+ 409          
+ 410          /***************************************************************************************************/
+ 411          /*
+ 412          **  Function Name: DATAST_Send_Kb_Break(U8_T currentHost,U8_T devinx, U8_T endpidx, U8_T reportId, U8_T re
+             -portLen)
+ 413          **  Parameter    : send virtual HID keyboard break report into dc endpoint buffer
+ 414          **  Description  : 
+ 415          **
+ 416          **
+ 417          */   
+ 418          void DATAST_Send_Kb_Break(U8_T currentHost,U8_T devinx, U8_T endpidx, U8_T reportId, U8_T reportLen)
+ 419          {
+ 420   1        U8_T  *p;
+ 421   1        U8_T  index;
+ 422   1        
+ 423   1        p = USBDC_EndpBufPtr[currentHost][devinx][endpidx]+OUT_BUF_OFFSET;
+ 424   1        for (index = 1;index < reportLen ;index++)
+ 425   1        {
+ 426   2          p[index] = 0;
+ 427   2        }
+ 428   1        p[0] = reportId;
+ 429   1        
+ 430   1        USBDC_EndpBufPtr[currentHost][devinx][endpidx][0] = reportLen; // length
+ 431   1        USBDC_REGS_Endp_ControlSet(currentHost,devinx,endpidx,DA_CR_BVLD_SET);  // inform data move
+ 432   1      }
+ 433          
+ 434          #endif /* End of SYSETM_DATA_STREAM_CONTROL_ENABLE */
+ 435          
+ 436          /* End of data_stream.c */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1597    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      1      27
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----       1
+   BIT SIZE         =   ----       1
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,637 @@
+/*
+ ******************************************************************************
+ *     Copyright (c) 2014	ASIX Electronic Corporation      All rights reserved.
+ *
+ *     This is an proprietary source code of ASIX Electronic Corporation
+ *
+ *     The copyright notice above does not evidence any actual or intended
+ *     publication of such source code.
+ ******************************************************************************
+ */
+ /*============================================================================
+ * Module Name: usbdc_vmsc.c
+ * Purpose: The USB DC USB Pen Drive MSC Class program
+ * Author:
+ * Date:
+ * Notes:
+ *=============================================================================
+ */
+ 
+/*
+ 
+*/
+/* INCLUDE FILE SECTION 									*/
+#include <string.h>
+#include <stdlib.h>
+#include "project_include.h"
+#include "usb_scsi.h"
+#include "spim.h"
+#include "spi_flash.h"
+
+#if (SYSTEM_USB_PEN_DRIVE_SUPPORT)
+
+/* NAMING CONSTANT DECLARATIONS 					*/
+/* GLOBAL VARIABLES DECLARATIONS 					*/
+U8_T  USBDC_MSC_State;		/* bit7-MSC Pen Drive Active
+                               bit6-
+                               bit5-
+                               bit4-
+                               bit3-
+                               bit2-MSC Data Out Wait Flag
+                               bit1-0 - MSC Mount Port
+                            */
+MSC_STATE	USBDC_MSC_BOT_State;
+U8_T		KVM_CurrentPEN;
+U8_T		MSC_LUN=0x00;
+U8_T		FlashId;
+U8_T		TASK_USBDC_VMSC_Bulk_Out_Wait_ID;
+U8_T		TASK_USBDC_VMSC_Bulk_In_Wait_ID;
+/* LOCAL VARIABLES DECLARATIONS 					*/
+/* LOCAL SUBPROGRAM DECLARATIONS 					*/
+void TASK_USBDC_VMSC_Bulk_Out_Wait(void);
+void TASK_USBDC_VMSC_Bulk_In_Wait(void);
+void USBDC_VMSC_Start(void);
+#if ((SYSTEM_MSC_DEVICE_SUPPORT) && (SYSTEM_USB_HC_BURST))
+RESULT USBDC_VMSC_BOT_CBW_Decode(U8_T devinx,U8_T *buf);
+#endif
+/* EXTERNAL GLOBAL VARIABLES DECLARATIONS */
+/* EXTERNAL SUBPROGRAM DECLARATIONS 			*/ 
+
+/*
+ * ----------------------------------------------------------------------------
+ * Function Name: USBDC_VMsc_Init
+ * Purpose: Initial the usb virtual generic hid
+ * Params:  NONE
+ * Returns: NONE
+ * Note:
+ * ----------------------------------------------------------------------------
+ */
+void USBDC_VMsc_Init(void)
+{
+	U8_T pdevinx;
+	
+	/*01.Initial Flag  */
+	USBDC_MSC_State		= 0x00;
+	USBDC_MSC_BOT_State	= MSC_IDLE;
+	KVM_CurrentPEN		= 0;
+	FlashId				= 0;
+	
+	USB_HAL_Alloc_Free_PDevice(&pdevinx, 0xFF);  // should be 2=> 0 for Hub,1 for HID,2 for MSC(PEN DRIVE)
+	USB_PDevice[pdevinx].DevClass = USB_MSC_CLASS;
+	TASK_USBDC_VMSC_Bulk_Out_Wait_ID = TASK_Create(TASK_USBDC_VMSC_Bulk_Out_Wait);
+	TASK_USBDC_VMSC_Bulk_In_Wait_ID  = TASK_Create(TASK_USBDC_VMSC_Bulk_In_Wait);
+	
+	/*-----------------------------------------------
+	/*Hardware SPI Releative Init                   */
+	SPI_MstModeSetup(0xb0, 0x03, 0x01, 0x00, 0x06);
+	SPI_MstDmaSetting(0x00, 0x00);
+	
+	/*-----------------------------------------------
+	/*SPI Flsah Releative Init                      */
+	spiflsh_IsFlashErase = FALSE;
+	spiflsh_InitMxFlashDescriptor(0);
+	USBDC_Virtual_Hub_Map[USBDC_VMSC_PORT_NUM].HubPort_Devinx = pdevinx;
+	USBDC_Virtual_Hub_Map[pdevinx].Devinx_HubPort = USBDC_VMSC_PORT_NUM;
+
+#if (SYSTEM_TASK_DUMP_SUPPORT)
+	printf("TASK_USBDC_VMSC_Bulk_Out_Wait_ID=%bu\n\r",TASK_USBDC_VMSC_Bulk_Out_Wait_ID);
+	printf("TASK_USBDC_VMSC_Bulk_In_Wait_ID=%bu\n\r",TASK_USBDC_VMSC_Bulk_In_Wait_ID);
+#endif	
+}
+ 
+ 
+/*******************************************************************************
+* Function Name  : USBDC_VMSC_Endpx_Data_IN_Handle.
+* Description    : Handle the MSC Bulk IN Complete
+* Input          :  
+* Output         : None.
+* Return         : None
+*******************************************************************************/
+void USBDC_VMSC_Endpx_Data_IN_Handle(U8_T port,U8_T devinx,U8_T endpinx)
+{
+	U8_T empbuf;
+	U8_T bufcnt;
+	U8_T len;
+	U8_T *bufp;
+	U8_T addr;
+	U8_T task_flag=0;
+	
+	if (USB_PDevice[devinx].MSC->BOT_State == MSC_IDLE) // not to processing...., for it is idle
+		return;
+	
+	if (USBDC_Device[devinx].DevAddr[port] == 0x00) // this port has been disattached
+		return;
+	
+	//USBDC_MSC_BOT_Data_Handle_In_Restart:
+	empbuf = USBDC_Check_Endp_Buffer_Valid(KVM_CurrentPEN,devinx,endpinx);
+	bufcnt = (empbuf & 0xf0) >> 4;
+	
+	if (bufcnt == 0) // nor any out data need to handle, exit now.
+	{
+		task_flag=1;
+		goto USBDC_VMSC_Endpx_Data_IN_Complete_Retry;
+	}
+	empbuf  = (empbuf & 0x0f)-1; 
+	
+	if (empbuf)
+		addr = USBDC_VMSC_MAX_ENDP1_SIZE+2; /*64+2*/
+	else
+		addr = 2;
+		
+	bufp = 	USBDC_EndpBufPtr[0][devinx][endpinx]+addr;
+
+	if (USB_PDevice[devinx].MSC->BOT_State == MSC_CMD_RESPONSED)
+	{
+		*(USBDC_EndpBufPtr[KVM_CurrentPEN][devinx][endpinx]+empbuf) = SCSI_DataLength;
+		memcpy(bufp,SCSI_SramPt,SCSI_DataLength);
+		USBDC_REGS_Endp_ControlSet(KVM_CurrentPEN,devinx,endpinx,DA_CR_BVLD_SET);  // inform data move 
+		USB_PDevice[devinx].MSC->BOT_State = MSC_CSW;
+		task_flag = 1;
+	}
+	else if (USB_PDevice[devinx].MSC->BOT_State == MSC_DATA_IN)
+	{
+		if (USB_PDevice[devinx].MSC->Control.Total_Length > USBDC_VMSC_MAX_ENDP2_SIZE)
+			len = USBDC_VMSC_MAX_ENDP2_SIZE;
+		else
+			len = USB_PDevice[devinx].MSC->Control.Total_Length;
+		if (SPIFLSH_read_handle(FlashId, SCSI_FlashAddr,bufp,len))
+		{
+			*(USBDC_EndpBufPtr[KVM_CurrentPEN][devinx][endpinx]+empbuf) = len;
+			USBDC_REGS_Endp_ControlSet(KVM_CurrentPEN,devinx,endpinx,DA_CR_BVLD_SET);  // inform data move 
+			SCSI_FlashAddr += len;
+			USB_PDevice[devinx].MSC->Control.Total_Length -= len;
+
+			if ((USB_PDevice[devinx].MSC->Control.Total_Length == 0x00) || (len < USBDC_VMSC_MAX_ENDP2_SIZE)) //no more data need to be readed
+			{
+				USB_PDevice[devinx].MSC->BOT_State = MSC_CSW; 
+			}
+			task_flag = 1;
+		}
+		else /* Check later */
+		{
+			task_flag = 1;
+		}
+	}
+	
+	if (task_flag == 0)
+	{
+		if (USB_PDevice[devinx].MSC->BOT_State == MSC_CSW)
+		{
+			if (USB_PDevice[devinx].MSC->Control.Total_Length == 0)
+				USB_PDevice[devinx].MSC->BOT->csw.dDataResidue = 0;
+			else
+				USB_PDevice[devinx].MSC->BOT->csw.dDataResidue = Endian_32_Convert(USB_PDevice[devinx].MSC->Control.Total_Length);
+			
+			if (USBDC_MSC_Bulk_In_Send(devinx,endpinx,CSW_LENGTH,(U8_T *)(&USB_PDevice[devinx].MSC->BOT->csw)))
+			{
+				USB_PDevice[devinx].MSC->BOT_State = MSC_IDLE;
+				USBDC_MSC_State = MSC_IDLE;
+			}
+			else
+			{
+				task_flag = 1;
+			}
+		}
+	}
+
+USBDC_VMSC_Endpx_Data_IN_Complete_Retry:
+	if (task_flag)    
+	{
+		TASK_Active(TASK_TYPE_EVENT,TASK_USBDC_VMSC_Bulk_In_Wait_ID,0x00,0x00,0x00,0x00);
+	}
+}
+
+/*******************************************************************************
+* Function Name  : USBDC_VMSC_Endpx_Data_OUT_Complete.
+* Description    : Handle the MSC Bulk OUT Complete
+* Input          :  
+* Output         : None.
+* Return         : None
+*******************************************************************************/
+void USBDC_VMSC_Endpx_Data_OUT_Complete(U8_T port,U8_T devinx,U8_T endpinx)
+{
+	U8_T	empbuf;
+	U8_T	bufcnt;
+	U8_T	len;
+	U8_T	bulk_out_flag=0;
+	U8_T	*bufp;
+	U8_T	addr;
+	U8_T	cmdSupport;
+	RESULT	Result;
+	U8_T	cbw_direction;
+	
+	if (USBDC_Device[devinx].DevAddr[port] == 0x00) // this port has been disattached
+		return;
+	
+	if (USBDC_MSC_BOT_State & USBDC_MSC_DATA_OUT_WAIT)
+		return;
+	
+	empbuf = USBDC_Check_Endp_Buffer_Valid(KVM_CurrentPEN,devinx,endpinx);
+	bufcnt = (empbuf & 0xf0) >> 4;
+	if (bufcnt == 0) // nor any out data need to handle, exit now.
+	{
+		return;
+	}
+	empbuf  = (empbuf & 0x0f)-1; 
+	
+	if (empbuf)
+		addr = USBDC_VMSC_MAX_ENDP2_SIZE+2; /*64+2*/
+	else
+		addr = 2;
+		
+	bufp = 	USBDC_EndpBufPtr[0][devinx][endpinx]+addr;      
+	len  = 	*(USBDC_EndpBufPtr[0][devinx][endpinx]+empbuf);
+	
+	//USBDC_MSC_BOT_Data_Handle_Out_Restart:
+	switch (USB_PDevice[devinx].MSC->BOT_State)
+	{
+		case MSC_IDLE: //wait for CBW
+			//1.Check the CBW block data length
+			if (len != USBHC_MSC_BOT_CBW_LENGTH)
+			{
+				//printf("USBDC=>CBW Length Error,len=%d\n\r",(U16_T)len);
+				goto USBDC_MSC_STATE_IDLE_EXIT;
+			}
+	
+			//2.check the CBW valid condition
+#if ((SYSTEM_MSC_DEVICE_SUPPORT) && (SYSTEM_USB_HC_BURST))
+			Result= USBDC_VMSC_BOT_CBW_Decode(devinx,bufp);
+#else
+			Result= USBHC_MSC_BOT_CBW_Decode(devinx,bufp);
+#endif /*#if ((SYSTEM_MSC_DEVICE_SUPPORT) && (SYSTEM_USB_HC_BURST)) */
+			if (Result == USB_SUCCESS)
+			{
+				cbw_direction = USB_PDevice[devinx].MSC->BOT_State;
+				/* transfer to SCSI command */
+				cmdSupport = 1;
+				USB_PDevice[devinx].MSC->BOT_State = SCSI_CmdDecode(((MSC_BOT_CBW_TypeDef *)bufp)->CB, &cmdSupport);
+				//-----------------------------------
+				//1.Copy CBW content into CSW
+				memcpy(&USB_PDevice[devinx].MSC->BOT->cbw,bufp,USBHC_MSC_BOT_CBW_LENGTH);
+				//2.Copy information into CSW 
+				USB_PDevice[devinx].MSC->BOT->csw.dSignature = CSW_SIGNATURE;
+				memcpy(&USB_PDevice[devinx].MSC->BOT->csw.dTag,bufp+4,4); //copy dSignature,dTag,dDataLength
+				if (cmdSupport == 0)
+					USB_PDevice[devinx].MSC->BOT->csw.bStatus = 1;
+				else
+					USB_PDevice[devinx].MSC->BOT->csw.bStatus = 0;
+				
+				/*Command support result check */
+				if (USB_PDevice[devinx].MSC->BOT_State == MSC_OP_NOT_SUPPORT)
+				{
+					if (cbw_direction == MSC_BOT_DATA_IN)
+					{
+						//USBDC_VIRTUAL_Endp_Stall_Control(KVM_CurrentPEN,USBDC_VMSC_DEVINX,1,SET);
+						if (USB_PDevice[devinx].MSC->Control.Total_Length == 0)
+						{
+							USB_PDevice[devinx].MSC->BOT_State = MSC_CSW;
+						}
+						else
+						{
+							// case 4.
+							USB_PDevice[devinx].MSC->BOT_State = MSC_DATA_IN;
+						}
+					}
+					else
+					{
+						USBDC_VIRTUAL_Endp_Stall_Control(KVM_CurrentPEN,USBDC_VMSC_DEVINX,2,SET);
+						
+						//USB_PDevice[devinx].MSC->BOT_State = MSC_IDLE;
+						USB_PDevice[devinx].MSC->BOT_State = MSC_CSW;	// case 9.
+						goto USBDC_MSC_STATE_IDLE_EXIT;
+					}
+				}
+				
+				//-----------------------------------
+				//2.Check the next CSW condition
+				if ((USB_PDevice[devinx].MSC->BOT_State == MSC_CSW) ||  //Send out the CSW String
+					(USB_PDevice[devinx].MSC->BOT_State == MSC_DATA_IN) ||
+					(USB_PDevice[devinx].MSC->BOT_State == MSC_CMD_RESPONSED))
+				{
+					USBDC_VMSC_Endpx_Data_IN_Handle(KVM_CurrentPEN,USBDC_VMSC_DEVINX,0x01); //perform the BULK IN
+				}
+				
+			}
+			else
+			{
+				//printf("UBDC_MSC Decode Error\n\r");
+			}
+			
+#if (USB_MSC_CLASS_DEBUG_MODE)
+			printf("\n\r");
+#endif
+
+USBDC_MSC_STATE_IDLE_EXIT:
+			//Release the OUT Buffer id
+			USBDC_REGS_Endp_ControlClear(port,devinx,endpinx,DA_CR_BCLR_SET); // now can receive data
+			break;
+			
+		case MSC_DATA_OUT:
+			//Process the Out Data 
+			if ((USBDC_MSC_State & USBDC_MSC_DATA_OUT_WAIT) == 0x00)
+			{
+				if (USBDC_MSC_Media_Write(bufp,len))
+				{
+					USBDC_REGS_Endp_ControlClear(port,devinx,endpinx,DA_CR_BCLR_SET); // now can receive data
+					if (bufcnt==2)
+					{
+						bulk_out_flag=1;
+					}
+				}
+				else
+				{
+					bulk_out_flag=1;
+				}
+				
+				if (bulk_out_flag)
+				{
+					USBDC_MSC_BOT_State |= USBDC_MSC_DATA_OUT_WAIT;
+					TASK_Active(TASK_TYPE_EVENT,TASK_USBDC_VMSC_Bulk_Out_Wait_ID,0x00,0x00,0x00,0x00); 
+				}
+			}
+			
+			//Check the Data out complete condition.
+			if (USB_PDevice[devinx].MSC->Control.Total_Length == 0)
+			{
+				printf("OUT=>CSW\n\r");
+				USB_PDevice[devinx].MSC->BOT_State = MSC_CSW; //next is request the CSW    
+				USBDC_MSC_BOT_State &= ~USBDC_MSC_DATA_OUT_WAIT;
+				USBDC_VMSC_Endpx_Data_IN_Handle(KVM_CurrentPEN,USBDC_VMSC_DEVINX,0x01); //perform the BULK IN
+			}
+			break;
+		default:
+			printf("USBDC_UNKNOW Status=%02x\n\r",(U16_T)USB_PDevice[devinx].MSC->BOT_State);
+			break;
+	}
+}
+
+/***********************************************************************************
+* Function Name  : USBDC_VMSC_Start(U8_T port)
+* Description    : This function will create the USBDC necessary MSC memory usage
+* Input          :  
+* Output         : None.
+* Return         : None
+************************************************************************************/
+void USBDC_VMSC_Start(void)
+{
+	U8_T devinx,*b;
+	
+	devinx = USBDC_VMSC_DEVINX;
+
+	b = m_malloc(sizeof(USBHC_MSC_Device_TypeDef),17);
+	USB_PDevice[devinx].MSC = (USBHC_MSC_Device_TypeDef *)(b);
+	b = m_malloc(sizeof(MSC_BOT_Control_TypeDefine),18);
+
+	USB_PDevice[devinx].MSC->BOT = (MSC_BOT_Control_TypeDefine *)(b);
+	USBDC_VIRTUAL_Create_DeviceDesc(USBDC_VMSC_DEVINX,VMSC_DeviceDescriptor);
+	
+	//Langid
+	USB_PDevice[devinx].Desc[LANG_ID].Len = VHID_SIZ_STRING_LANGID;
+	USB_PDevice[devinx].Desc[LANG_ID].Ptr = VHID_StringLangID;
+	//Vendier ID String
+	USB_PDevice[devinx].Desc[VENDOR_ID].Len = VHID_SIZ_STRING_VENDOR;
+	USB_PDevice[devinx].Desc[VENDOR_ID].Ptr = VHID_StringVendor;	  
+	//Product String
+	USB_PDevice[devinx].Desc[PRODUCT_ID].Len = VMSC_SIZ_STRING_PRODUCT;
+	USB_PDevice[devinx].Desc[PRODUCT_ID].Ptr = VMSC_StringProduct;	  
+	//Serial String
+	USB_PDevice[devinx].Desc[SERIAL_ID].Len = VMSC_SIZ_STRING_SERIAL;
+	USB_PDevice[devinx].Desc[SERIAL_ID].Ptr = VMSC_StringSerial;
+	
+	USBDC_VIRTUAL_Create_ConfigDesc(devinx,VMSC_ConfigDescriptor);
+	
+	/* Generate the USB Devcie Attribute */
+	USB_PDevice[devinx].ConfigurationValue = 0x01; // Set current configuration Value
+	(USB_PDevice[USBDC_VHUB_DEVINX].HUB.ReportState+USBDC_VMSC_PORT_NUM)->Devinx  = devinx;	
+	
+	//active the hub port
+	USBDC_Device[USBDC_VHUB_DEVINX].VHub->PortStatus[KVM_CurrentPEN][USBDC_VMSC_PORT_NUM].Devinx = USBDC_VMSC_DEVINX;
+	
+	//1.Create the virtual devcie
+	USBDC_VirtualDevice_Create(devinx);
+	USBDC_Device[devinx].VirHubNum[KVM_CurrentPEN] = USBDC_VMSC_PORT_NUM + 1;
+	
+	USBDC_Virtual_Hub_DeviceMount_Control(USBDC_VHUB_DEVINX,USBDC_VMSC_PORT_NUM,VDEV_MOUNT,MOUNT_PORT[KVM_CurrentPEN],devinx);
+	
+	KVM_Flash.cSystemFlag1 |= SYSTEM_PEN_DRIVE_ATTACH_MASK;
+}
+
+/***********************************************************************************
+* Function Name  : USBDC_VMSC_Stop(U8_T port)
+* Description    : This function will create the USBDC necessary MSC memory usage
+* Input          :  
+* Output         : None.
+* Return         : None
+************************************************************************************/
+void USBDC_VMSC_Stop(void)
+{
+	if (KVM_Flash.cSystemFlag1 & SYSTEM_PEN_DRIVE_ATTACH_MASK)
+	{
+		//printf("Start to remove USB PEN Driver\n\r");
+		USBDC_Virtual_Hub_DeviceMount_Control(USBDC_VHUB_DEVINX,USBDC_VMSC_PORT_NUM,VDEV_UNMOUNT,MOUNT_PORT[KVM_CurrentPEN],USBDC_VMSC_DEVINX);
+		USBHC_CORE_Clear_Device(USBDC_VMSC_DEVINX);
+		KVM_Flash.cSystemFlag1 &= ~SYSTEM_PEN_DRIVE_ATTACH_MASK;
+	}
+}
+
+/*******************************************************************************
+* Function Name  : USBDC_VMSC_Port_Switch.
+* Description    : Handle the MSC device switch operation
+* Input          :  
+* Output         : None.
+* Return         : None
+*******************************************************************************/
+void USBDC_VMSC_Port_Switch(U8_T newport)
+{
+	if (KVM_CurrentPEN != newport)
+	{
+		/*Unmount the current port first*/
+		USBDC_Virtual_Hub_DeviceMount_Control(USBDC_VHUB_DEVINX,USBDC_VMSC_PORT_NUM,VDEV_UNMOUNT,MOUNT_PORT[KVM_CurrentPEN],USBDC_VMSC_DEVINX);
+		/*Disable the address now */	  	  
+		USBDC_REGS_Device_Reset(KVM_CurrentPEN,USBDC_VMSC_DEVINX);
+		
+		//2.Disable the Endp
+		USBDC_REGS_Address_Write(newport,USBDC_VMSC_DEVINX,0x00); //write new port with address 0
+		(USB_PDevice[0].HUB.ReportState+USBDC_VMSC_PORT_NUM)->Devinx = USBDC_VMSC_DEVINX;
+		USBDC_Virtual_Hub_DeviceMount_Control(USBDC_VHUB_DEVINX,USBDC_VMSC_PORT_NUM,VDEV_MOUNT ,MOUNT_PORT[newport],USBDC_VMSC_DEVINX);
+		KVM_CurrentPEN = newport;
+	}
+}
+
+/*******************************************************************************
+* Function Name  : USBDC_VMSC_Setup_Process.
+* Description    : process the MSC setup token
+* Input          : None.
+* Output         : None.
+* Return         : None.
+*******************************************************************************/
+RESULT USBDC_VMSC_Setup_Process(U8_T devinx,U8_T port) 
+{ 
+	RESULT Result=USB_UNSUPPORT;
+	
+	if (Type_Recipient == (CLASS_REQUEST | INTERFACE_RECIPIENT))
+	{
+		switch (Request_No)
+		{
+			case USB_REQ_GET_MAX_LUN:
+				USBDC_Device[devinx].Ctrl_TotalByte[port]   = USBDC_Device[devinx].Setup[port].b.wLength.w;
+				USBDC_Device[devinx].Ctrl_CurrentByte[port] = 0;
+				USBDC_Device[devinx].Control_EndpBuf[port]  = &MSC_LUN;
+				Result=USB_SUCCESS;
+				break;
+			case USB_REQ_BOT_RESET:
+				break;
+		}
+	}
+	return Result;
+}
+
+/*******************************************************************************
+* Function Name  : USBDC_MSC_Bulk_In_Send.
+* Description    : prepare the BULK IN data and send out
+* Input          : None.
+* Output         : None.
+* Return         : None.
+*******************************************************************************/
+U8_T USBDC_MSC_Bulk_In_Send(U8_T devinx,U8_T endpinx,U8_T datalen,U8_T *buf)
+{
+	U8_T empbuf;
+	U8_T addr;
+	U8_T *bufp;
+	
+	//Check the avaiable buffer id
+	empbuf = USBDC_Check_Endp_Buffer_Valid(KVM_CurrentPEN,devinx,endpinx);
+	if (empbuf & 0xf0) //if any buffer can be used to send out data
+	{
+		empbuf  = (empbuf & 0x0f);
+		empbuf--;
+		if (empbuf)
+			addr = USBDC_VMSC_MAX_ENDP1_SIZE+2; /*64+2*/
+		else
+			addr = 2;
+			
+		bufp = 	USBDC_EndpBufPtr[KVM_CurrentPEN][devinx][endpinx]+addr;
+		memcpy(bufp,buf,datalen);
+		
+		*(USBDC_EndpBufPtr[KVM_CurrentPEN][devinx][endpinx]+empbuf) = CSW_LENGTH;
+		USBDC_REGS_Endp_ControlSet(KVM_CurrentPEN,devinx,endpinx,DA_CR_BVLD_SET);  // inform data move
+	}
+	else
+		return 0;
+	
+	return 1;
+}
+
+/*******************************************************************************
+* Function Name  : USBDC_VMSC_Data_Out_Write.
+* Description    : The data write out 
+* Input          : None.
+* Output         : None.
+* Return         : None.
+*******************************************************************************/
+void TASK_USBDC_VMSC_Bulk_Out_Wait(void)
+{
+	USBDC_MSC_BOT_State &= ~USBDC_MSC_DATA_OUT_WAIT;
+	USBDC_VMSC_Endpx_Data_OUT_Complete(KVM_CurrentPEN,USBDC_VMSC_DEVINX,0x02); // the out endpinx=2
+}
+
+/*******************************************************************************
+* Function Name  : TASK_USBDC_VMSC_Bulk_In_Wait.
+* Description    : The data write out 
+* Input          : None.
+* Output         : None.
+* Return         : None.
+*******************************************************************************/
+void TASK_USBDC_VMSC_Bulk_In_Wait(void)
+{
+	USBDC_VMSC_Endpx_Data_IN_Handle(KVM_CurrentPEN,USBDC_VMSC_DEVINX,0x01);
+}
+
+/*******************************************************************************
+* Function Name  :  USBDC_MSC_Media_Write
+* Description    : The data write out 
+* Input          : None.
+* Output         : None.
+* Return         : None.
+*******************************************************************************/
+U8_T USBDC_MSC_Media_Write(U8_T *txDmaPt,U8_T txLen)
+{
+	if (SPIFLSH_write_handle(FlashId, SCSI_FlashAddr, txDmaPt, txLen))
+	{
+		SCSI_FlashAddr += txLen;
+		USB_PDevice[USBDC_VMSC_DEVINX].MSC->Control.Total_Length -= txLen;
+		return 1;
+	}
+	return 0;
+}
+
+/*******************************************************************************
+* void USBDC_MSC_Stall_Clear(U8_T devinx)
+* Description    : After the Stall has been clear, need to answer the Bulk IN with CSW  
+* Input          : None.
+* Output         : None.
+* Return         : None.
+*******************************************************************************/
+void USBDC_MSC_Stall_Clear(U8_T devinx)
+{
+	USB_PDevice[devinx].MSC->BOT_State = MSC_CSW;
+	TASK_Active(TASK_TYPE_EVENT,TASK_USBDC_VMSC_Bulk_In_Wait_ID,0x00,0x00,0x00,0x00);
+}
+
+/*******************************************************************************
+* Function Name  :  USBDC_MSC_Media_Write
+* Description    : The data write out 
+* Input          : None.
+* Output         : None.
+* Return         : None.
+*******************************************************************************/
+void USBDC_MSC_State_Reset(void)
+{
+	USBDC_MSC_BOT_State = MSC_IDLE;
+	USB_PDevice[USBDC_VMSC_DEVINX].MSC->BOT_State = MSC_IDLE;
+}
+
+#if ((SYSTEM_MSC_DEVICE_SUPPORT) && (SYSTEM_USB_HC_BURST))
+/****************************************************************************
+ * void USBDC_VMSC_BOT_CBW_Decode(U8_T devinx,U8_T *cbw)
+ *
+ * @brief  Decode the CBW command and set the BOT state machine accordingtly  
+ * @param  
+ * @retval none
+ */
+RESULT USBDC_VMSC_BOT_CBW_Decode(U8_T devinx,U8_T *buf)
+{
+	MSC_BOT_CBW_TypeDef	*cbw;
+	
+	cbw = (MSC_BOT_CBW_TypeDef *)buf;
+	
+	//1.Check Signature First
+	if (cbw->dSignature != USBHC_MSC_BOT_CBW_SIGNATURE)
+	{
+		return USB_ERROR;
+	}
+	//2.Check next BOT State
+	USB_PDevice[devinx].MSC->Control.Total_Length = Endian_32_Convert(cbw->dDataLength);
+	if (USB_PDevice[devinx].MSC->Control.Total_Length)
+	{
+		USB_PDevice[devinx].MSC->Control.Current_Length = 0;
+		if (cbw->bmFlags & BOT_DIR_IN)
+		{
+			USB_PDevice[devinx].MSC->BOT_State = MSC_BOT_DATA_IN; //Request data from HC
+		}
+		else
+		{
+			USB_PDevice[devinx].MSC->BOT_State = MSC_BOT_DATA_OUT; //Send data to HC
+		}
+	}
+	else
+	{
+		USB_PDevice[devinx].MSC->BOT_State = MSC_BOT_CSW_REQUEST; //wait HC issue a IN Token in Bulk endp IN
+	}
+
+	return USB_SUCCESS;
+}
+#endif
+#endif /* #if (SYSTEM_USB_PEN_DRIVE_SUPPORT) */
+
+/* End of usbdc_vmsc.c */

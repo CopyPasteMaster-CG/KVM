@@ -1,0 +1,401 @@
+/*
+ ******************************************************************************
+ *     Copyright (c) 2014	ASIX Electronic Corporation      All rights reserved.
+ *
+ *     This is an proprietary source code of ASIX Electronic Corporation
+ *
+ *     The copyright notice above does not evidence any actual or intended
+ *     publication of such source code.
+ ******************************************************************************
+ */
+ /*============================================================================
+ * Module Name: osd.c
+ * Purpose:
+ * Author:
+ * Date:
+ * Notes:
+ *=============================================================================
+ */
+
+/* INCLUDE FILE SECTION */
+/* INCLUDE FILE DECLARATIONS */
+#include	<stdio.h>
+#include	<string.h>
+#include	<stdlib.h>
+#include	"project_include.h"
+
+#ifdef I2C_BUS
+/* NAMING CONSTANT DECLARATIONS */
+/* GLOBAL VARIABLES DECLARATIONS */
+U8_T 	I2C_RingBuffer[I2C_BUF_MAX];
+U8_T 	I2C_Tx_State;
+//U8_T 	I2C_RxB_End;
+
+U8_T    I2C_Control_State;
+U8_T    I2C_Control_Target;
+U16_T 	I2C_Tx_Start;
+U16_T 	I2C_Tx_End;
+U16_T 	I2C_Transmit_OutP;
+//U16_T 	I2C_Transmit_InP;
+
+idata volatile U16_T  I2C_Transmit_Index;
+idata volatile U16_T  I2C_Transmit_Len;
+idata volatile U16_T  I2C_Transmit_End;
+idata volatile U8_T   *I2C_Transmit_Buf;
+I2C_Transimit_Def 	  I2C_Trainsmit;
+U8_T			 	  *I2C_TrainsmitP;
+
+/* LOCAL VARIABLES DECLARATIONS */
+/* LOCAL SUBPROGRAM DECLARATIONS */
+U8_T IsMstI2cBusRdy(void);
+/* EXTERNAL GLOBAL VARIABLES DECLARATIONS */
+/* EXTERNAL SUBPROGRAM DECLARATIONS */
+
+/*----------------------------------------------------------------------------
+ * Function Name: I2C_Core_Init
+ * Purpose: initial the I2c master bus
+ * Params:  NONE
+ * Returns: NONE
+ * Note:
+ *----------------------------------------------------------------------------*/
+void I2C_Core_Init(void)
+{					
+	I2C_Transmit_OutP	= 0;
+	//I2C_Transmit_InP	= 0;
+	I2C_Control_State	= 0;
+	I2C_Tx_Start		= 0;
+ 	I2C_Tx_End			= 0;
+ 	//I2C_RxB_Start		= 0;
+ 	//I2C_RxB_End			= 0;
+	I2C_TrainsmitP = (U8_T *)&I2C_Trainsmit;
+} 
+
+/*----------------------------------------------------------------------------
+ * Function Name: I2C_Core_Buffer_Write_Byre(U8_T byte)
+ * Purpose: write one byte into the I2C Ring Buffer, and update the index
+ * Params:  
+ *    byte
+ * Returns: 0/1
+ * Note:
+ *----------------------------------------------------------------------------*/
+U8_T I2C_Core_Buffer_Write_Byre(U8_T byte)
+{
+	I2C_RingBuffer[I2C_Tx_End] = byte;
+	I2C_Tx_End++;
+	if (I2C_Tx_End >= I2C_BUF_MAX)
+		I2C_Tx_End = 0;
+	if (I2C_Tx_Start == I2C_Tx_End)
+	{
+		//printf("!!!!! I2C BUFFER WRITE OVER_FOLLOW\n\r");
+		return 0;
+	}
+	return 1;
+}
+
+/*----------------------------------------------------------------------------
+ * Function Name: I2C_Core_Buffer_Read_Byte(void)
+ * Purpose: read one byte from I2C Ring Buffer, and update the index
+ * Params:  
+ *    
+ * Returns: 0/byte value
+ * Note:
+ *----------------------------------------------------------------------------*/
+U8_T I2C_Core_Buffer_Read_Byte(void)
+{
+	U8_T byte;
+	
+	if (I2C_Tx_Start == I2C_Tx_End)
+	{	
+		//printf("!!!!! I2C BUFFER READ OVER_FOLLOW\n\r");
+		return 0;
+	}
+	
+	byte = I2C_RingBuffer[I2C_Tx_Start];
+	I2C_Tx_Start++;
+	if (I2C_Tx_Start >= I2C_BUF_MAX)
+		I2C_Tx_Start = 0;	
+	return byte;
+	
+}
+
+/*----------------------------------------------------------------------------
+ * Function Name: I2C_Core_Cmd_Transmit
+ * Purpose: Send out the I2c command, include Read/Write
+ * Params:  NONE
+ * Returns: NONE
+ * Note:
+ *----------------------------------------------------------------------------*/
+void I2C_Core_Cmd_Transmit(U8_T *buf,U8_T control,U16_T len,void *functionp)
+{			 	
+	U16_T i;	
+	
+	I2C_Trainsmit.Header  = I2C_HEADER;	
+	I2C_Trainsmit.Control = control;
+	I2C_Trainsmit.DataLen = len;
+	I2C_Trainsmit.Funp 	  = functionp;
+	I2C_Trainsmit.Buf 	  = buf;	
+	
+	//printf("I2C_T(%d),",(U16_T)I2C_Transmit_InP);
+	//Disp_Str(buf,10);
+			
+	//Add the FIFO pointer
+	for (i=0; i < sizeof(I2C_Transimit_Def); i++)
+	{
+		if (I2C_Core_Buffer_Write_Byre(I2C_TrainsmitP[i]) == 0)
+			return;		
+	}		
+	
+	if (I2C_Trainsmit.Control & I2C_CONTROL_USE_RING)
+	{
+		I2C_Trainsmit.Buf = &I2C_RingBuffer[I2C_Tx_End];
+		if (control & I2C_CONTROL_TRANSMIT)
+		{	
+			for (i=0; i < len; i++)
+			{
+				if (I2C_Core_Buffer_Write_Byre(buf[i]) == 0)
+					return;			
+			}	
+		}
+		else
+		{//read into the Ring buffer
+			i = I2C_Tx_End + len;
+			if (i >= I2C_BUF_MAX)
+			{	
+				i = i-I2C_BUF_MAX;
+			}	
+			I2C_Tx_End = i;
+		}			
+	}			
+}
+
+/*----------------------------------------------------------------------------
+ * Function Name: I2C_Core_Transmit_FIFO_Send
+ * Purpose: Send out the SPI Transcation
+ * Params:  NONE
+ * Returns: NONE
+ * Note:
+ *----------------------------------------------------------------------------*/
+void I2C_Core_Transmit_FIFO_Send(void)
+{
+	U8_T reg;	
+	U8_T i2cbyte;
+				
+	//printf("Size=%bu",(U8_T)sizeof(I2C_Transimit_Def));
+	//01.Check I2C Buffer header first
+I2C_Transmit_FIFO_Start:
+	//printf("\n\r[S-%d,%d]",I2C_Tx_Start,I2C_Tx_End);
+	if (I2C_Tx_Start != I2C_Tx_End)
+	{
+		if (I2C_RingBuffer[I2C_Tx_Start] != I2C_HEADER)
+		{
+			I2C_Core_Buffer_Read_Byte();			
+			goto I2C_Transmit_FIFO_Start;
+		}	
+	}
+	
+	//if (I2C_Tx_Start == I2C_Tx_End)
+	//	return;	
+	
+	//02.Copy content into struct buffer		
+	//printf("<");
+	for (reg = 0; reg < sizeof(I2C_Transimit_Def); reg++)
+	{		
+		I2C_TrainsmitP[reg] = I2C_Core_Buffer_Read_Byte();
+		//printf("%02bx ",I2C_TrainsmitP[reg]);
+		/*
+		I2C_TrainsmitP[reg] = I2C_Core_Buffer_Read_ByteI2C_RingBuffer[I2C_Tx_Start];
+		if (I2C_Tx_Start >= I2C_BUF_MAX)
+			I2C_Tx_Start = 0;
+		*/
+		//if (I2C_Tx_Start == I2C_Tx_End)
+		//{
+		//	printf("(b1)");
+		//	break;			
+		//}
+	}
+	//printf(">");
+		
+	if (reg != sizeof(I2C_Transimit_Def))
+	{			
+		return;
+	}
+	I2C_Transmit_OutP = I2C_Tx_Start; //store the index
+	
+	I2C_Control_State   = I2C_Trainsmit.Control; //Kept the transmitter state		
+	I2C_Transmit_Len    = I2C_Trainsmit.DataLen;		 		
+	I2C_Transmit_Buf    = I2C_Trainsmit.Buf;		
+	I2C_Transmit_Index  = 1;	
+	I2C_Transmit_End    = I2C_Transmit_Len-1;		
+	//printf("(Len:%d)",I2C_Transmit_Len);
+	
+	if (I2C_Control_State & I2C_CONTROL_TRANSMIT)
+	{
+		if (I2C_Control_State & I2C_CONTROL_USE_RING)
+		{
+			//printf("r");
+			i2cbyte = I2C_Core_Buffer_Read_Byte();						
+		}	
+		else	
+		{	
+			i2cbyte = I2C_Transmit_Buf[0];			
+		}	
+		//printf("(%02bx)",i2cbyte);
+	}	
+	//03.Check the read & write
+	EXTINT4_DISABLE;
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//2.Send out	
+	if (I2C_Control_State & I2C_CONTROL_TRANSMIT)
+	{									
+		//1.Enable the Master Interrupt
+		/* Record the globe flag of command condition */					
+		//read back the I2c master interrupt setting
+		_I2C_CIR_SFR(I2CMIER);
+		_I2C_DR_READ_SFR(reg);					
+			
+		// Enable Master transfer complete Interrupt	
+		reg |= I2CMIER_TCIE;
+		_I2C_DR_SFR(reg);	
+		_I2C_CIR_SFR(I2CMIER);
+		
+		// Send out the Addres byte via I2c Master		
+		_I2C_DR_SFR(i2cbyte);			
+		_I2C_CIR_SFR(I2CMTR);
+		
+		// I2C Master GO		
+		if (I2C_Transmit_Len == I2C_Transmit_Index) // last byte
+		{				
+			if ((I2C_Control_State & I2C_CONTROL_TRANSMIT_NOSTOP) == 0)
+			{
+				_I2C_DR_SFR(I2CMCR_MASTER_GO | I2CMCR_CMD_WRITE | I2CMCR_START_COND | I2CMCR_STOP_COND);	
+				_I2C_CIR_SFR(I2CMCR);			
+			}				
+			else
+			{
+				_I2C_DR_SFR(I2CMCR_MASTER_GO | I2CMCR_CMD_WRITE | I2CMCR_START_COND);	
+				_I2C_CIR_SFR(I2CMCR);			
+			}	
+		}	
+		else
+		{				
+			_I2C_DR_SFR(I2CMCR_MASTER_GO | I2CMCR_CMD_WRITE | I2CMCR_START_COND);	
+			_I2C_CIR_SFR(I2CMCR);			
+		}		
+	}	
+	else
+	{ //I2C read		
+		//read back the I2c master interrupt setting
+		_I2C_CIR_SFR(I2CMIER);
+		_I2C_DR_READ_SFR(reg);					
+			
+		// Enable Master transfer complete Interrupt	
+		reg |= I2CMIER_TCIE;
+		_I2C_DR_SFR(reg);	
+		_I2C_CIR_SFR(I2CMIER);
+				
+		// I2C Master GO to read in the first byte
+		if (I2C_Transmit_Len == I2C_Transmit_Index) // one byte read
+		{				
+			if ((I2C_Control_State & I2C_CONTROL_TRANSMIT_NOSTOP) == 0)
+			{
+				_I2C_DR_SFR(I2CMCR_MASTER_GO | I2CMCR_CMD_READ | I2CMCR_STOP_COND);	
+				_I2C_CIR_SFR(I2CMCR);			
+			}				
+			else
+			{
+				_I2C_DR_SFR(I2CMCR_MASTER_GO | I2CMCR_CMD_READ);	
+				_I2C_CIR_SFR(I2CMCR);			
+			}	
+		}	
+		else
+		{	
+			_I2C_DR_SFR(I2CMCR_MASTER_GO | I2CMCR_CMD_READ);	
+			_I2C_CIR_SFR(I2CMCR);
+		}		
+	}	
+	EXTINT4_ENABLE;	
+	//printf("[S2-%d,%d]",I2C_Tx_Start,I2C_Tx_End);
+}
+
+/*----------------------------------------------------------------------------
+ * IsMstI2cBusRdy
+ * Purpose:  
+ * Params:  NONE
+ * Returns: NONE
+ * Note:
+ *----------------------------------------------------------------------------*/
+U8_T IsMstI2cBusRdy(void)
+{
+	U8_T reg;
+	
+	EXTINT4_DISABLE;
+	_I2C_CIR_SFR(I2CMSR);
+	_I2C_DR_READ_SFR(reg);	
+	EXTINT4_ENABLE;
+	
+	return (reg & I2CMSR_BUS_BUSY);
+	
+}
+
+/*----------------------------------------------------------------------------
+ * void I2C_Core_Handle_After_Transfer_Complete(U8_T state)
+ * Purpose: 
+ * Params :
+ * Returns: NONE
+ * Note:
+ *----------------------------------------------------------------------------*/
+void I2C_Core_Handle_After_Transfer_Complete(U8_T state)
+{	 
+	U16_T len;
+	
+	I2C_Tx_State = state;
+	
+	if (state & (I2CMISR_ARB_LOST|I2CMISR_NO_ACK))
+	{
+		if (state & I2CMISR_ARB_LOST)
+		{	
+			printf("I2C Error:Arbit Lost\n\r"); 
+		}	
+		//else
+		//{
+		//	printf("@");
+		//}			
+		goto OSDI2C_Handle_After_Transmit; //Go Next 
+	}
+	else
+	{	
+		if (state & I2CMISR_TC)
+		{	
+OSDI2C_Handle_After_Transmit:			
+			if (I2C_Control_State & I2C_CONTROL_TRANSMIT)
+			{										
+				I2C_Control_State &= ~I2C_CONTROL_TRANSMIT;
+				
+				if (I2C_Trainsmit.Control & I2C_CONTROL_FREE)
+				{
+					malloc_free(I2C_Trainsmit.Buf);
+				}									
+				//printf("(t%02bx)",I2C_Control_State);				
+			}
+			else
+			{								
+				I2C_Control_State &= ~I2C_CONTROL_RECEIVE;	
+				//printf("(r%02bx)",I2C_Control_State);
+				if (I2C_Control_State & I2C_CONTROL_USE_RING)
+				{
+					len = I2C_Transmit_OutP + I2C_Transmit_Len;
+					if (len >= I2C_BUF_MAX)
+					{	
+						len = len-I2C_BUF_MAX;
+					}	
+					I2C_Tx_Start = len;
+				}					
+			}	
+			
+			if (I2C_Trainsmit.Funp != NULL)
+				I2C_Trainsmit.Funp();
+		}
+	}			
+}
+#endif /* #if (SYSTEM_CASCADE_I2C_SUPPORT) */
+/* End of osd.c */

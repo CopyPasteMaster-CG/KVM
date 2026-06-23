@@ -1,0 +1,1551 @@
+/*
+ ******************************************************************************
+ *     Copyright (c) 2014	ASIX Electronic Corporation      All rights reserved.
+ *
+ *     This is an proprietary source code of ASIX Electronic Corporation
+ *
+ *     The copyright notice above does not evidence any actual or intended
+ *     publication of such source code.
+ ******************************************************************************
+ */
+ /*============================================================================
+ * Module Name: km_log.c
+ * Purpose:
+ * Author:
+ * Date:
+ *=============================================================================
+ */
+/* 
+*/
+
+/* INCLUDE FILE SECTION */
+#include <stdio.h>
+#include <string.h>
+#include "project_include.h"
+
+
+#ifdef KMLOG
+//P A R T 1
+#define    HUART_12M			0
+#define    HUART_8M				1
+#define    HUART_6M				2
+#define    HUART_4M				3
+#define    HUART_3M				4
+#define    HUART_2M				5
+#define    HUART_1M				6
+#define    HUART_921K			7
+#define    HUART_115K			8
+#define    HUART_9600			9
+#define    HUART_19200			10
+#define    HUART_38400			11
+#define    HUART_57600			12
+
+#ifndef REMOTE_HUART_BAUD
+#define REMOTE_HUART_BAUD	HUART_115K
+#endif
+
+//-----------------------------------------------------------------------------------------------------------------------------------------
+#define KMLOG_BUTTON_MASK  0x03
+code GPIO_TypeDef	*LED_PORT[] = {PORT2,PORT2,PORT2};
+code GPIO_PinTypeDef LED_PIN[] =
+{
+	GPIO_Pin_0,
+	GPIO_Pin_1,
+	GPIO_Pin_2,	
+};
+
+code U8_T USBSCANCODE_MODIFIERH_TAB[] = 
+{
+	//0xe0,0xe1,0xe2,0xe3,0xe4,0xe5,0xe6,0xe7
+      0x00,0x00,0x00,0xe0,0xe0,0x00,0xe0,0xe0 	     	        
+};
+code U8_T USBSCANCODE_MODIFIER_TAB[] = 
+{
+	//0xe0,0xe1,0xe2,0xe3,0xe4,0xe5,0xe6,0xe7
+	  0x14,0x12,0x11,0x1f,0x14,0x59,0x11,0x27 	     	        
+};
+
+U16_T  HUART_BAUDRATE_96M[] = {
+	0x0001, 	/* 12M	  */
+	0x0001, 	/*  8M	  */
+	0x0001, 	/*  6M	  */
+	0x0001, 	/*  4M	  */
+	0x0001, 	/*  3M	  */	
+	0x0001, 	/*  2M	  */
+	0x0001, 	/*  1M    */
+	0x0004, 	/* 921600 */
+	0x0020, 	/* 115200 */
+	0x0064, 	/* 9600   */
+	0x0032,		/* 19200   */
+	0x0019,		/* 38400   */
+	0x0011,		/* 57600   */
+};
+									
+U16_T  HUART_BAUDRATE_48M[] = {
+	0x0001, 	/* 12M	  */
+	0x0001, 	/*  8M	  */
+	0x0001, 	/*  6M	  */
+	0x0001, 	/*  4M	  */
+	0x0001, 	/*  3M	  */
+	0x0001, 	/*  2M	  */
+	0x0001, 	/*  1M    */
+	0x0002, 	/* 921600 */
+	0x0010, 	/* 115200 */
+	0x0032, 	/* 9600   */
+	0x0019,		/* 19200   */
+	0x000C,		/* 38400   */
+	0x0008,		/* 57600   */
+};
+
+U8_T  HUART_DPR_96M[] = {
+//	0x06,		//16M(bps)
+	0x08,		//12M(bps)
+	0x0C,		//8M(bps)
+	0x10,		//6M(bps)
+	0x18,		//4M(bps)
+	0x20,		//3M(bps)
+	0x30,		//2M(bps)
+	0x5E,		//1M(bps)
+	0x1A,		//921600(bps)
+	0x1A,		//115200(bps)
+	0x64,		//9600(bps)
+	0x64,		//19200
+	0x64,		//38400
+	0x64,		//57600
+};
+
+U8_T  HUART_DPR_48M[] = {
+	0x04,		//12M(bps)
+	0x06,		//8M(bps)
+	0x08,		//6M(bps)
+	0x0C,		//4M(bps)
+	0x10,		//3M(bps)
+	0x18,		//2M(bps)
+	0x2F,		//1M(bps)
+	0x1A,		//921600(bps)
+	0x1A,		//115200(bps)
+	0x64,		//9600(bps)
+	0x64,		//19200
+	0x64,		//38400
+	0x64,		//57600
+};
+
+
+//P A R T 2 
+#define STAGE_READ_WAIT			0
+#define STAGE_READ_HANDLE		1
+#define STAGE_SEND				2
+#define STAGE_SEND_HANDLE		3
+#define STAGE_SEND_WAIT			4
+#define STAGE_SEND_WAIT			4
+//------------------------------------------
+//$ Console Behavior define
+//------------------------------------------
+#define AUTO_0A				1
+#define CHAR_ECHO			1
+#define CHAR_TERMINATE1		0x0d
+#define CHAR_TERMINATE2		0x0a
+#define AUTO_TOUPPER		1
+#define AUTO_TOLOWER		0
+#define KMLogStrMaxLength	13
+#define KMLogStrMaxCnt		6
+
+//P A R T 1 -----------------------------
+bit	   KMLogTimeOut_Pause=0;
+bit	   KMLogTimeOut_Flag=0;
+
+static U8_T		hsur2IntrEnbType;
+static U8_T		hsur2FifoCtrl;
+static U16_T	hsur2ErrCount;
+
+U8_T	KMLogCRC[2];
+U8_T    KMLOG_Button_State = 0x03;
+U8_T	KM_Host_Connect_State;
+U8_T	hsuart_TxFlag = 0;
+U8_T	KMLogModifier;
+U8_T	OperationMode = 0;
+U16_T	AutoMode_Timer=1; //5 Seconds
+// KMLog Buffer handle
+U8_T	hsuart_TxBuf[MAX_TX_REMOTE_BUF_SIZE];
+U8_T	hsuart_RxBuf[MAX_RX_REMOTE_BUF_SIZE];
+
+U16_T	hsuart_TxHead = 0;
+U16_T	hsuart_TxTail = 0;
+U16_T	hsuart_RxHead = 0;
+U16_T	hsuart_RxTail = 0;
+U8_T	KMLog_VBus_Connect_State=0;
+U8_T	KMLog_USB_Bus_State=0;
+
+U16_T	hsuart_RxCount = 0;
+volatile U16_T	hsuart_TxCount = 0;
+static const U8_T KMLogBaudText[15][6] = {"12M", "8M", "6M", "4M", "3M", "2M", "1M", "921K", "115K", "9600", "19200", "38400", "57600"};
+U8_T	KMLog_RxBuf[MAX_RX_REMOTE_Q_SIZE];
+U8_T	KMLog_TxBuf[MAX_TX_REMOTE_Q_SIZE];
+U16_T	KMLog_RxHead  = 0;
+U16_T	KMLog_RxTail  = 0;
+U16_T	KMLog_RxCount = 0;
+U16_T	KMLog_RxTail_Hold;	
+
+U8_T	TASK_KMLogReceive_TimeOut_ID;		
+U8_T	TASK_KMLogReceive_TimeOut_ActiveID;
+U8_T	KMLog_HotkeyFun[2];
+U8_T    TASK_KMLog_Send_Hotkey_ID;
+
+Kmlog_Kb_Packet_Def 	Kb_Log;
+Kmlog_Ms_Packet_Def 	Ms_Log;
+Kmlog_MsA_Packet_Def 	MsA_Log;
+Kmlog_Data_Packet_Def	Km_Data;
+Kmlog_Data_Packet_Def	*Receive_Data;
+
+/* LOCAL SUBPROGRAM DECLARATIONS */
+void HSUR2_Start(void);
+void HSUR2_Setup(U16_T divisor, U8_T lCtrl, U8_T intEnb, U8_T fCtrl, U8_T mCtrl);
+BOOL REMOTE_PutStr(char *str,U8_T len);
+BOOL HSUR2_RegWrite(U8_T addr, U8_T *ptData, U8_T dataLen);
+BOOL HSUR2_RegRead(U8_T addr, U8_T *ptData, U8_T dataLen);
+void KMLog_Function_System_Handle(void);
+void TASK_KMLogReceive_TimeOut_Start(void);
+void TASK_KMLogReceive_TimeOut(void);
+void KMLogConsoel_Nak(void);
+void KMLogConsoel_Ack(void);
+void KMLog_Send_System(U8_T *buf,U8_T funcode,U8_T subfuncode,U8_T payload,U8_T payload1);
+
+void KMLog_Handle_Reset(void);			
+void KMLog_Handle_KbLed_Set(void);			
+void KMLog_Handle_KbLed_State(void);			
+void KMLog_Handle_Device_State(void);			
+void KMLog_Handle_Version_Number(void);			
+void KMLog_Handle_Version_Date(void);
+void KMLog_Handle_Led_Set(void);			
+void KMLog_Handle_Mouse_Mode_Set(void);
+void KMLog_Handle_Host_Connect_Set(void);
+void KMLog_Function_AMS_Set(void);
+void KMLog_Function_RMS_Set(void);
+void KMLog_Function_KB_Set(void);
+void KMLog_Function_AMS_Req(void);
+void TASK_KMLog_Send_Hotkey(void);
+void KMLog_Handle_Repeat_Key(void);
+void KMLog_Handle_Cls_Roaming_Event(void);
+/* LOCAL SUBPROGRAM BODIES */
+/*
+ * ----------------------------------------------------------------------------
+ * void KMLOG_Init(void)
+ * Purpose : KMLOG initial function. It will call a initial function
+ *           corresponding to HSUART port.
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------
+ */
+void KMLOG_Init(void)
+{
+	U16_T	baud;
+	U8_T	reg8b;
+	
+	//Do the software & memory init
+	Receive_Data = (Kmlog_Data_Packet_Def *)&KMLog_RxBuf[0]; //assign the receive packtet pointer to RX buffer
+	hsuart_TxHead = 0;
+	hsuart_TxTail = 0;
+	hsuart_TxCount = 0;
+	hsuart_TxFlag = 0;
+	hsuart_RxHead = 0;
+	hsuart_RxTail = 0;
+	hsuart_RxCount = 0;
+	#ifdef MCU_TYPE_AX68002
+	KM_Host_Connect_State = 0x03; //default connect
+	#else
+	KM_Host_Connect_State = 0x0f; 
+	#endif
+	memset(hsuart_TxBuf,0x00,sizeof(hsuart_TxBuf));
+	memset(hsuart_RxBuf,0x00,sizeof(hsuart_RxBuf));	
+	KMLog_RxCount = 0;
+	KMLog_TxBuf[0] = 0xff;
+	
+	/* Baudrate = 12M for RS232 */
+	if (CPU_SysClk == SCS_96M)
+	{
+		reg8b = HUART_DPR_96M[HUART_BAUD];
+		baud = HUART_BAUDRATE_96M[HUART_BAUD];
+	}
+	else
+	{
+		reg8b = HUART_DPR_48M[HUART_BAUD];
+		baud = HUART_BAUDRATE_48M[HUART_BAUD];
+	}
+
+	HSUR2_RegWrite(HSDPR, &reg8b, 1); //setup the clock rate
+	//For Extender Setting
+	//Data Bit 8, Stop bit 1,None parity
+	//Interupt-Receive when receive buffer level changed
+	//         Line status 
+	//         Receive buffer full
+	//         Transmitte complete
+	//         DMA error 
+	//         Flow character received complete
+
+//#ifdef KMLOG_RS232
+	//printf("KMLog Console:@RS-232 @ %s bps\n\r", &KMLogBaudText[HUART_BAUD][0]);
+	HSUR2_Setup(baud,
+				(HSLCR_CHAR_8|HSLCR_STOP_10),
+				(HSIER_RDI_ENB|HSIER_TFEI_ENB|HSIER_RLSI_ENB|HSIER_RBRFI_ENB),
+				(HSFCR_HSUART_ENB|HSFCR_FIFOE|HSFCR_RFR|HSFCR_TFR|HSFCR_TRIG_01),
+				0);
+//#else // For RS485 Mode
+/*	
+	printf("@RS-485 @ %s bps\n\r", &KMLogBaudText[HUART_BAUD][0]);
+	HSUR2_Setup(baud,
+				(HSLCR_CHAR_8|HSLCR_STOP_10),
+				(HSIER_RDI_ENB|HSIER_TFEI_ENB|HSIER_RLSI_ENB|HSIER_RBRFI_ENB),
+				(HSFCR_HSUART_ENB|HSFCR_FIFOE|HSFCR_RFR|HSFCR_TFR|HSFCR_TRIG_01),
+				(HSMCR_RTS|HSMCR_RS485_ENB|HSMCR_DEREC_STPHD));
+#endif //#if (SYSTEM_EXTENDER_RS232_MODE)
+*/
+	/* Enable HSUR interrupt */
+	HSUR2_Start();
+	
+	KMLog_RxCount = 0;
+	KMLogModifier = 0;
+	TASK_KMLogReceive_TimeOut_ID = TASK_Create(TASK_KMLogReceive_TimeOut);
+	TASK_KMLog_Send_Hotkey_ID = TASK_Create(TASK_KMLog_Send_Hotkey);
+	TASK_KMLogReceive_TimeOut_ActiveID = 0;
+}
+
+/*
+ *--------------------------------------------------------------------------------
+ * BOOL HSUR2_RegWrite(U8_T addr, U8_T *ptData, U8_T dataLen)
+ * Purpose: Write data bytes into a register with interrupt locked.
+ * Params : addr:An index address to UART2 register.
+ *          ptData:A pointer to indicate the register data.
+ *          dataLen:A number of bytes to indicate how many bytes will be written.
+ * Returns: TRUE (1) is success ; FALSE (0) is failure.
+ * Note   : None.
+ *--------------------------------------------------------------------------------
+ */
+BOOL HSUR2_RegWrite(U8_T addr, U8_T *ptData, U8_T dataLen)
+{
+	U8_T	oldEintBit = EINT4;
+
+	EINT4 = 0;
+	while (dataLen--)
+	{
+		UR2DR = *(ptData + dataLen);
+	}
+	UR2CIR = addr;
+	EINT4 = oldEintBit;
+
+	return TRUE;
+}
+
+/*
+ *--------------------------------------------------------------------------------
+ * BOOL HSUR2_RegRead(U8_T addr, U8_T *ptData, U8_T dataLen)
+ * Purpose: Read data bytes from a register with interrupt locked.
+ * Params : addr:An index address to UART2 register.
+ *          ptData:A pointer to indicate the register data.
+ *          dataLen:A number of bytes to indicate how many bytes will be read.
+ * Returns: TRUE (1) is success ; FALSE (0) is failure.
+ * Note   : None.
+ *--------------------------------------------------------------------------------
+ */
+BOOL HSUR2_RegRead(U8_T addr, U8_T *ptData, U8_T dataLen)
+{
+	U8_T	oldEintBit = EINT4;
+
+	EINT4 = 0;
+	UR2CIR = addr;
+	while (dataLen--)
+	{
+		*(ptData + dataLen) = UR2DR;
+	}
+	EINT4 = oldEintBit;
+
+	return TRUE;
+}
+/*
+ *--------------------------------------------------------------------------------
+ * static void hsur_ReadLsr(void)
+ * Purpose: Read the Line Status Register to record the error events in a counter.
+ *          And begin the error recovering if happening many errors.
+ * Params : None.
+ * Returns: None.
+ * Note   : None.
+ *--------------------------------------------------------------------------------
+ */
+static void hsur2_ReadLsr(void)
+{
+	U8_T	lineStatus;
+	U8_T	fifoCtrl;
+	U16_T	reg16b;
+	
+	UR2CIR = HSLSR;
+	lineStatus = UR2DR;
+
+	if (lineStatus & HSLSR_OE_OVER)
+	{
+		hsur2ErrCount ++;
+		// Overrun Error
+	}
+	else if (lineStatus & HSLSR_PE_ERROR)
+	{
+		hsur2ErrCount ++;
+		// Parity Error
+	}
+	else if (lineStatus & HSLSR_FE_ERROR)
+	{
+		hsur2ErrCount ++;
+		// Framing Error
+	}
+	else if (lineStatus & HSLSR_BI_INT)
+	{
+		hsur2ErrCount ++;
+		// Break Interrupt Occured
+	}
+	else if (lineStatus & HSLSR_FERR_ERROR)
+	{
+		hsur2ErrCount ++;
+		// Mixing Error
+	}
+	/* For Error handling before data synchrony */
+	if (hsur2ErrCount)
+	{
+		/* Enable the Receiver FIFO STOP (RSTOP) bit to stop data characters transfer into RX FIFO.
+		   And Reset Rx FIFO and TX FIFO */
+		fifoCtrl = (hsur2FifoCtrl | HSFCR_RSTOP | HSFCR_RFR | HSFCR_TFR);
+		UR2DR = fifoCtrl;
+		UR2CIR = HSFCR;
+		/* Read the error data pointer */
+		UR2CIR = HSRBDEP;
+		reg16b = (U16_T)UR2DR;
+		reg16b |= (U16_T)UR2DR << 8;
+		/* Flush all characters in the RX buffer ring by HSRBRP = HSRBWP when UART2 is in DMA mode */
+		/*
+		UR2CIR = HSRBWP;
+		reg16b = (U16_T)UR2DR;
+		reg16b |= (U16_T)UR2DR << 8;
+		UR2DR = (U8_T)reg16b;
+		UR2DR = (U8_T)(reg16b >> 8);
+		UR2CIR = HSRBRP;
+		ptHsur2RxDmaRingSwRead = (U8_T XDATA*)reg16b;
+		*/
+		/* Disable the Receiver FIFO STOP (RSTOP) bit to re-start RX FIFO */
+		fifoCtrl = (hsur2FifoCtrl | HSFCR_RFR | HSFCR_TFR);
+		fifoCtrl &= ~HSFCR_RSTOP;
+		UR2DR = fifoCtrl;
+		UR2CIR = HSFCR;
+
+		if (hsur2ErrCount >= 100)
+		{
+//			hsur2ErrBlocking = 1;
+			/* Disable the UART2 interrupt */
+			UR2DR = 0;
+			UR2CIR = HSIER;
+		}
+	}
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * void HSUR2_IntrEntryFunc(void)
+ * Purpose : HSUART interrupt service routine. For sending out, it puts data
+ *           from software buffer into hardware serial buffer register (SBUF0).
+ *           For receiving, it gets data from hardware serial buffer register
+ *           (SBUF0) and stores into software buffer.
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------
+ */
+void HSUR2_IntrEntryFunc(void)
+{	
+	U8_T	intrStatus;
+	U8_T	ur2DmaIntrStatus;
+	U16_T	temp16b = 0;
+//	U8_T	temp8b[2];
+
+	UR2CIR = HSIIR;
+	intrStatus = UR2DR;	
+	intrStatus &= 0x1F;	
+	
+	if ((intrStatus & HSIIR_RLS_INTR) == HSIIR_RLS_INTR)
+	{
+		hsur2_ReadLsr();
+		return;
+	}
+	//else if (intrStatus == HSIIR_DMAS_INTR)
+	if (intrStatus == HSIIR_DMAS_INTR)
+	{ /* DMA interrupt flag */
+		UR2CIR = HSDSR;
+		ur2DmaIntrStatus = UR2DR;
+		
+		//Assing to ISR handle 
+		ISR_FIFO[ISR_FIFO_Wp].ISR_Type = ISR_HUART;
+		ISR_FIFO[ISR_FIFO_Wp].Data = ur2DmaIntrStatus;				
+		
+		ISR_FIFO_Wp++;
+		if (ISR_FIFO_Wp >= ISR_FIFO_DEPTH)
+			ISR_FIFO_Wp = 0;			
+		return;
+	}	
+	//else if ((intrStatus == HSIIR_RD_TI_INTR) || (intrStatus == HSIIR_RD_TRIG_INTR))	
+	if ((intrStatus & HSIIR_RD_TI_INTR) == HSIIR_RD_TRIG_INTR)	
+	{ /* Receiver Timeout */		
+		// Assing to ISR handle 		
+		UR2CIR = HSRBR;								
+		hsuart_RxBuf[hsuart_RxTail] = UR2DR;
+		
+		hsuart_RxTail++;
+		hsuart_RxTail &= MAX_RX_HSUART_MASK;
+		ISR_FIFO[ISR_FIFO_Wp].ISR_Type = ISR_UART1;
+		//ISR_FIFO[ISR_FIFO_Wp].Data = intrStatus;
+		if (++ISR_FIFO_Wp >= ISR_FIFO_DEPTH)
+		{
+			ISR_FIFO_Wp = 0;
+		}	
+	}
+	
+	if ((intrStatus & HSIIR_TFE_INTR) == HSIIR_TFE_INTR)
+	{ /* Transmitte complete */				
+		if (hsuart_TxCount > 0)
+		{
+			hsuart_TxTail++;
+			hsuart_TxTail &= MAX_TX_HSUART_MASK;		
+			hsuart_TxCount--;
+			if (hsuart_TxCount > 0)			
+			{	
+				UR2DR = hsuart_TxBuf[hsuart_TxTail];
+				UR2CIR = HSTHR;						
+			}
+			else
+			{
+				hsuart_TxFlag = 0;
+			}				
+		}
+		else
+		{	
+			hsuart_TxFlag = 0;
+		}	
+	}
+}
+
+/*
+ *--------------------------------------------------------------------------------
+ * void HSUR2_Start(void)
+ * Purpose: Start function will enable the interrupt sources that be configured
+ *          in the setup function. This function should be closely called before
+ *          running application tasks.
+ * Params : None.
+ * Returns: None.
+ * Note   : None.
+ *--------------------------------------------------------------------------------
+ */
+void HSUR2_Start(void)
+{
+	/* Enable the UART2 interrupt */
+	//REMOTE_PutStr("IER=%02x\r",(U16_T)hsur2IntrEnbType);
+	HSUR2_RegWrite(HSIER, &hsur2IntrEnbType, 1);
+}
+
+/*
+ *--------------------------------------------------------------------------------
+ * void HSUR_Setup(U16_T divisor, U8_T lCtrl, U8_T intEnb, U8_T fCtrl, U8_T mCtrl)
+ * Purpose: Use this function can initialize the UART2 basic mode. It will configure
+ *          the baudrate, data bus type, interrupt source, FIFO setup and modem status.
+ * Params : divisor : A 16-bit Divisor Latch value to calaulate the baudrate.
+ *          lCtrl : A value to Line Control Register.
+ *          intEnb : The interrupt source type of Interrupt Enable Register.
+ *          fCtrl : A value to FIFO Control Register.
+ *          mCtrl : A value to Modem Control Register.
+ * Returns: None.
+ * Note   : None.
+ *--------------------------------------------------------------------------------
+ */
+void HSUR2_Setup(U16_T divisor, U8_T lCtrl, U8_T intEnb, U8_T fCtrl, U8_T mCtrl)
+{
+	U8_T	lineCtrl, dll, dlh;
+
+	hsur2IntrEnbType = intEnb;
+	/* Set UART2 Baudrate */
+	lineCtrl = HSLCR_DLAB_ENB;
+	HSUR2_RegWrite(HSLCR, &lineCtrl, 1);
+	dll = (U8_T)(divisor & 0x00FF);
+	dlh = (U8_T)((divisor & 0xFF00) >> 8);
+	HSUR2_RegWrite(HSDLLR, &dll, 1);
+	HSUR2_RegWrite(HSDLHR, &dlh, 1);
+	lineCtrl &= ~HSLCR_DLAB_ENB;
+	HSUR2_RegWrite(HSLCR, &lineCtrl, 1);
+	/* Set Line Control Register */
+	lCtrl &= ~HSLCR_DLAB_ENB;
+	HSUR2_RegWrite(HSLCR, &lCtrl, 1);
+	/* Set FIFO Control Register */
+	//hsur2FifoCtrl = fCtrl | HSFCR_RSTOP; // Enable the RSTOP bit to stop the data characters into RX FIFO.
+	hsur2FifoCtrl = fCtrl; // Enable the RSTOP bit to stop the data characters into RX FIFO.
+	hsur2FifoCtrl &= ~(HSFCR_RFR | HSFCR_TFR);
+	HSUR2_RegWrite(HSFCR, &fCtrl, 1);
+	/* Set Modem Control Register */
+	HSUR2_RegWrite(HSMCR, &mCtrl, 1);
+	/* Disable DMA Mode */
+	dll = 0;
+	HSUR2_RegWrite(HSDCR, &dll, 1);
+	/* Initial Variables */
+	hsur2ErrCount = 0;
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * S8_T HSUART_PutChar(S8_T c)
+ * Purpose : HSUART output function. This function puts one byte data into the
+ *           software character buffer.
+ * Params  : c - one byte character.
+ * Returns : c - one byte character.
+ * Note    : none
+ * ----------------------------------------------------------------------------
+ */
+S8_T HSUART_PutChar(S8_T c)
+{
+	U16_T	count = 0;	
+	
+	do
+	{	
+		count = hsuart_TxCount;			
+	} while (count == MAX_TX_HSUART_MASK);		
+	hsuart_TxBuf[hsuart_TxHead] = c;	
+	hsuart_TxCount++;		
+	hsuart_TxHead++;
+	hsuart_TxHead &= MAX_TX_HSUART_MASK;
+
+	if (!hsuart_TxFlag)
+	{	
+		hsuart_TxFlag = 1;
+		EINT4 = 0;	
+		UR2DR = hsuart_TxBuf[hsuart_TxTail];;	
+		UR2CIR = HSTHR;	
+		EINT4 = 1;	
+	}	
+	return c;
+}
+
+/** ----------------------------------------------------------------------------
+ * S8_T *REMOTE_PutStr(S8_T *format,...)  
+ * Purpose : HSUART initial function. It will call a real initial function
+ *           corresponding to the used HSUART port.
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+BOOL REMOTE_PutStr(U8_T *str,U8_T len)
+{        
+	U8_T i;
+	
+	for (i=0; i < len ; i++)	   
+    {          
+        HSUART_PutChar(str[i]);		
+    }      
+	
+	return 1;
+}    
+
+/** ----------------------------------------------------------------------------
+* BOOL REMOTE_PutData(U8_T *str)  
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+BOOL REMOTE_PutData(char *str)
+{        
+	U8_T i;
+	
+	for (i=0; i < sizeof(KMLog_Format_TypeDef);i++)
+	{    
+		HSUART_PutChar(*str);
+		str++;
+    }      
+	
+	return 1;
+} 
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Recieve_Handle(void)
+ * Purpose : UART0 console receive handle 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+void KMLog_Recieve_Handle(void)
+{	
+	bit terminate=0;
+	U8_T  cmd_get=0;
+	
+	//printf("(%d-%d)\n\r",KMLog_RxTail,hsuart_RxTail);			
+	if (KMLog_RxTail != hsuart_RxTail)	
+	{					
+		//printf("|%d-%02bx|",KMLog_RxCount,hsuart_RxBuf[hsuart_RxHead]);		
+		KMLogTimeOut_Pause = 0;		
+		TASK_KMLogReceive_TimeOut_Start();
+		if (KMLog_RxCount == 0)
+		{//The first byte
+			KMLog_RxBuf[0]=hsuart_RxBuf[hsuart_RxHead];
+			if (KMLog_RxBuf[KMLog_RxCount] == KMLOG_HEADER0)
+			{
+				KMLog_RxTail_Hold = KMLog_RxTail;				
+			}				
+		}		
+		
+		if (KMLog_RxBuf[0] == KMLOG_HEADER0)
+		{				
+			KMLog_RxBuf[KMLog_RxCount]=hsuart_RxBuf[hsuart_RxHead];			
+			//Check Data complete condition			
+			if (KMLog_RxCount >= sizeof(Kmlog_Data_Packet_Def)-1) //now data receive done
+			{								
+				{	
+					KMLogTimeOut_Pause = 1;					
+					switch (KMLog_RxBuf[1])
+					{
+						case KMLOG_TYPE_KB:
+							KMLog_Function_KB_Set();
+							break;
+						case KMLOG_TYPE_MS:
+							KMLog_Function_RMS_Set();
+							break;
+						case KMLOG_TYPE_SYSTEM:
+							KMLog_Function_System_Handle();
+							break;
+						case KMLOG_TYPE_MSA:
+							KMLog_Function_AMS_Set();
+							break;
+						case KMLOG_TYPE_REPEAT_KEY:
+							KMLog_Handle_Repeat_Key();
+							break;
+						default:
+							KMLogConsoel_Nak();
+						
+					}
+					/*	
+					if (KMLog_RxBuf[1] == KMLOG_TYPE_SYTEM)
+					{
+						//printf("S");
+						KMLog_Function_System_Handle();
+					}				
+					else if 
+					{
+						KMLogConsoel_Nak();
+					}
+					*/					
+				}	
+				KMLog_RxCount  = 0;
+			}
+			else
+			{
+				KMLog_RxCount++;
+			}				
+				
+		}
+						 							
+		//----------------------------------------------------------
+		//update the ring buffer end pointer for RX ring buffer
+		hsuart_RxHead++;
+		hsuart_RxHead &= MAX_RX_HSUART_MASK;						
+		KMLog_RxTail++;			
+		KMLog_RxTail &= MAX_RX_HSUART_MASK;															
+	} /* End of if(RI0) */
+} 
+
+/**----------------------------------------------------------------------------
+ * void TASK_KMLogReceive_TimeOut_Start(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+void TASK_KMLogReceive_TimeOut_Start(void)
+{
+	if (TASK_KMLogReceive_TimeOut_ActiveID == 0)
+	{
+		TASK_KMLogReceive_TimeOut_ActiveID =
+			TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_KMLogReceive_TimeOut_ID,0,0,100,100)+1;		
+	}		
+	else
+	{
+		Task_Active_Table[TASK_KMLogReceive_TimeOut_ActiveID-1].Task_Interval.w = 100; //100ms
+	}		
+}
+
+/**----------------------------------------------------------------------------
+ * void TASK_KMLogReceive_TimeOut(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+void TASK_KMLogReceive_TimeOut(void)
+{
+	if (KMLogTimeOut_Pause == 0)
+	{
+		KMLogTimeOut_Flag=1;
+		//if (KMLog_RxCount != 0)
+		//{
+			//printf("Clear_Rx:%d\n\r",KMLog_RxCount);
+		//}	
+		KMLog_RxCount = 0;
+	}	
+	
+	TASK_Destory_Current();
+	TASK_KMLogReceive_TimeOut_ActiveID = 0;
+}
+
+/**----------------------------------------------------------------------------
+ * void KMLogConsoel_Nak(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+void KMLogConsoel_Nak(void)
+{
+	HSUART_PutChar(REMOTE_NAK);	
+}	
+
+/**----------------------------------------------------------------------------
+ * void KMLogConsoel_Ack(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+void KMLogConsoel_Ack(void)
+{
+	HSUART_PutChar(REMOTE_ACK);
+}	
+  
+/**----------------------------------------------------------------------------
+ * void KMLog_Function_System_Handle(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+void KMLog_Function_System_Handle(void)
+{	
+	//Kmlog_Sys_Packet_Def  kmlog_sys;
+		
+	KMLogConsoel_Ack();
+	//REMOTE_PutStr(KMLog_RxBuf,6);
+	//memcpy(&kmlog_sys,&KMLog_RxBuf[2],sizeof(Kmlog_Sys_Packet_Def));		
+	switch (KMLog_RxBuf[2])
+	{
+		case KMLOG_REQ_RESET:		//0x01
+			KMLog_Handle_Reset();
+			break;
+		case KMLOG_REQ_KBLED_STATE:	//0x02
+			KMLog_Handle_KbLed_State();
+			break;		
+		case KMLOG_KBLED_SET:		//0x03
+			KMLog_Handle_KbLed_Set();
+			break;		
+		case KMLOG_REQ_DEVICE_STATE: //0x04
+			KMLog_Handle_Device_State();
+			break;
+		case KMLOG_REQ_VERSION_NUMBER:	//0x05
+			KMLog_Handle_Version_Number();
+			break;
+		case KMLOG_REQ_VERSION_DATE:	//0x06
+			KMLog_Handle_Version_Date();
+			break;		
+		case KMLOG_HOST_CONNECT_SET:
+			KMLog_Handle_Host_Connect_Set();
+			break;
+		case KMLOG_LED_SET:				//0x0a
+			KMLog_Handle_Led_Set();
+			break;		
+		case KMLOG_GET_MOUSE_ABS:		//0x0b
+			KMLog_Function_AMS_Req();
+			break;
+		case KMLOG_MOUSE_MODE_SET:		//0x0c
+			KMLog_Handle_Mouse_Mode_Set();
+			break;		
+		case KMLOG_CLS_ROAMING_EVENT:
+			KMLog_Handle_Cls_Roaming_Event();
+			break;
+	}		
+	
+	/*
+	if ((KMLog_RxBuf[2] >= OPF_MOUSE_SYNC) && (KMLog_RxBuf[2] >= OPF_OP_STATE))
+	{
+		KMLogConsoel_Ack();
+		KMLog_FunTab[KMLog_RxBuf[2]].HandleFunction();
+	}		
+	else if (KMLog_RxBuf[2] == OPF_RESET)
+	{
+		printf("Reset");
+		KMLog_Handle_Reset();
+	}
+	*/	
+} 
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Handle_KbLed_Set(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/ 
+void KMLog_Handle_KbLed_Set(void)
+{	 	
+	//KVM_HostLed[KVM_CurrentHost] = KMLog_RxBuf[3];	
+	KVM_CONSOLE_Keyboard_Led_Control(KMLog_RxBuf[3]);	
+}
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Handle_KbLed_State(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/ 
+void KMLog_Handle_KbLed_State(void)
+{	
+	KMLog_TxBuf[3] = KVM_HostLed[KVM_CurrentHost];	
+	KMLog_Send_System(KMLog_TxBuf,KMLOG_TYPE_SYSTEM,KMLOG_REQ_KBLED_STATE,0,0);	
+}
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Handle_Device_State(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/ 
+void KMLog_Handle_Device_State(void)
+{
+}	
+/**----------------------------------------------------------------------------
+ * void KMLog_Handle_Version_Number(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+void KMLog_Handle_Version_Number(void)
+{		
+	
+}
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Handle_Version_Date(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+void KMLog_Handle_Version_Date(void)
+{			
+}
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Handle_Reset(void)
+ * Purpose :  
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+void KMLog_Handle_Reset(void)
+{
+	//printf("Reset\n\r");
+	while (uart0_TxFlag);
+	while (hsuart_TxFlag);	
+}
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Send_System(U8_T *buf,U8_T funcode,U8_T subfuncode,U8_T payload)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/ 
+void KMLog_Send_System(U8_T *buf,U8_T funcode,U8_T subfuncode,U8_T payload,U8_T payload1)
+{
+	buf[0] = KMLOG_HEADER0;
+	buf[1] = funcode;		
+	buf[2] = subfuncode;			
+	buf[3] = payload;			
+	buf[4] = payload1;
+	buf[5] = 0;
+	buf[6] = 0;
+	buf[7] = 0;
+	REMOTE_PutStr(buf,sizeof(Kmlog_Data_Packet_Def));
+}
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Send_Keyboard(U8_T *buf,U8_T len)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/ 
+void KMLog_Send_Keyboard(U8_T datatype,U8_T datausage,U16_T datacode)
+{	
+	U8_T len;
+	
+	Last_Keyboard_Data[0] = datatype;
+	Last_Keyboard_Data[1] = datausage;
+	Last_Keyboard_Data[2] = ((datacode & 0xff00) >> 8);
+	Last_Keyboard_Data[3] = (datacode & 0x00ff);
+	if (API_User_Call_Back_Control & CALL_BACK_KEYBOARD_MASK)
+	{
+		if (datausage == 0x0c) //consumer
+			len = 4;
+		else
+			len = 3;
+		API_Keyboard_Data_Call_Back(Last_Keyboard_Data,len);
+	}
+	/*
+	Km_Data.bHeader 	= KMLOG_HEADER0;
+	Km_Data.bDataType 	= KMLOG_TYPE_KB;		
+	Km_Data.bPayload[0] = datatype;
+	Km_Data.bPayload[1] = datausage;
+	Km_Data.bPayload[2] = ((datacode & 0xff00) >> 8);
+	Km_Data.bPayload[3] = (datacode & 0x00ff);
+	Km_Data.bPayload[4] = 0x00;
+	Km_Data.bPayload[5] = 0x00;
+	
+	REMOTE_PutStr((U8_T *)&Km_Data,sizeof(Kmlog_Data_Packet_Def));
+	*/
+}
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Send_Mouse_Relative(U8_T *buf,U8_T len)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/ 
+void KMLog_Send_Mouse_Relative(U8_T *msdata)
+{
+	memcpy(Last_Relative_Coordinate,msdata,4); 
+	if (API_User_Call_Back_Control & CALL_BACK_RELATIVE_MOUSE_MASK)
+	{				 
+		API_Relative_Mouse_Data_Call_Back(Last_Relative_Coordinate,4);
+	}		
+	/*	
+	Km_Data.bHeader 	= KMLOG_HEADER0;
+	Km_Data.bDataType 	= KMLOG_TYPE_MS;		
+	Km_Data.bPayload[0] = msdata[0];
+	Km_Data.bPayload[1] = msdata[1];
+	Km_Data.bPayload[2] = msdata[2];
+	Km_Data.bPayload[3] = msdata[3];	
+	Km_Data.bPayload[4] = 0x00;
+	Km_Data.bPayload[5] = 0x00;
+	REMOTE_PutStr((U8_T *)&Km_Data,sizeof(Kmlog_Data_Packet_Def));
+	*/
+}
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Send_Roaming_Report(U8_T port,U8_T direction)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/ 
+void KMLog_Send_Roaming_Report(U8_T port,U8_T direction)
+{
+	Km_Data.bHeader 	= KMLOG_HEADER0;
+	Km_Data.bDataType 	= KMLOG_TYPE_SYSTEM;		
+	Km_Data.bPayload[0] = KMLOG_MOUSE_ROAMING_REPORT;
+	Km_Data.bPayload[1] = port;
+	Km_Data.bPayload[2] = direction;
+	Km_Data.bPayload[3] = 0x00;
+	Km_Data.bPayload[4] = 0x00;
+	Km_Data.bPayload[5] = 0x00;
+	REMOTE_PutStr((U8_T *)&Km_Data,sizeof(Kmlog_Data_Packet_Def));
+}
+/**----------------------------------------------------------------------------
+ * void KMLog_Send_Host_State(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/ 
+void KMLog_Send_Host_State(void)
+{	
+	U8_T port;
+		
+	
+	Km_Data.bHeader 	= KMLOG_HEADER0;
+	Km_Data.bDataType 	= KMLOG_TYPE_SYSTEM;		
+	
+	Km_Data.bPayload[0] = KMLOG_HOST_STATE; //USB VBUS state
+	Km_Data.bPayload[1] = 0x00; //BVBUS state
+	Km_Data.bPayload[2] = 0x00; //USB Suspend state
+	for (port=0; port < KVM_MAX_PORT ; port++)
+	{
+		if (USBDC_UpPortState[port] & USBDC_ROOTHUB_ATTACHED_MASK)
+		{
+			Km_Data.bPayload[1] |= BIT_MASK[port]; //USB VBUS state
+		}			
+		if (USBDC_UpPortState[port] & USBDC_ROOTHUB_SUSPEND_MASK)
+		{
+			Km_Data.bPayload[2] |= BIT_MASK[port]; //USB suspend
+		}
+	}		
+	
+	if ((KMLog_VBus_Connect_State == Km_Data.bPayload[1]) && (KMLog_USB_Bus_State == Km_Data.bPayload[2]))
+	{
+		return;
+	}		
+	KMLog_VBus_Connect_State = Km_Data.bPayload[1];
+	KMLog_USB_Bus_State = Km_Data.bPayload[2];
+	
+	Km_Data.bPayload[3] = 0x00;
+	Km_Data.bPayload[4] = 0x00;
+	Km_Data.bPayload[5] = 0x00;
+	
+	REMOTE_PutStr((U8_T *)&Km_Data,sizeof(Kmlog_Data_Packet_Def));
+}
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Send_Button_State(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/ 
+void KMLog_Send_Button_State(U8_T btnstate)
+{
+	if (btnstate != KMLOG_Button_State)
+	{
+		KMLOG_Button_State = btnstate;	
+		Km_Data.bHeader 	= KMLOG_HEADER0;
+		Km_Data.bDataType 	= KMLOG_BUTTON_STATE;		
+		Km_Data.bPayload[0] = btnstate;
+		Km_Data.bPayload[1] = 0x00;
+		Km_Data.bPayload[2] = 0x00;
+		Km_Data.bPayload[3] = 0x00;
+		Km_Data.bPayload[4] = 0x00;
+		Km_Data.bPayload[5] = 0x00;
+		REMOTE_PutStr((U8_T *)&Km_Data,sizeof(Kmlog_Data_Packet_Def));
+	}	
+}	
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Function_AMS_Req(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/ 
+void KMLog_Function_AMS_Req(void)
+{
+	Km_Data.bHeader 	= KMLOG_HEADER0;
+	Km_Data.bDataType 	= KMLOG_GET_MOUSE_ABS;		
+	Km_Data.bPayload[0] = Mouse_Data.b.wBtn.bbw.lsb; //button
+	Km_Data.bPayload[1] = (MouseX & 0xff00) >> 8;  	//X high byte
+	Km_Data.bPayload[2] = MouseX & 0x00ff;  		//X-high byte
+	Km_Data.bPayload[3] = (MouseY & 0xff00) >> 8;	//Y-high byte		
+	Km_Data.bPayload[4] = MouseY & 0x00ff;	 		//Y-low byte		
+	Km_Data.bPayload[5] = Mouse_Data.b.wZ.bbw.lsb;		 //Z-low byte		
+	REMOTE_PutStr((U8_T *)&Km_Data,sizeof(Kmlog_Data_Packet_Def));
+}	
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Function_AMS_Set(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/ 
+void KMLog_Function_AMS_Set(void)
+{
+	KMLogConsoel_Ack();
+	//Km_Data.bHeader 	= KMLOG_HEADER0;
+	//Km_Data.bDataType 	= KMLOG_TYPE_MSA;		
+	//Mouse_Btn = Km_Data.bPayload[0]; //button
+	MouseX = (Receive_Data->bPayload[1] << 8) + Receive_Data->bPayload[2];
+	MouseY = (Receive_Data->bPayload[3] << 8) + Receive_Data->bPayload[4];	
+	//MouseZ = Km_Data.bPayload[5];	
+		//Km_Data.bHeader 	= KMLOG_HEADER0;
+	//Km_Data.bDataType 	= KMLOG_TYPE_MSA;	
+	//DATAST_Generic_USB_MS_Report[0] = 0x04; //Absolute
+	DATAST_Generic_USB_MS_Report[0]	= Receive_Data->bPayload[0]; //button
+	DATAST_Generic_USB_MS_Report[1] = Receive_Data->bPayload[5]; //Z
+	DATAST_Generic_USB_MS_Report[2] = Receive_Data->bPayload[2]; //X low
+	DATAST_Generic_USB_MS_Report[3] = Receive_Data->bPayload[1]; //X high
+ 	DATAST_Generic_USB_MS_Report[4] = Receive_Data->bPayload[4]; //Y low
+	DATAST_Generic_USB_MS_Report[5] = Receive_Data->bPayload[3]; //Y high	
+	USBHC_InterruptTransfer_HID_Mouse(DATAST_Generic_USB_MS_Report,GENERIC_USAGE_ABS_MAKE);
+}	
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Function_RMS_Set(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/ 
+void KMLog_Function_RMS_Set(void)
+{
+	KMLogConsoel_Ack();
+	//Km_Data.bHeader 	= KMLOG_HEADER0;
+	//Km_Data.bDataType 	= KMLOG_TYPE_MSA;	
+	//DATAST_Generic_USB_MS_Report[0] = 0x01; //normal mouse data	
+	DATAST_Generic_USB_MS_Report[0]	= Receive_Data->bPayload[0]; //button
+	DATAST_Generic_USB_MS_Report[1] = Receive_Data->bPayload[1]; //X
+	DATAST_Generic_USB_MS_Report[2] = Receive_Data->bPayload[2]; //Y
+ 	DATAST_Generic_USB_MS_Report[3] = Receive_Data->bPayload[3]; //Z
+	//Disp_Str(DATAST_Generic_USB_MS_Report,4);
+	USBHC_InterruptTransfer_HID_Mouse(DATAST_Generic_USB_MS_Report,GENERIC_USAGE_07_MAKE);
+}
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Function_KB_Set(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/ 
+void KMLog_Function_KB_Set(void)
+{
+	U8_T  key_type;
+	
+	KMLogConsoel_Ack();
+	//printf("[Make=%02bx,keytype=%02bx,code=%02bx]",Receive_Data->bPayload[0],Receive_Data->bPayload[1],Receive_Data->bPayload[2]);
+	switch(Receive_Data->bPayload[1])
+	{
+		case 0x07: //normal keyboard data
+			key_type = HID_USAGE_PAGE_07_MAKE + (Receive_Data->bPayload[0] & 0x01);	
+			#ifdef SYNC
+			KM_SYNC_Send_VHID_Key(key_type,Receive_Data->bPayload[2]);
+			#else
+			DATAST_Keyboard_Send(KVM_CurrentHost,key_type,Receive_Data->bPayload[2]);
+			#endif
+			break;
+		case 0x01: //system keyboard data
+		case 0x0c: //consumer keyboard data	
+			key_type = GENERIC_USAGE_0C_MAKE + (Receive_Data->bPayload[0] & 0x01);
+			if (Receive_Data->bPayload[1] == 0x01)
+				DATAST_Generic_USB_MS_Report[0] = 0x01; //system			 
+			else
+				DATAST_Generic_USB_MS_Report[0] = 0x04; //system			 
+			DATAST_Generic_USB_MS_Report[2]	= Receive_Data->bPayload[2];
+			DATAST_Generic_USB_MS_Report[1]	= Receive_Data->bPayload[3];		
+			USBHC_InterruptTransfer_HID_Mouse(DATAST_Generic_USB_MS_Report,GENERIC_USAGE_07_MAKE);			
+			break;		
+	}	
+}
+/**----------------------------------------------------------------------------
+ * void KMLog_Handle_Host_Connect_Set(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+void KMLog_Handle_Host_Connect_Set(void)
+{
+	U8_T port;
+	U8_T port_mask;
+	U8_T current_port=0;
+		
+	port_mask = Receive_Data->bPayload[1];
+	//printf("[Port=%02bx,Connect=%02bx]",port_mask,Receive_Data->bPayload[2]);
+	#ifdef MCU_TYPE_AX68002
+	if ((Receive_Data->bPayload[2] & 0x03) == 0x03)
+		current_port = 1;
+	#else
+	if ((Receive_Data->bPayload[2] & 0x0f) == 0x0f)
+		current_port = 1;
+	#endif
+	
+	#ifdef SYNC
+	if (Receive_Data->bPayload[2] == 0x00)
+	{	
+		//Coordinate_State = 0;
+		KM_SYNC_Mouse_Jump_State_Reset();
+	}
+	#endif
+	
+	for (port=0; port < KVM_MAX_PORT ; port++)
+	{
+		if (port_mask & BIT_MASK[port]) //pc control
+		{	
+			if (Receive_Data->bPayload[2] & BIT_MASK[port])	
+			{
+				KM_Host_Connect_State |= BIT_MASK[port];
+			}
+			else
+			{
+				KM_Host_Connect_State &= ~BIT_MASK[port];
+			}				
+			
+			if (current_port == 0) //not assign all port
+			{
+				if (Receive_Data->bPayload[2] & BIT_MASK[port])	
+				{	
+#ifdef SYNC						
+					KM_SYNC_Mouse_Jump_State_Reset();
+#endif						
+					if (port != KVM_CurrentHost) //need to do the port jump
+					{				
+						KVM_Port_Jump(port);
+					}										
+#ifdef SYNC					
+					if (KM_SYNC_Roaming_Control & BIT_MASK[0])
+					{	
+						KM_Host_Connect_State |= 0x0f;
+					}	
+#endif					
+				}	
+			}				
+			port_mask &= ~BIT_MASK[port];
+		}	
+		
+		if (port_mask == 0x00) //no more port
+			break;
+	}	
+	
+}
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Handle_Led_Set(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+void KMLog_Handle_Led_Set(void)
+{
+	U8_T port;
+	U8_T port_mask;
+	U8_T led_control;
+	
+	port_mask = Receive_Data->bPayload[1]; 
+	for (port=0; port < 3 ; port++) //four LED
+	{
+		if (port_mask & BIT_MASK[port]) //led id
+		{	
+			//User LED control
+			port_mask &= ~BIT_MASK[port];
+			if (Receive_Data->bPayload[2] & BIT_MASK[port])
+			{ //LED off
+				led_control = LED_OFF;				
+			}				
+			else
+			{	
+				led_control = LED_ON;
+			}	
+			GPIO_SetOneBit(LED_PORT[port],LED_PIN[port],led_control);			
+		}						
+		if (port_mask == 0x00) //no more port
+			break;
+	}
+}
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Handle_Mouse_Mode_Set(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+void KMLog_Handle_Mouse_Mode_Set(void)
+{
+	
+	//printf("[Mode Control:%02bx]",Receive_Data->bPayload[1]);
+	//1.Check mouse absolute/relative mode
+	if (Receive_Data->bPayload[1] & BIT_MASK[0]) //Absolute mode
+	{	
+#ifdef SYNC
+		KM_SYNC_Mouse_Absolute_Mode();		
+#endif		
+	}			
+	else	
+	{ //Relative mode
+#ifdef SYNC		
+		KM_SYNC_Mouse_Relative_Mode();
+#endif		
+	}
+	
+	//2.Check sync 
+	if (Receive_Data->bPayload[1] & BIT_MASK[1]) //Sync mode
+	{		
+#ifdef SYNC			
+		KM_SYNC_ModeSync_Control(1);		
+		KM_SYNC_Roaming_DelayCnt = Receive_Data->bPayload[3];
+		if (KM_SYNC_Roaming_DelayCnt == 0)
+			KM_SYNC_Roaming_DelayCnt = 1;
+#endif		
+	}		
+	else	
+	{ //Sync off	
+#ifdef SYNC					
+		KM_SYNC_ModeSync_Control(0);
+#endif		
+	}
+	
+	//3.Check Roaming 
+	if (Receive_Data->bPayload[1] & BIT_MASK[2]) //Roaming mode
+	{
+#ifdef SYNC			
+		KM_SYNC_ModeAccross_Control(1);
+#endif		
+	}		
+	else	
+	{ //Roaming off
+#ifdef SYNC					
+		KM_SYNC_ModeAccross_Control(0);
+#endif		
+	}
+
+#ifdef SYNC		
+	if ((KM_SYNC_Roaming_Control & 0x01) == 0x00) //only report
+	{
+		if (Receive_Data->bPayload[2] & BIT_MASK[0])
+		{
+			//Coordinate_State = 0;
+			KM_SYNC_Mouse_Jump_State_Reset();
+		}			
+	}		
+	KM_SYNC_Roaming_Control = Receive_Data->bPayload[2] & BIT_MASK[0];
+	if (KM_SYNC_Roaming_Control & BIT_MASK[0])
+	{	
+		KM_Host_Connect_State |= 0x0f;
+	}	
+	KM_SYNC_Roaming_Edge = Receive_Data->bPayload[2] >> 4;			
+	KM_SYNC_Roaming_DelayCnt = Receive_Data->bPayload[3];
+#endif	
+	printf("[Roamin=%02bx,edge=%02bx,Delay=%02bx]",KM_SYNC_Roaming_Control,KM_SYNC_Roaming_Edge,KM_SYNC_Roaming_DelayCnt);
+}
+
+/**----------------------------------------------------------------------------
+ * void U8_T KM_Check_Skip_Condition(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+U8_T KM_Check_Skip_Condition(void)
+{
+	if (KVM_Flash.cSystemFlag2 & SYSTEM_ALL_SYNC_MASK)
+		return 0;
+	
+	if ((KM_Host_Connect_State & BIT_MASK[KVM_CurrentHost]) == 0x00)
+		return 1; //not skip
+	return 0; //skip 
+}
+
+void TASK_KMLog_Send_Hotkey_Fork(U8_T fun,U8_T payload)
+{	
+	KMLog_HotkeyFun[0] = fun;
+	KMLog_HotkeyFun[1] = payload;	
+	TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_KMLog_Send_Hotkey_ID,0,0,5,5);	
+}
+
+void TASK_KMLog_Send_Hotkey(void)
+{
+	TASK_Destory_Current();
+	KMLog_Send_System(KMLog_TxBuf,KMLOG_TYPE_SYSTEM,KMLOG_REQ_HOTKEY,KMLog_HotkeyFun[0],KMLog_HotkeyFun[1]);	
+}
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Handle_Repeat_Key(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+void KMLog_Handle_Repeat_Key(void)
+{
+	U8_T c,i,tb;
+	
+	if (Receive_Data->bPayload[0]  == 0x0f)
+	{//clear all the repeat key
+		KM_SYNC_Clear_Repeat_Table();
+		return;
+	}
+	
+	for (c=0; c < 5 ;c++)
+	{
+		if (Receive_Data->bPayload[1+c] != 0x00)
+		{	
+			i=KM_SYNC_Search_Repeat_Table(KM_SYNC_Sync_KB_Repeat,Receive_Data->bPayload[1+c]);
+			if (Receive_Data->bPayload[0] == 0x01) //set key 		
+			{					
+				if (i == 0xff)				
+				{ // add repeat key
+					if (KM_SYNC_Sync_KB_Repeat != 0xff) //if not full setting
+					{	
+						////printf("[h1-6-2]");
+						tb = ~KM_SYNC_Sync_KB_Repeat;
+						i=KM_SYNC_Search_Repeat_Table(tb,0x00);
+						if (i != 0xff)								
+						{					
+							//printf("Set repeat key=%02bx\n\r",keycode);							
+							KM_SYNC_Sync_KB_Repeat |= BIT_MASK[i];
+							KM_SYNC_Sync_KB_RepeatTable[i] = Receive_Data->bPayload[1+c];							 							
+						}
+					}	
+				}
+			}
+			else
+			{ // clear key	
+				if (i != 0xff)
+				{									
+					//printf("Clear repeat key=%02bx\n\r",keycode);							
+					KM_SYNC_Sync_KB_Repeat	&= ~BIT_MASK[i];
+					KM_SYNC_Sync_KB_RepeatTable[i] = 0;										 
+				}
+			}	
+		}
+	}
+}
+
+/**----------------------------------------------------------------------------
+ * void KMLog_Handle_Cls_Roaming_Event(void)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/
+void KMLog_Handle_Cls_Roaming_Event(void)
+{
+	Coordinate_State &= ~(ACROSS_LEFT_MASK|ACROSS_RIGHT_MASK);
+	KM_SYNC_Mouse_Jump_State_Reset();
+}	
+#else
+/**----------------------------------------------------------------------------
+ * void KMLog_Send_Keyboard(U8_T *buf,U8_T len)
+ * Purpose : 
+ * Params  : none
+ * Returns : none
+ * Note    : none
+ * ----------------------------------------------------------------------------*/ 
+void KMLog_Send_Keyboard(U8_T datatype,U8_T datausage,U16_T datacode)
+{	
+	U8_T len;
+	
+	Last_Keyboard_Data[0] = datatype;
+	Last_Keyboard_Data[1] = datausage;
+	Last_Keyboard_Data[2] = ((datacode & 0xff00) >> 8);
+	Last_Keyboard_Data[3] = (datacode & 0x00ff);
+	if (API_User_Call_Back_Control & CALL_BACK_KEYBOARD_MASK)
+	{
+		if (datausage == 0x0c) //consumer
+			len = 4;
+		else
+			len = 3;
+		API_Relative_Mouse_Data_Call_Back(API_Keyboard_Data_Call_Back,len);
+	}
+	/*
+	Km_Data.bHeader 	= KMLOG_HEADER0;
+	Km_Data.bDataType 	= KMLOG_TYPE_KB;		
+	Km_Data.bPayload[0] = datatype;
+	Km_Data.bPayload[1] = datausage;
+	Km_Data.bPayload[2] = ((datacode & 0xff00) >> 8);
+	Km_Data.bPayload[3] = (datacode & 0x00ff);
+	Km_Data.bPayload[4] = 0x00;
+	Km_Data.bPayload[5] = 0x00;
+	
+	REMOTE_PutStr((U8_T *)&Km_Data,sizeof(Kmlog_Data_Packet_Def));
+	*/
+}
+#endif /* #ifdef KMLOG */
+
+/* End of km_log.c */

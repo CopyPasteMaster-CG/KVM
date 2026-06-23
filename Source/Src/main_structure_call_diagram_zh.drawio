@@ -1,0 +1,187 @@
+<mxfile host="app.diagrams.net" modified="2026-06-15T00:00:00.000Z" agent="Codex" version="24.7.17" type="device">
+  <diagram id="main-overview-zh" name="主函数总览">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="m_title" value="main() 主函数结构总览" style="text;html=1;strokeColor=none;fillColor=none;fontSize=22;fontStyle=1" vertex="1" parent="1"><mxGeometry x="40" y="20" width="360" height="40" as="geometry"/></mxCell>
+        <mxCell id="m_main" value="main/main.c&#xa;main() 入口函数" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" vertex="1" parent="1"><mxGeometry x="40" y="90" width="170" height="70" as="geometry"/></mxCell>
+        <mxCell id="m_base" value="基础初始化" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1" vertex="1" parent="1"><mxGeometry x="290" y="70" width="180" height="50" as="geometry"/></mxCell>
+        <mxCell id="m_feature" value="功能模块初始化" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1" vertex="1" parent="1"><mxGeometry x="290" y="250" width="180" height="50" as="geometry"/></mxCell>
+        <mxCell id="m_boot" value="读取 PORT0 GPIO&#xa;组合 btn_state" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" vertex="1" parent="1"><mxGeometry x="290" y="520" width="180" height="70" as="geometry"/></mxCell>
+        <mxCell id="m_loop" value="while(1)&#xa;主轮询循环" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1"><mxGeometry x="290" y="760" width="180" height="70" as="geometry"/></mxCell>
+        <mxCell id="m_cpu" value="CPU_Init()&#xa;关闭全局中断/配置时钟" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1"><mxGeometry x="550" y="35" width="170" height="55" as="geometry"/></mxCell>
+        <mxCell id="m_uart" value="UART_Init()&#xa;初始化串口" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1"><mxGeometry x="550" y="105" width="170" height="50" as="geometry"/></mxCell>
+        <mxCell id="m_timer" value="SWTIMER_Init()&#xa;SWTIMER_Start()&#xa;启动毫秒定时器" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1"><mxGeometry x="550" y="170" width="170" height="70" as="geometry"/></mxCell>
+        <mxCell id="m_isr" value="ISR_Init()&#xa;清空 ISR_FIFO" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1"><mxGeometry x="760" y="35" width="170" height="55" as="geometry"/></mxCell>
+        <mxCell id="m_taskinit" value="TASK_Init()&#xa;清空任务表/读写指针" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1"><mxGeometry x="760" y="105" width="190" height="55" as="geometry"/></mxCell>
+        <mxCell id="m_gpio" value="Check_Devcie_Gpio_Setting()&#xa;根据 GPIO/宏设置音频和存储能力" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1"><mxGeometry x="760" y="175" width="230" height="65" as="geometry"/></mxCell>
+        <mxCell id="m_console" value="KVM_Console_Init()&#xa;读取存储配置/初始化 LED/创建 KVM 任务" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="550" y="250" width="240" height="65" as="geometry"/></mxCell>
+        <mxCell id="m_usb" value="USBHC_Init() / USBDC_Init()&#xa;初始化 USB 主机/设备核心和虚拟设备" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="550" y="335" width="240" height="65" as="geometry"/></mxCell>
+        <mxCell id="m_kvmio" value="按键/蜂鸣器/EDID&#xa;省电/Extender 等外设初始化" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="840" y="250" width="230" height="65" as="geometry"/></mxCell>
+        <mxCell id="m_syncapi" value="KM_SYNC_Init() / API_Init()&#xa;MULTIVIEW_Init()&#xa;按编译宏启用" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="840" y="335" width="230" height="75" as="geometry"/></mxCell>
+        <mxCell id="m_mode" value="判断 btn_state" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="570" y="500" width="140" height="90" as="geometry"/></mxCell>
+        <mxCell id="m_single" value="单端口模式&#xa;PORT0/1/2/3_ACTIVE&#xa;关闭漫游和同步&#xa;跳到映射端口" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="780" y="430" width="240" height="90" as="geometry"/></mxCell>
+        <mxCell id="m_roam" value="漫游模式&#xa;PORT12/34/ALL_ACTIVE&#xa;开启 Roaming&#xa;选择 TWO/QUAD_SCREEN_MODE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="780" y="545" width="250" height="90" as="geometry"/></mxCell>
+        <mxCell id="m_syncmode" value="同步模式&#xa;PORT_ALL_SYNC&#xa;关闭 Roaming&#xa;开启 Sync" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="780" y="660" width="240" height="80" as="geometry"/></mxCell>
+        <mxCell id="m_isrdispatch" value="ISR FIFO 分发&#xa;按键/EDID/UART/I2C 等中断事件转任务处理" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366" vertex="1" parent="1"><mxGeometry x="550" y="720" width="260" height="70" as="geometry"/></mxCell>
+        <mxCell id="m_irq" value="USB/PS2 中断队列处理&#xa;USBDC_ISR_Handle()&#xa;USBHC_ISR_Handle()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366" vertex="1" parent="1"><mxGeometry x="550" y="820" width="260" height="75" as="geometry"/></mxCell>
+        <mxCell id="m_tasks" value="任务调度&#xa;TASK_USB_Main()&#xa;TASK_Event_Main()&#xa;TASK_MS_Period_Main()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366" vertex="1" parent="1"><mxGeometry x="860" y="720" width="240" height="90" as="geometry"/></mxCell>
+        <mxCell id="m_bg" value="后台维护检查&#xa;MSC/Extender/省电退出/I2C 发送/24 小时存储检查" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366" vertex="1" parent="1"><mxGeometry x="860" y="835" width="320" height="75" as="geometry"/></mxCell>
+        <mxCell id="me1" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_main" target="m_base"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me2" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_main" target="m_feature"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me3" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_main" target="m_boot"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me4" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_main" target="m_loop"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me5" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_base" target="m_cpu"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me6" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_base" target="m_uart"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me7" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_base" target="m_timer"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me8" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_base" target="m_isr"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me9" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_base" target="m_taskinit"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me10" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_base" target="m_gpio"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me11" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_feature" target="m_console"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me12" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_feature" target="m_usb"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me13" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_feature" target="m_kvmio"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me14" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_feature" target="m_syncapi"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me15" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_boot" target="m_mode"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me16" value="单端口" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_mode" target="m_single"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me17" value="漫游" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_mode" target="m_roam"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me18" value="同步" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_mode" target="m_syncmode"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me19" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_loop" target="m_isrdispatch"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me20" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_loop" target="m_irq"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me21" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_loop" target="m_tasks"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="me22" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="m_loop" target="m_bg"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="mouse-roaming-zh" name="鼠标位置和漫游">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1300" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="p_title" value="鼠标当前位置判断和漫游跳转流程" style="text;html=1;strokeColor=none;fillColor=none;fontSize=22;fontStyle=1" vertex="1" parent="1"><mxGeometry x="40" y="20" width="520" height="40" as="geometry"/></mxCell>
+        <mxCell id="p_input" value="USB 鼠标报告" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" vertex="1" parent="1"><mxGeometry x="40" y="100" width="180" height="50" as="geometry"/></mxCell>
+        <mxCell id="p_ds" value="data_stream_generic.c&#xa;收到鼠标数据后调用&#xa;KM_SYNC_Abs_Mouse_Coordinate_Convert(mbuf)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="300" y="80" width="280" height="90" as="geometry"/></mxCell>
+        <mxCell id="p_convert" value="KM_SYNC_Abs_Mouse_Coordinate_Convert(datacode)&#xa;把相对位移转换为绝对坐标" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1" vertex="1" parent="1"><mxGeometry x="670" y="90" width="310" height="70" as="geometry"/></mxCell>
+        <mxCell id="p_x" value="X 位移为负？" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="1100" y="70" width="130" height="90" as="geometry"/></mxCell>
+        <mxCell id="p_y" value="Y 位移为负？" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="1100" y="220" width="130" height="90" as="geometry"/></mxCell>
+        <mxCell id="p_xleft" value="向左移动&#xa;设置 X_LEFT_MASK&#xa;MouseX 减小并限制到 0" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1"><mxGeometry x="1320" y="45" width="190" height="75" as="geometry"/></mxCell>
+        <mxCell id="p_xright" value="向右移动&#xa;设置 X_RIGHT_MASK&#xa;MouseX 增加并限制到 X_MAX" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1"><mxGeometry x="1320" y="140" width="200" height="75" as="geometry"/></mxCell>
+        <mxCell id="p_ytop" value="向上移动&#xa;设置 Y_TOP_MASK&#xa;MouseY 减小并限制到 0" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1"><mxGeometry x="1320" y="235" width="190" height="75" as="geometry"/></mxCell>
+        <mxCell id="p_ybottom" value="向下移动&#xa;设置 Y_BOTTOM_MASK&#xa;MouseY 增加并限制到 Y_MAX" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1"><mxGeometry x="1320" y="330" width="200" height="75" as="geometry"/></mxCell>
+        <mxCell id="p_send" value="API_Send_Mouse_Absolute()&#xa;把当前 MouseX/MouseY 提供给 API 回调" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6" vertex="1" parent="1"><mxGeometry x="670" y="250" width="310" height="70" as="geometry"/></mxCell>
+        <mxCell id="p_enabled" value="是否允许漫游？&#xa;MPASS_ACROSS_MODE&#xa;且 SYSTEM_MOUSE_SW_MASK 有效" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="700" y="390" width="220" height="120" as="geometry"/></mxCell>
+        <mxCell id="p_pack" value="写回绝对鼠标报告&#xa;datacode[2..5] = MouseX/MouseY" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1"><mxGeometry x="710" y="1090" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="p_edges" value="检查允许的边缘方向&#xa;由 KM_SYNC_Roaming_Edge 控制" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" vertex="1" parent="1"><mxGeometry x="1070" y="430" width="240" height="65" as="geometry"/></mxCell>
+        <mxCell id="p_left" value="左边缘触发条件&#xa;MouseX == X_LEFT_EDGE&#xa;Coordinate_Cnt[0] 达到 Left.Latency" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="1400" y="420" width="260" height="75" as="geometry"/></mxCell>
+        <mxCell id="p_right" value="右边缘触发条件&#xa;MouseX == X_RIGHT_EDGE&#xa;Coordinate_Cnt[1] 达到 Right.Latency" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="1400" y="510" width="270" height="75" as="geometry"/></mxCell>
+        <mxCell id="p_top" value="上边缘触发条件&#xa;MouseY == Y_TOP_EDGE&#xa;Coordinate_Cnt[2] 达到 Up.Latency" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="1400" y="600" width="260" height="75" as="geometry"/></mxCell>
+        <mxCell id="p_bottom" value="下边缘触发条件&#xa;MouseY == Y_BOTTOM_EDGE&#xa;Coordinate_Cnt[3] 达到 Down.Latency" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="1400" y="690" width="270" height="75" as="geometry"/></mxCell>
+        <mxCell id="p_jump" value="KM_SYNC_Port_Jump_Power(current, direction, 1)&#xa;准备执行端口跳转" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1" vertex="1" parent="1"><mxGeometry x="1070" y="780" width="320" height="70" as="geometry"/></mxCell>
+        <mxCell id="p_power" value="KM_SYNC_Power_Status_Check()&#xa;按方向查找可跳转端口" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6" vertex="1" parent="1"><mxGeometry x="710" y="780" width="260" height="65" as="geometry"/></mxCell>
+        <mxCell id="p_portmap" value="KM_SYNC_Port()&#xa;根据 Roaming 映射表取得下一端口" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="380" y="730" width="250" height="70" as="geometry"/></mxCell>
+        <mxCell id="p_one3" value="是否一大三小模式？&#xa;且从主屏上下跳转" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="380" y="850" width="220" height="100" as="geometry"/></mxCell>
+        <mxCell id="p_attach" value="目标端口已连接？&#xa;检查 USBDC_UpPortState[nextport]" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="710" y="900" width="220" height="105" as="geometry"/></mxCell>
+        <mxCell id="p_fork" value="发起端口切换&#xa;KVM_NextHost = newport&#xa;TASK_KVM_Switch_Event_Control_Fork()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1"><mxGeometry x="1070" y="920" width="320" height="85" as="geometry"/></mxCell>
+        <mxCell id="p_reset" value="没有可用端口&#xa;KM_SYNC_Mouse_Jump_State_Reset()&#xa;清除跳转状态" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1"><mxGeometry x="1070" y="1030" width="280" height="75" as="geometry"/></mxCell>
+        <mxCell id="pe1" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_input" target="p_ds"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe2" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_ds" target="p_convert"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe3" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_convert" target="p_x"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe4" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_convert" target="p_y"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe5" value="是" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_x" target="p_xleft"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe6" value="否" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_x" target="p_xright"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe7" value="是" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_y" target="p_ytop"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe8" value="否" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_y" target="p_ybottom"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe9" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_xleft" target="p_send"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe10" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_xright" target="p_send"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe11" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_ytop" target="p_send"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe12" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_ybottom" target="p_send"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe13" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_send" target="p_enabled"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe14" value="否" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_enabled" target="p_pack"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe15" value="是" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_enabled" target="p_edges"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe16" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_edges" target="p_left"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe17" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_edges" target="p_right"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe18" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_edges" target="p_top"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe19" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_edges" target="p_bottom"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe20" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_left" target="p_jump"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe21" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_right" target="p_jump"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe22" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_top" target="p_jump"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe23" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_bottom" target="p_jump"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe24" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_jump" target="p_power"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe25" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_power" target="p_portmap"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe26" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_portmap" target="p_one3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe27" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_one3" target="p_attach"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe28" value="是" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_attach" target="p_fork"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe29" value="否" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_attach" target="p_reset"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe30" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_fork" target="p_pack"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pe31" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="p_reset" target="p_pack"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="keyboard-hotkey-zh" name="键盘快捷键">
+    <mxGraphModel dx="1800" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1500" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="k_title" value="键盘快捷键识别和执行流程" style="text;html=1;strokeColor=none;fillColor=none;fontSize=22;fontStyle=1" vertex="1" parent="1"><mxGeometry x="40" y="20" width="460" height="40" as="geometry"/></mxCell>
+        <mxCell id="k_input" value="键盘 HID 事件&#xa;keytype + keycode" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" vertex="1" parent="1"><mxGeometry x="40" y="90" width="180" height="60" as="geometry"/></mxCell>
+        <mxCell id="k_handle" value="HOTKEY_Handle()&#xa;转入 KM_SYNC 快捷键检查" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="300" y="90" width="240" height="60" as="geometry"/></mxCell>
+        <mxCell id="k_check" value="KM_SYNC_KB_Hotkey_Check(keytype, keycode)&#xa;快捷键状态机入口" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1" vertex="1" parent="1"><mxGeometry x="620" y="90" width="300" height="70" as="geometry"/></mxCell>
+        <mxCell id="k_mod" value="是否修饰键？&#xa;0xe0..0xe7" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="1030" y="70" width="150" height="100" as="geometry"/></mxCell>
+        <mxCell id="k_state" value="按状态索引分发&#xa;KM_SYNC_Sync_KB_HotkeyInx" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1" vertex="1" parent="1"><mxGeometry x="1290" y="90" width="230" height="70" as="geometry"/></mxCell>
+        <mxCell id="k_s0" value="状态 0&#xa;等待快捷键起始键" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" vertex="1" parent="1"><mxGeometry x="160" y="260" width="190" height="60" as="geometry"/></mxCell>
+        <mxCell id="k_repeat" value="没有修饰键时&#xa;先检查重复按键逻辑&#xa;KM_SYNC_Repeat_Key_Handle()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="430" y="235" width="240" height="75" as="geometry"/></mxCell>
+        <mxCell id="k_start" value="KM_SYNC_KB_Hotkey_Function_0_StartCheck()&#xa;检查是否进入快捷键模式" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="430" y="330" width="300" height="60" as="geometry"/></mxCell>
+        <mxCell id="k_lead" value="起始键 MAKE？&#xa;Pad* / ScrollLock / Pad+ / Pad-" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="800" y="285" width="220" height="100" as="geometry"/></mxCell>
+        <mxCell id="k_capture" value="记录起始键&#xa;Hotkey_Queue[0]&#xa;Q_Size=1，状态=1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366" vertex="1" parent="1"><mxGeometry x="1120" y="295" width="220" height="80" as="geometry"/></mxCell>
+        <mxCell id="k_s1" value="状态 1&#xa;等待第二个键" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" vertex="1" parent="1"><mxGeometry x="160" y="500" width="190" height="60" as="geometry"/></mxCell>
+        <mxCell id="k_second" value="KM_SYNC_KB_Hotkey_Function_1_SecondKeyMakeCheck()&#xa;解析第二个键的含义" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="430" y="490" width="340" height="70" as="geometry"/></mxCell>
+        <mxCell id="k_save2" value="第二键 MAKE&#xa;Hotkey_Queue[1]&#xa;Q_Size++，状态=2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366" vertex="1" parent="1"><mxGeometry x="850" y="485" width="220" height="80" as="geometry"/></mxCell>
+        <mxCell id="k_leadtype" value="根据起始键分类" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="1160" y="480" width="170" height="90" as="geometry"/></mxCell>
+        <mxCell id="k_star" value="Pad* 命令组&#xa;Pad1..4：强制跳端口&#xa;O：四屏漫游&#xa;S：单屏漫游&#xa;Pad0：同步模式&#xa;F9/F10：绝对/相对鼠标&#xa;F11：软重启&#xa;M：映射表 2" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="1450" y="370" width="250" height="165" as="geometry"/></mxCell>
+        <mxCell id="k_plus" value="Pad+ + Pad1..4&#xa;添加同步端口" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="1450" y="560" width="220" height="60" as="geometry"/></mxCell>
+        <mxCell id="k_minus" value="Pad- + Pad1..4&#xa;清除同步端口" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="1450" y="640" width="220" height="60" as="geometry"/></mxCell>
+        <mxCell id="k_scroll" value="ScrollLock + 字母/Esc/Tab&#xa;设置重复按键模式" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="1450" y="720" width="250" height="60" as="geometry"/></mxCell>
+        <mxCell id="k_perform" value="KM_SYNC_KB_Hotkey_Function_Perform()&#xa;执行已经解析出的快捷键功能" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1" vertex="1" parent="1"><mxGeometry x="1780" y="570" width="310" height="70" as="geometry"/></mxCell>
+        <mxCell id="k_exec" value="按 KM_SYNC_Hotkey_Function[0]&#xa;选择具体动作" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1"><mxGeometry x="1780" y="690" width="310" height="70" as="geometry"/></mxCell>
+        <mxCell id="k_exec_list" value="JUMP：KM_SYNC_Force_Port_Jump()&#xa;ADD/CLEAR：KM_SYNC_Port_Add/Clear()&#xa;SYNC：KM_SYNC_Set_SyncMode()&#xa;ROAMING：API_Set_Roaming_Mode()&#xa;ABS/REL：API_Set_Mouse_Mode()&#xa;RESET：CPU_SoftReboot()&#xa;IAP：KVM_CONSOLE_IAP_Mode()&#xa;REPEAT：KM_SYNC_Handle_SetRepeatKey()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366" vertex="1" parent="1"><mxGeometry x="1740" y="810" width="390" height="180" as="geometry"/></mxCell>
+        <mxCell id="k_s2" value="状态 2&#xa;等待按键释放或第三键" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" vertex="1" parent="1"><mxGeometry x="160" y="780" width="220" height="60" as="geometry"/></mxCell>
+        <mxCell id="k_release" value="KM_SYNC_KB_Hotkey_Function_2_SecondKeyBreakCheck()&#xa;处理起始键/第二键释放，或新的第三键按下" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="460" y="775" width="380" height="70" as="geometry"/></mxCell>
+        <mxCell id="k_release_detail" value="起始键释放：状态=3&#xa;第二键释放：状态=1&#xa;新按键按下：记录 Hotkey_Queue[2]，状态=3" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="920" y="760" width="330" height="95" as="geometry"/></mxCell>
+        <mxCell id="k_s3" value="状态 &gt;= 3&#xa;等待剩余按键释放并清理" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" vertex="1" parent="1"><mxGeometry x="160" y="960" width="230" height="60" as="geometry"/></mxCell>
+        <mxCell id="k_third" value="KM_SYNC_KB_Hotkey_Function_3_ThirdKeyCheck()&#xa;维护队列数量并清除已释放按键" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="460" y="955" width="370" height="70" as="geometry"/></mxCell>
+        <mxCell id="k_empty" value="Q_Size 是否为 0？" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="920" y="940" width="160" height="100" as="geometry"/></mxCell>
+        <mxCell id="k_clear" value="KM_SYNC_KB_Hotkey_Clear()&#xa;状态回到 0&#xa;清空功能参数" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366" vertex="1" parent="1"><mxGeometry x="1180" y="950" width="230" height="80" as="geometry"/></mxCell>
+        <mxCell id="ke1" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_input" target="k_handle"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke2" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_handle" target="k_check"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke3" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_check" target="k_mod"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke4" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_mod" target="k_state"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke5" value="状态 0" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_state" target="k_s0"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke6" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_s0" target="k_repeat"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke7" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_repeat" target="k_start"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke8" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_start" target="k_lead"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke9" value="是" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_lead" target="k_capture"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke10" value="状态 1" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_state" target="k_s1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke11" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_s1" target="k_second"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke12" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_second" target="k_save2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke13" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_save2" target="k_leadtype"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke14" value="Pad*" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_leadtype" target="k_star"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke15" value="Pad+" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_leadtype" target="k_plus"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke16" value="Pad-" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_leadtype" target="k_minus"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke17" value="ScrollLock" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_leadtype" target="k_scroll"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke18" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_star" target="k_perform"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke19" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_plus" target="k_perform"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke20" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_minus" target="k_perform"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke21" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_scroll" target="k_perform"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke22" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_perform" target="k_exec"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke23" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_exec" target="k_exec_list"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke24" value="状态 2" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_state" target="k_s2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke25" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_s2" target="k_release"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke26" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_release" target="k_release_detail"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke27" value="状态 &gt;= 3" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_state" target="k_s3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke28" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_s3" target="k_third"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke29" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_third" target="k_empty"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ke30" value="是" style="endArrow=block;html=1;rounded=0" edge="1" parent="1" source="k_empty" target="k_clear"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

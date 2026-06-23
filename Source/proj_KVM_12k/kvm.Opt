@@ -1,0 +1,115 @@
+### uVision2 Project, (C) Keil Software
+### Do not modify !
+
+ cExt (*.c)
+ aExt (*.s*; *.src; *.a*)
+ oExt (*.obj)
+ lExt (*.lib)
+ tExt (*.txt; *.h; *.inc)
+ pExt (*.plm)
+ CppX (*.cpp)
+ DaveTm { 0,0,0,0,0,0,0,0 }
+
+Target (kvm), 0x0000 // Tools: 'MCS-51'
+GRPOPT 1,(CPU),0,0,0
+GRPOPT 2,(MAIN),0,0,0
+GRPOPT 3,(UART),0,0,0
+GRPOPT 4,(MSTIMER),0,0,0
+GRPOPT 5,(FLASH),0,0,0
+GRPOPT 6,(SPI),0,0,0
+GRPOPT 7,(SPI_Flash),0,0,0
+GRPOPT 8,(Project),0,0,0
+GRPOPT 9,(TASK_MAN),0,0,0
+GRPOPT 10,(GPIO),0,0,0
+GRPOPT 11,(PS2_Host),0,0,0
+GRPOPT 12,(DATA_STREAM),0,0,0
+GRPOPT 13,(KVM_Console),0,0,0
+GRPOPT 14,(KVM_BUTTON),0,0,0
+GRPOPT 15,(KVM_EDID),0,0,0
+GRPOPT 16,(USB_DC),0,0,0
+GRPOPT 17,(USBDC_Virtual_HUB),0,0,0
+GRPOPT 18,(USBDC_Virtual_HID),0,0,0
+GRPOPT 19,(USB_HC),0,0,0
+GRPOPT 20,(PowerSaving),0,0,0
+GRPOPT 21,(USBHC_HUB),0,0,0
+GRPOPT 22,(USBHC_MSC),1,0,0
+GRPOPT 23,(USBHC_AUDIO),0,0,0
+GRPOPT 24,(USBHC_HID),0,0,0
+GRPOPT 25,(USBHC_HID_PARSER),0,0,0
+GRPOPT 26,(USBHC_ROOT_HUB),0,0,0
+GRPOPT 27,(USBDC_MSC),0,0,0
+GRPOPT 28,(Special_Handler),0,0,0
+GRPOPT 29,(SWDMA),0,0,0
+GRPOPT 30,(ASIX_VENDOR_Handler),0,0,0
+
+OPTFFF 1,1,1,436207616,0,0,0,0,<..\Src\cpu\cpu.c><cpu.c> 
+OPTFFF 1,2,1,0,0,0,0,0,<..\Src\cpu\interrupt.c><interrupt.c> 
+OPTFFF 1,3,2,285212672,0,0,0,0,<..\Src\cpu\START390.A51><START390.A51> 
+OPTFFF 2,4,1,0,0,0,0,0,<..\Src\main\main.c><main.c> 
+OPTFFF 3,5,1,520093696,0,0,0,0,<..\Src\uart\uart.c><uart.c> 
+OPTFFF 4,6,1,0,0,0,0,0,<..\Src\mstimer\mstimer.c><mstimer.c> 
+OPTFFF 5,7,1,0,0,0,0,0,<..\Src\storage\storage.c><storage.c> 
+OPTFFF 5,8,1,822083584,0,0,0,0,<..\Src\flash\flash.c><flash.c> 
+OPTFFF 6,9,1,0,0,0,0,0,<..\Src\spi\spim.c><spim.c> 
+OPTFFF 7,10,1,419430400,0,0,0,0,<..\Src\kvm_control\kvm_storage\spi_flash\spi_flash.c><spi_flash.c> 
+OPTFFF 8,11,5,0,0,0,0,0,<..\Src\project\project_include.h><project_include.h> 
+OPTFFF 8,12,5,0,0,0,0,0,<..\Src\project\system_cfg.h><system_cfg.h> 
+OPTFFF 9,13,1,1325400064,0,0,0,0,<..\Src\task_man\task_main.c><task_main.c> 
+OPTFFF 10,14,1,167772160,0,0,0,0,<..\Src\gpio\gpio.c><gpio.c> 
+OPTFFF 11,15,1,50331648,0,0,0,0,<..\Src\ps2_host\ps2_host.c><ps2_host.c> 
+OPTFFF 11,16,1,50331648,0,0,0,0,<..\Src\hardware_ps2\hardware_ps2.c><hardware_ps2.c> 
+OPTFFF 12,17,1,436207616,0,0,0,0,<..\Src\data_stream\data_stream.c><data_stream.c> 
+OPTFFF 12,18,1,0,0,0,0,0,<..\Src\data_stream\data_stream_generic.c><data_stream_generic.c> 
+OPTFFF 13,19,1,335544320,0,0,0,0,<..\Src\kvm_control\kvm_console\kvm_console.c><kvm_console.c> 
+OPTFFF 13,20,1,587202560,0,0,0,0,<..\Src\kvm_control\kvm_hotkey\kvm_hotkey.c><kvm_hotkey.c> 
+OPTFFF 13,21,1,0,0,0,0,0,<..\Src\kvm_control\kvm_buzzer\buzzer_hardware.c><buzzer_hardware.c> 
+OPTFFF 14,22,1,0,0,0,0,0,<..\Src\kvm_control\kvm_button\btn_interrupt.c><btn_interrupt.c> 
+OPTFFF 15,23,1,218103808,0,0,0,0,<..\Src\kvm_control\kvm_edid\console_edid.c><console_edid.c> 
+OPTFFF 15,24,1,335544320,0,0,0,0,<..\Src\kvm_control\kvm_edid\edid_hardware.c><edid_hardware.c> 
+OPTFFF 16,25,1,33554432,0,0,0,0,<..\Src\usbdc\usbdc.c><usbdc.c> 
+OPTFFF 16,26,1,0,0,0,0,0,<..\Src\usbdc\usbdc_regs.c><usbdc_regs.c> 
+OPTFFF 16,27,1,0,0,0,0,0,<..\Src\usbdc\usbdc_hal.c><usbdc_hal.c> 
+OPTFFF 16,28,1,671088640,0,0,0,0,<..\Src\usbdc\usbdc_virtual\usbdc_virtual_core.c><usbdc_virtual_core.c> 
+OPTFFF 17,29,1,855638016,0,0,0,0,<..\Src\usbdc\usbdc_hub\usbdc_vhub.c><usbdc_vhub.c> 
+OPTFFF 17,30,1,167772160,0,0,0,0,<..\Src\usbdc\usbdc_hub\usbdc_vhub_desc.c><usbdc_vhub_desc.c> 
+OPTFFF 18,31,1,956301312,0,0,0,0,<..\Src\usbdc\usbdc_hid\usbdc_vhid.c><usbdc_vhid.c> 
+OPTFFF 18,32,1,637534208,0,0,0,0,<..\Src\usbdc\usbdc_hid\usbdc_vhid_desc.c><usbdc_vhid_desc.c> 
+OPTFFF 19,33,1,922746880,0,0,0,0,<..\Src\usbhc\usbhc.c><usbhc.c> 
+OPTFFF 19,34,1,0,0,0,0,0,<..\Src\usbhc\usbhc_core.c><usbhc_core.c> 
+OPTFFF 19,35,1,0,0,0,0,0,<..\Src\usbhc\usbhc_ioreq.c><usbhc_ioreq.c> 
+OPTFFF 19,36,1,0,0,0,0,0,<..\Src\usbhc\usbhc_stdreq.c><usbhc_stdreq.c> 
+OPTFFF 19,37,1,0,0,0,0,0,<..\Src\usbhc\usbhc_regs.c><usbhc_regs.c> 
+OPTFFF 20,38,1,83886080,0,0,0,0,<..\Src\kvm_control\power_saving\power_saving.c><power_saving.c> 
+OPTFFF 21,39,1,150994944,0,0,0,0,<..\Src\usbhc\HUB\usbhc_hub.c><usbhc_hub.c> 
+OPTFFF 22,40,1,0,0,0,0,0,<..\Src\usbhc\MSC\usbhc_msc_burst.c><usbhc_msc_burst.c> 
+OPTFFF 22,41,1,0,0,0,0,0,<..\Src\usbhc\MSC\usbhc_msc_bot_burst.c><usbhc_msc_bot_burst.c> 
+OPTFFF 23,42,1,0,0,0,0,0,<..\Src\usbhc\AUDIO\usbhc_audio.c><usbhc_audio.c> 
+OPTFFF 24,43,1,0,0,0,0,0,<..\Src\usbhc\HID\usbhc_hid.c><usbhc_hid.c> 
+OPTFFF 25,44,1,0,0,0,0,0,<..\Src\usbhc\HID_PARSER\usbhc_hidparser.c><usbhc_hidparser.c> 
+OPTFFF 26,45,1,83886080,0,0,0,0,<..\Src\usbhc\ROOT_HUB\usbhc_roothub.c><usbhc_roothub.c> 
+OPTFFF 27,46,1,0,0,0,0,0,<..\Src\usbdc\usbdc_msc\usb_scsi\usb_scsi.c><usb_scsi.c> 
+OPTFFF 27,47,1,33554432,0,0,0,0,<..\Src\usbdc\usbdc_msc\usbdc_vmsc.c><usbdc_vmsc.c> 
+OPTFFF 27,48,1,520093696,0,0,0,0,<..\Src\usbdc\usbdc_msc\usbdc_vmsc_desc.c><usbdc_vmsc_desc.c> 
+OPTFFF 28,49,1,0,0,0,0,0,<..\Src\handler\logitech\logitech.c><logitech.c> 
+OPTFFF 28,50,1,0,0,0,0,0,<..\Src\handler\A4_Tech\a4_tech.c><a4_tech.c> 
+OPTFFF 29,51,1,335544320,0,0,0,0,<..\Src\swdma\dma.c><dma.c> 
+OPTFFF 30,52,1,452984832,0,0,0,0,<..\Src\usbdc\usbdc_vendor\usbdc_vendor.c><usbdc_vendor.c> 
+
+
+TARGOPT 1, (kvm)
+ CLK51=100000000
+  OPTTT 1,1,1,0
+  OPTHX 1,65535,0,0,0
+  OPTLX 120,65,8,<.\>
+  OPTOX 16
+  OPTLT 1,1,1,0,1,1,0,1,0,0,0,0
+  OPTXL 1,1,1,1,1,1,1,0,0
+  OPTFL 1,0,1
+  OPTAX 0
+  OPTDL (S8051.DLL)(-c390)(DP51.DLL)(-p)(S8051.DLL)(-c390)(TP51.DLL)(-p)
+  OPTDBG 48125,-1,()()()()()()()()()() (BIN\DCD_DoCD_USB.DLL)()()()
+  OPTDF 0x0
+  OPTLE <>
+  OPTLC <>
+EndOpt
+

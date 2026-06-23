@@ -1,0 +1,264 @@
+C51 COMPILER V9.60.7.0   POWER_SAVING                                                      06/18/2026 10:50:20 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE POWER_SAVING
+OBJECT MODULE PLACED IN .\power_saving.obj
+COMPILER INVOKED BY: C:\Users\Administrator\AppData\Local\Keil_v5\C51\BIN\C51.EXE ..\Src\kvm_control\power_saving\power_
+                    -saving.c LARGE OMF2 ROM(D16M) OPTIMIZE(9,SIZE) BROWSE NOAREGS INCDIR(..\src\main\;..\src\cpu\;..\src\flash\;..\src\uart\
+                    -;..\src\swdma\;..\src\mstimer\;..\src\i2c\;..\src\spi\;..\src\task_man\;..\src\project\;..\Src\ps2_host;..\Src\console_e
+                    -did;..\Src\storage;..\Src\data_stream;..\Src\kvm_control\kvm_hotkey;..\Src\kvm_control\kvm_console;..\Src\kvm_control\kv
+                    -m_button;..\Src\kvm_control\kvm_edid;..\Src\kvm_control\kvm_buzzer;..\src\gpio\;..\Src\hardware_ps2;..\Src\usbdc;..\Src\
+                    -usbdc\usbdc_virtual;..\Src\usb_std;..\Src\usbhc;..\Src\kvm_control\power_saving;..\Src\usbhc\MSC;..\Src\usbhc\AUDIO;..\S
+                    -rc\usbhc\HUB;..\Src\usbhc\HID;..\Src\usbhc\HID_PARSER;..\Src\usbhc\ROOT_HUB;..\Src\usbdc\usbdc_hub;..\Src\usbdc\usbdc_hi
+                    -d;..\Src\kvm_control\kvm_storage\spi_flash;..\Src\usbdc\usbdc_msc\usb_scsi;..\Src\usbdc\usbdc_msc;..\Src\handler\logitec
+                    -h;..\Src\handler\A4_Tech;..\Src\usbdc\usbdc_vendor;..\Src\hsur;..\Src\extender\core;..\Src\extender\receiver;..\Src\uart
+                    -_console;..\Src\kvm_control\km_sync;..\Src\hsur;..\Src\kvm_control\km_log;..\Src\kvm_control\km_api;..\Src\kvm_control\k
+                    -vm_ir;..\Src\kvm_control\kvm_rtc;..\Src\i2c;..\Src\kvm_control\kvm_multiview) STRING(FAR) DEFINE(RuntimeCodeAt0KH,MCU_TY
+                    -PE_AX68004,KVM,HC_TIMEOUT=10000,VHID,HID_PARSER_CORE_KB,HID_PARSER_CORE_MS,API,NO_AUDIO,NO_MSC,NO_EDID,HUART_BAUD=HUART_
+                    -115K,SYNC,CROSS_JUMP_MAP0,VPID_CHANGER,SYNC_KB_HOTKEY,SYNC_MS_HOTKEY,REPEAT_MODE=1,HSUART,MULTIVIEW) VARBANKING DEBUG PR
+                    -INT(.\power_saving.lst) TABS(2) OBJECT(.\power_saving.obj)
+
+line level    source
+
+   1          /*
+   2           ******************************************************************************
+   3           *     Copyright (c) 2014 ASIX Electronic Corporation      All rights reserved.
+   4           *
+   5           *     This is an proprietary source code of ASIX Electronic Corporation
+   6           *
+   7           *     The copyright notice above does not evidence any actual or intended
+   8           *     publication of such source code.
+   9           ******************************************************************************
+  10           */
+  11           /*============================================================================
+  12           * Module Name: power_saving.c
+  13           * Purpose: KVM Power saving mode control program
+  14           * Author:
+  15           * Date:
+  16           *=============================================================================
+  17           */
+  18          
+  19          /* INCLUDE FILE SECTION */
+  20          #include <stdio.h>
+  21          #include <string.h>
+  22          #include "project_include.h"
+  23          
+  24          
+  25          #if (SYSTEM_POWER_SAVING_MODE_SUPPORT)
+              /* NAMING CONSTANT DECLARATIONS */
+              /* GLOBAL VARIABLES DECLARATIONS */
+              bit PowerSavingStartFlag;
+              bit PowerSavingInhibitFlag;
+              bit PowerSavingExitFlag;
+              U8_T  PowerSavingExitSate;
+              U8_T  TASK_KVM_PowerSaving_Check_ID;
+              U8_T  TASK_KVM_PowerSaving_Start_ID;
+              
+              /* LOCAL VARIABLES DECLARATIONS */
+              
+              /* EXTERNAL GLOBAL VARIABLES DECLARATIONS */
+              extern U8_T TASK_USBHC_Resume_Command_ID;
+              
+              
+              /* LOCAL SUBPROGRAM DECLARATIONS */
+              void TASK_KVM_PowerSaving_Start(void);
+C51 COMPILER V9.60.7.0   POWER_SAVING                                                      06/18/2026 10:50:20 PAGE 2   
+
+              void TASK_KVM_PowerSaving_Check(void);
+              
+              /* EXTERNAL SUBPROGRAM DECLARATIONS */
+              
+              /*
+               * ----------------------------------------------------------------------------
+               * Function Name: KVM_PowerSaving_Init(void)
+               * Purpose:
+               * Params:
+               * Returns:
+               * Note:
+               * ----------------------------------------------------------------------------
+               */
+              void KVM_PowerSaving_Init(void)
+              {
+                PowerSavingStartFlag = 0;
+                PowerSavingExitFlag = 0;
+                PowerSavingExitSate = 0;
+                PowerSavingInhibitFlag = 0;
+              
+                TASK_KVM_PowerSaving_Check_ID = TASK_Create(TASK_KVM_PowerSaving_Check);
+                TASK_KVM_PowerSaving_Start_ID = TASK_Create(TASK_KVM_PowerSaving_Start);
+                TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_KVM_PowerSaving_Check_ID,0,0,SYSTEM_POWER_SAVING_TIMER,SYSTEM_POWE
+             -R_SAVING_TIMER); //after 100ms, start power on all port
+              #if (POWER_SAVING_DEBUG_MODE)
+                if (KVM_Flash.PowerSavingMode)
+                {
+                  printf("\n\r> Default Power Saving Mode = %s\n\r", (KVM_Flash.PowerSavingMode == SYSTEM_POWER_STOP_MODE)
+             - ? "STOP" : "DEEP SLEEP");
+                }
+                else
+                {
+                  printf("\n\r> Default Power Saving Mode = OFF\n\r");
+                }
+              #endif
+              
+              #if (SYSTEM_TASK_DUMP_SUPPORT)
+                printf("TASK_KVM_PowerSaving_Check_ID=%bu\n\r",TASK_KVM_PowerSaving_Check_ID);
+                printf("TASK_KVM_PowerSaving_Start_ID=%bu\n\r",TASK_KVM_PowerSaving_Check_ID);
+              #endif
+              }
+              
+              /*--------------------------------------------------------------------------------
+               * void TASK_KVM_PowerSaving_Check(void)
+               * Purpose : Check weither get into power saving mode
+               * Params  : None 
+               * Returns : None
+               * Note    : The length can not large than 0xff
+               *--------------------------------------------------------------------------------
+               */
+              void TASK_KVM_PowerSaving_Check(void)
+              {
+                if (PowerSavingInhibitFlag)
+                {
+                  PowerSavingInhibitFlag = 0;
+                }
+                else
+                {
+                  if ((KVM_Flash.cSystemFlag1 & SYSTEM_POWERSAVING_MASK) == 0) //if not support powersaving mode
+                  {
+                    return;
+                  } 
+C51 COMPILER V9.60.7.0   POWER_SAVING                                                      06/18/2026 10:50:20 PAGE 3   
+
+                  /* Need to Check DC Suspend Status */
+                  if (USBDC_PortSuspendCheck() == 0)
+                  {
+                    return;
+                  }
+              #if (SYSETM_CONSOLE_EDID_CONTROL_ENABLE)
+                  /* Need to check I2C bus status is whether idle or not */
+                  if (EDID_ctrl.TaskState != CONSOLE_MONITOR_PLUG_PAUSED)
+                  {
+                    EDID_ctrl.TaskPauseRequest = 1;//Pause any communication on I2C bus
+                    return;
+                  }
+              #endif
+                  if (PowerSavingStartFlag == 0)
+                  {
+              #if (POWER_SAVING_DEBUG_MODE2) || (POWER_SAVING_DEBUG_MODE)
+                    printf("\n\r");
+                    printf("> *******************************************\n\r");
+                    if (KVM_Flash.PowerSavingMode)
+                    {
+                      printf("> * Power Saving Mode(%s) Start... \n\r", (KVM_Flash.PowerSavingMode == SYSTEM_POWER_STOP_MODE
+             -) ? "STOP" : "DEEP SLEEP");
+                    }
+                    else
+                    {
+                      printf("> * Power Saving Mode(OFF) Start...\n\r");
+                    }
+                    printf("> *******************************************\n\r");
+              #endif
+                    PowerSavingStartFlag = 1;
+                    USBHC_CORE_Suspend();
+                    TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_KVM_PowerSaving_Start_ID,0,0,200,200); //after 100ms, start powe
+             -r on all port
+                  }
+                }
+              }
+              
+              /*--------------------------------------------------------------------------------
+               * void TASK_KVM_PowerSaving_Start(void)
+               * Purpose : Enter Low Power Mode
+               * Params  : None 
+               * Returns : None
+               * Note    : The length can not large than 0xff
+               *--------------------------------------------------------------------------------
+               */
+              void TASK_KVM_PowerSaving_Start(void)
+              {
+                if (PowerSavingInhibitFlag)
+                {
+                  PowerSavingStartFlag = 0;
+              #if (POWER_SAVING_DEBUG_MODE)
+                  printf(">Power Saving Mode Stop by interrupt...\n\r");
+              #endif
+                }
+                else
+                {
+                  CPU_SetPowerSaveMode(KVM_Flash.PowerSavingMode);
+              #if (SYSETM_CONSOLE_EDID_CONTROL_ENABLE)
+                  /* Clear EDID puase flag to continue the process of EDID task */
+                  EDID_ctrl.TaskPauseRequest = 0;
+              #endif
+                }
+C51 COMPILER V9.60.7.0   POWER_SAVING                                                      06/18/2026 10:50:20 PAGE 4   
+
+                TASK_Destory_Current();
+              }
+              
+              /*--------------------------------------------------------------------------------
+               * void KVM_PowerSaving_Exit(void)
+               * Purpose : Check weither get into power saving mode
+               * Params  : None 
+               * Returns : None
+               * Note    : The length can not large than 0xff
+               *--------------------------------------------------------------------------------
+               */
+              void KVM_PowerSaving_Exit(void)
+              {
+                EXTINT6_DISABLE;
+                PowerSavingExitFlag = 0;
+              #if (POWER_SAVING_DEBUG_MODE)
+                printf("INT6 incoming, state = %02bx\n\r", PowerSavingExitSate);
+              #endif
+                EXTINT6_ENABLE;
+                
+              #if (POWER_SAVING_DEBUG_MODE2) || (POWER_SAVING_DEBUG_MODE)
+                if (PowerSavingStartFlag)
+                {
+                  if (KVM_Flash.PowerSavingMode)
+                  {
+                    printf("> Power Saving Mode(%s)Exit by Event:%02x\n\r", (KVM_Flash.PowerSavingMode == SYSTEM_POWER_STOP
+             -_MODE) ? "STOP" : "DEEP SLEEP", (U16_T)PowerSavingExitSate);
+                  }
+                  else
+                  {
+                    printf("> Power Saving Mode(OFF)Exit by Event:%02x\n\r", (U16_T)PowerSavingExitSate);
+                  }
+                }
+              #endif
+                
+                if ((PowerSavingExitSate & UHC_WKUP) == 0) // wake up from other interface
+                {
+              #if (POWER_SAVING_DEBUG_MODE)
+                  printf("Resume HC\n\r");
+              #endif
+                  USBHC_CORE_Resmue();
+                }
+                TASK_Active(TASK_TYPE_EVENT,TASK_USBHC_Resume_Command_ID,0x00,USBDC_VIRTUAL_DEVINX,0,0); //Generate the t
+             -ask, for next Event check
+                PowerSavingStartFlag = 0;
+              }
+              
+              #endif //#if (SYSTEM_POWER_SAVING_MODE_SUPPORT)
+ 209          
+ 210          /* End of power_saving.c */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+C51 COMPILER V9.60.7.0   POWER_SAVING                                                      06/18/2026 10:50:20 PAGE 5   
+
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

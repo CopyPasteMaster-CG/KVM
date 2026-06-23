@@ -1,0 +1,251 @@
+C51 COMPILER V9.60.7.0   FLASH                                                             06/18/2026 10:50:16 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE FLASH
+OBJECT MODULE PLACED IN .\flash.obj
+COMPILER INVOKED BY: C:\Users\Administrator\AppData\Local\Keil_v5\C51\BIN\C51.EXE ..\Src\flash\flash.c LARGE OMF2 ROM(D1
+                    -6M) OPTIMIZE(9,SIZE) BROWSE NOAREGS INCDIR(..\src\main\;..\src\cpu\;..\src\flash\;..\src\uart\;..\src\swdma\;..\src\msti
+                    -mer\;..\src\i2c\;..\src\spi\;..\src\task_man\;..\src\project\;..\Src\ps2_host;..\Src\console_edid;..\Src\storage;..\Src\
+                    -data_stream;..\Src\kvm_control\kvm_hotkey;..\Src\kvm_control\kvm_console;..\Src\kvm_control\kvm_button;..\Src\kvm_contro
+                    -l\kvm_edid;..\Src\kvm_control\kvm_buzzer;..\src\gpio\;..\Src\hardware_ps2;..\Src\usbdc;..\Src\usbdc\usbdc_virtual;..\Src
+                    -\usb_std;..\Src\usbhc;..\Src\kvm_control\power_saving;..\Src\usbhc\MSC;..\Src\usbhc\AUDIO;..\Src\usbhc\HUB;..\Src\usbhc\
+                    -HID;..\Src\usbhc\HID_PARSER;..\Src\usbhc\ROOT_HUB;..\Src\usbdc\usbdc_hub;..\Src\usbdc\usbdc_hid;..\Src\kvm_control\kvm_s
+                    -torage\spi_flash;..\Src\usbdc\usbdc_msc\usb_scsi;..\Src\usbdc\usbdc_msc;..\Src\handler\logitech;..\Src\handler\A4_Tech;.
+                    -.\Src\usbdc\usbdc_vendor;..\Src\hsur;..\Src\extender\core;..\Src\extender\receiver;..\Src\uart_console;..\Src\kvm_contro
+                    -l\km_sync;..\Src\hsur;..\Src\kvm_control\km_log;..\Src\kvm_control\km_api;..\Src\kvm_control\kvm_ir;..\Src\kvm_control\k
+                    -vm_rtc;..\Src\i2c;..\Src\kvm_control\kvm_multiview) STRING(FAR) DEFINE(RuntimeCodeAt0KH,MCU_TYPE_AX68004,KVM,HC_TIMEOUT=
+                    -10000,VHID,HID_PARSER_CORE_KB,HID_PARSER_CORE_MS,API,NO_AUDIO,NO_MSC,NO_EDID,HUART_BAUD=HUART_115K,SYNC,CROSS_JUMP_MAP0,
+                    -VPID_CHANGER,SYNC_KB_HOTKEY,SYNC_MS_HOTKEY,REPEAT_MODE=1,HSUART,MULTIVIEW) VARBANKING DEBUG PRINT(.\flash.lst) TABS(2) O
+                    -BJECT(.\flash.obj)
+
+line level    source
+
+   1          /*
+   2           *********************************************************************************
+   3           *     Copyright (c) 2014   ASIX Electronic Corporation      All rights reserved.
+   4           *
+   5           *     This is unpublished proprietary source code of ASIX Electronic Corporation
+   6           *
+   7           *     The copyright notice above does not evidence any actual or intended
+   8           *     publication of such source code.
+   9           *********************************************************************************
+  10           */
+  11          /*================================================================================
+  12           * Module Name : flash.c
+  13           * Purpose     :
+  14           * Author      : 
+  15           * Date        : 
+  16           * Notes       : Flash driver to read/write flash in IAP. In all API functions,
+  17           *               the Flash address is byte address and will be converted to word
+  18           *               address in the API function.
+  19           *================================================================================
+  20           */
+  21          /* INCLUDE FILE DECLARATIONS */
+  22          #include  <absacc.h>
+  23          #include  "project_include.h"
+  24          
+  25          #if (SYSTEM_STORAGE_FLASH)
+  26          /* GLOBAL VARIABLE DECLARATIONS */
+  27          U8_T  flashIntrStatus = 0;
+  28          U8_T  flashIntrEnbFlag = 0;
+  29          
+  30          /* STATIC VARIABLE DECLARATIONS */
+  31          /* LOCAL SUBPROGRAM DECLARATIONS */
+  32          static bit flash_isr;
+  33          
+  34          /* LOCAL SUBPROGRAM BODIES */
+  35          
+  36          /* EXPORTED SUBPROGRAM BODIES */
+  37          
+  38          /*
+  39           *--------------------------------------------------------------------------------
+  40           * void FLASH_Setup(void)
+  41           * Purpose : Flash interrupt server routine for programming and erasing.
+  42           * Params  :
+C51 COMPILER V9.60.7.0   FLASH                                                             06/18/2026 10:50:16 PAGE 2   
+
+  43           * Returns :
+  44           * Note    :
+  45           *--------------------------------------------------------------------------------
+  46           */
+  47          void FLASH_Setup(void)
+  48          {
+  49   1        flashIntrEnbFlag = 0;
+  50   1        FLASH_RegWrite(FLH_FCCR2, &flashIntrEnbFlag, 1);
+  51   1      }
+  52          
+  53          /*
+  54           *--------------------------------------------------------------------------------
+  55           * void FLASH_RegWrite(U8_T addr, U8_T *ptData, U8_T dataLen)
+  56           * Purpose: Write data bytes into a register with interrupt locked.
+  57           * Params : addr: an index address to Flash register.
+  58           *          ptData: a pointer to indicate the register data.
+  59           *          dataLen:A number of bytes to indicate how many bytes will be written.
+  60           * Returns: TRUE (1) is success ; FALSE (0) is failure.
+  61           * Note   : None.
+  62           *--------------------------------------------------------------------------------
+  63           */
+  64          void FLASH_RegWrite(U8_T addr, U8_T *ptData, U8_T dataLen)
+  65          {
+  66   1        flash_isr = EA;
+  67   1        EA = 0;
+  68   1        while (dataLen --)
+  69   1        {
+  70   2          FDR = *(ptData + dataLen);
+  71   2        }
+  72   1        FCIR = addr;
+  73   1        EA = flash_isr;
+  74   1      }
+  75          
+  76          /*
+  77           *--------------------------------------------------------------------------------
+  78           * void FLASH_RegRead(U8_T addr, U8_T *ptData, U8_T dataLen)
+  79           * Purpose: Read data bytes from a register with interrupt locked.
+  80           * Params : addr: an index address to Flash register.
+  81           *          ptData: a pointer to indicate the register data.
+  82           *          dataLen:A number of bytes to indicate how many bytes will be read.
+  83           * Returns: TRUE (1) is success ; FALSE (0) is failure.
+  84           * Note   : None.
+  85           *--------------------------------------------------------------------------------
+  86           */
+  87          void FLASH_RegRead(U8_T addr, U8_T *ptData, U8_T dataLen)
+  88          {
+  89   1        flash_isr = EA;
+  90   1        EA = 0;
+  91   1        FCIR = addr;
+  92   1        while (dataLen --)
+  93   1        {
+  94   2          *(ptData + dataLen) = FDR;
+  95   2        }
+  96   1      
+  97   1        EA = flash_isr;
+  98   1      }
+  99          
+ 100          /*
+ 101           *--------------------------------------------------------------------------------
+ 102           * BOOL FLASH_CheckCmdComplete(void)
+ 103           * Purpose : Check the Flash status after triggering a Flash access.
+ 104           * Params  : 
+C51 COMPILER V9.60.7.0   FLASH                                                             06/18/2026 10:50:16 PAGE 3   
+
+ 105           * Returns : TRUE (1) is success ; FALSE (0) is failure with error.
+ 106           * Note    :
+ 107           *--------------------------------------------------------------------------------
+ 108           */
+ 109          BOOL FLASH_CheckCmdComplete(void)
+ 110          {
+ 111   1        U8_T  reg8b;
+ 112   1      
+ 113   1        /* Check the Flash status */
+ 114   1        while (1)
+ 115   1        {
+ 116   2          FLASH_RegRead(FLH_FCSR, &reg8b, 1);
+ 117   2          if (reg8b & FCSR_FC_CS)
+ 118   2            break;
+ 119   2        }
+ 120   1        if (reg8b & FCSR_ERROR_OCCURRED)
+ 121   1          return FALSE;
+ 122   1        
+ 123   1        return TRUE;
+ 124   1      }
+ 125          
+ 126          /*
+ 127           *--------------------------------------------------------------------------------
+ 128           * BOOL FLASH_SectorErase(void)
+ 129           * Purpose : Erase the flash for a sector.
+ 130           * Params  : sectAddr: flash address that is a multiple of 0x2000 (8K).
+ 131           *           sectSize: total sectors to be erased.
+ 132           * Returns : TRUE (1) is success ; FALSE (0) is failure with error.
+ 133           * Note    :
+ 134           *--------------------------------------------------------------------------------
+ 135           */
+ 136          BOOL FLASH_SectorErase(void)
+ 137          {
+ 138   1        U16_T addrRealFlash;
+ 139   1        U8_T  reg8b;
+ 140   1      
+ 141   1        /* Convert the byte mode address to the word mode address.
+ 142   1        /* A word address 0x0000 indicates a byte address 0x0000~0x0007, 0x0001 for 0x0008~0x000F. */
+ 143   1        addrRealFlash = (STORAGE_START_ADDRESS / FLASH_WORD_LEN);
+ 144   1        FLASH_RegWrite(FLH_FAR, (U8_T *)&addrRealFlash, 2);
+ 145   1        
+ 146   1        /* Trigger the GO bit to erase Flash sector */
+ 147   1        reg8b = (FCCR1_FC_GO | FCCR1_FCMD_SECTOR_ERASE);
+ 148   1        FLASH_RegWrite(FLH_FCCR1, &reg8b, 1);
+ 149   1        /* Check the Flash status */
+ 150   1        if (FLASH_CheckCmdComplete() == FALSE)
+ 151   1        {
+ 152   2          return FALSE;
+ 153   2        }
+ 154   1      
+ 155   1        return TRUE;
+ 156   1      }
+ 157          
+ 158          /*
+ 159           *--------------------------------------------------------------------------------
+ 160           * BOOL FLASH_InfoWordRead8Byte(U32_T addr, U8_T *pData)
+ 161           * Purpose : Flash interrupt server routine for programming and erasing.
+ 162           * Params  :
+ 163           * Returns :
+ 164           * Note    :
+ 165           *--------------------------------------------------------------------------------
+ 166           */
+C51 COMPILER V9.60.7.0   FLASH                                                             06/18/2026 10:50:16 PAGE 4   
+
+ 167          BOOL FLASH_InfoWordRead8Byte(U32_T addr, U8_T *pData)
+ 168          {
+ 169   1        U16_T i, addrRealFlash;
+ 170   1        U8_T  reg8b;
+ 171   1      
+ 172   1        /* Check the Flash address must be a word mode address (1 word = 8 bytes) */
+ 173   1        if (addr & 0x07)
+ 174   1        {
+ 175   2          return FALSE;
+ 176   2        }
+ 177   1        
+ 178   1        /* Convert the byte mode address to the word mode address.
+ 179   1        /* A word address 0x0000 indicates a byte address 0x0000~0x0007, 0x0001 for 0x0008~0x000F. */
+ 180   1        addrRealFlash = (U16_T)(addr / FLASH_WORD_LEN);
+ 181   1        FLASH_RegWrite(FLH_FAR, (U8_T *)&addrRealFlash, 2);
+ 182   1        
+ 183   1        /* Trigger the GO bit to read Flash */
+ 184   1        reg8b = (FCCR1_FC_GO | FCCR1_FCMD_WORD_READ | FCCR1_INFO_PAGE);
+ 185   1        FLASH_RegWrite(FLH_FCCR1, &reg8b, 1);
+ 186   1        
+ 187   1        /* Check the Flash status */
+ 188   1        if (FLASH_CheckCmdComplete() == FALSE)
+ 189   1        {
+ 190   2          return FALSE;
+ 191   2        }
+ 192   1      
+ 193   1        /* Fill a page data 256 bytes into the Flash HW buffer */
+ 194   1        flash_isr = EA;
+ 195   1        EA = 0;
+ 196   1        for (i = 0 ; i < FLASH_WORD_LEN ; i ++)
+ 197   1        {
+ 198   2          *(pData + i) = FCDP;
+ 199   2        }
+ 200   1        EA = flash_isr;
+ 201   1        return TRUE;
+ 202   1      }
+ 203          #endif
+ 204          
+ 205          /* End of flash.c */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    419    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      2      24
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

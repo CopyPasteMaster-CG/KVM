@@ -1,0 +1,352 @@
+C51 COMPILER V9.60.7.0   USBHC_STDREQ                                                      06/18/2026 10:50:19 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBHC_STDREQ
+OBJECT MODULE PLACED IN .\usbhc_stdreq.obj
+COMPILER INVOKED BY: C:\Users\Administrator\AppData\Local\Keil_v5\C51\BIN\C51.EXE ..\Src\usbhc\usbhc_stdreq.c LARGE OMF2
+                    - ROM(D16M) OPTIMIZE(9,SIZE) BROWSE NOAREGS INCDIR(..\src\main\;..\src\cpu\;..\src\flash\;..\src\uart\;..\src\swdma\;..\s
+                    -rc\mstimer\;..\src\i2c\;..\src\spi\;..\src\task_man\;..\src\project\;..\Src\ps2_host;..\Src\console_edid;..\Src\storage;
+                    -..\Src\data_stream;..\Src\kvm_control\kvm_hotkey;..\Src\kvm_control\kvm_console;..\Src\kvm_control\kvm_button;..\Src\kvm
+                    -_control\kvm_edid;..\Src\kvm_control\kvm_buzzer;..\src\gpio\;..\Src\hardware_ps2;..\Src\usbdc;..\Src\usbdc\usbdc_virtual
+                    -;..\Src\usb_std;..\Src\usbhc;..\Src\kvm_control\power_saving;..\Src\usbhc\MSC;..\Src\usbhc\AUDIO;..\Src\usbhc\HUB;..\Src
+                    -\usbhc\HID;..\Src\usbhc\HID_PARSER;..\Src\usbhc\ROOT_HUB;..\Src\usbdc\usbdc_hub;..\Src\usbdc\usbdc_hid;..\Src\kvm_contro
+                    -l\kvm_storage\spi_flash;..\Src\usbdc\usbdc_msc\usb_scsi;..\Src\usbdc\usbdc_msc;..\Src\handler\logitech;..\Src\handler\A4
+                    -_Tech;..\Src\usbdc\usbdc_vendor;..\Src\hsur;..\Src\extender\core;..\Src\extender\receiver;..\Src\uart_console;..\Src\kvm
+                    -_control\km_sync;..\Src\hsur;..\Src\kvm_control\km_log;..\Src\kvm_control\km_api;..\Src\kvm_control\kvm_ir;..\Src\kvm_co
+                    -ntrol\kvm_rtc;..\Src\i2c;..\Src\kvm_control\kvm_multiview) STRING(FAR) DEFINE(RuntimeCodeAt0KH,MCU_TYPE_AX68004,KVM,HC_T
+                    -IMEOUT=10000,VHID,HID_PARSER_CORE_KB,HID_PARSER_CORE_MS,API,NO_AUDIO,NO_MSC,NO_EDID,HUART_BAUD=HUART_115K,SYNC,CROSS_JUM
+                    -P_MAP0,VPID_CHANGER,SYNC_KB_HOTKEY,SYNC_MS_HOTKEY,REPEAT_MODE=1,HSUART,MULTIVIEW) VARBANKING DEBUG PRINT(.\usbhc_stdreq.
+                    -lst) TABS(2) OBJECT(.\usbhc_stdreq.obj)
+
+line level    source
+
+   1          /*
+   2           *********************************************************************************
+   3           *     Copyright (c) 2014   ASIX Electronic Corporation      All rights reserved.
+   4           *
+   5           *     This is unpublished proprietary source code of ASIX Electronic Corporation
+   6           *
+   7           *     The copyright notice above does not evidence any actual or intended
+   8           *     publication of such source code.
+   9           *********************************************************************************
+  10           */
+  11          /*================================================================================
+  12           * Module Name : usbhc_stdreq.c
+  13           * Purpose     : The handler of HC interface standard request 
+  14           * Author      : Jack Wang
+  15           * Date        :
+  16           * Notes       :
+  17           *               Standard Request(bRequest)
+  18           *               [ ].Get Status(0x00)
+  19           *               [ ].Clear Feature(0x01)
+  20           *               [ ].Set Feature(0x03)
+  21           *               [v].Set Address(0x05)               wValueH
+  22           *               [v].Get Descriptor(0x06)----------> [v].Device(0x01)
+  23           *               [ ].Set Descriptor(0x07)            [v].Config(0x02)
+  24           *               [ ].Get Config(0x08)                [v].String(0x03)
+  25           *               [v].Set Config(0x09)                [v].HID(0x021)  
+  26           *               [ ].Get Interface(0x0A)             [v].Report(0x22)
+  27           *               [ ].Set Interface(0x0B)             [ ].Physical(0x23)
+  28           *               [ ].Sync Frame
+  29           *               [ ].Stall
+  30           * no message
+  31           *
+  32           *================================================================================
+  33           */
+  34          
+  35          /* INCLUDE FILE DECLARATIONS */
+  36          #include  <string.h>
+  37          #include  <stdio.h>
+  38          #include  "project_include.h"
+  39          
+  40          
+  41          /* STATIC VARIABLE DECLARATIONS */ 
+  42          /* LOCAL SUBPROGRAM DECLARATIONS */
+C51 COMPILER V9.60.7.0   USBHC_STDREQ                                                      06/18/2026 10:50:19 PAGE 2   
+
+  43          /* LOCAL SUBPROGRAM BODIES */
+  44          
+  45          
+  46          /**
+  47          * @brief  USBH_SetAddress
+  48          *         This command sets the address to the connected device
+  49          * @param  pdev: Selected device
+  50          * @param  DeviceAddress: Device address to assign
+  51          * @retval Status
+  52          */
+  53          USBH_Status USBHC_Stdreq_SetAddress(U8_T devinx,U8_T td_id,U8_T DeviceAddress)
+  54          {
+  55   1        //1.Fill up Host Channel Table
+  56   1        HCTD_Channel_Table[td_id].TD_Length = USBHC_SETUP_PKT_SIZE;
+  57   1        HCTD_Channel_Table[td_id].Total_Length = 0; // no data stage
+  58   1        HCTD_Channel_Table[td_id].Current_Length = 0;
+  59   1        HCTD_Channel_Table[td_id].Endp_Size = USBHC_MAX_PACKET_SIZE;
+  60   1        
+  61   1        //2.Fill up Device Table Control Transfer relative field
+  62   1        USB_PDevice[devinx].Hc.Control.EpN_MaxSize = USBHC_SETUP_PKT_SIZE;
+  63   1        USB_PDevice[devinx].Hc.Control.Setup.b.bmRequestType = USB_H2D | USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_
+             -STANDARD;
+  64   1        USB_PDevice[devinx].Hc.Control.Setup.b.bRequest = USB_REQ_SET_ADDRESS;
+  65   1        USB_PDevice[devinx].Hc.Control.Setup.b.wValue.w = Big_Endian_16_Convert(DeviceAddress);
+  66   1        USB_PDevice[devinx].Hc.Control.Setup.b.wIndex.w = 0;
+  67   1        USB_PDevice[devinx].Hc.Control.Setup.b.wLength.w = 0;
+  68   1        
+  69   1        return USBHC_CtlReq(devinx,td_id);
+  70   1      }
+  71          
+  72          /**
+  73          * @brief  USBH_GetDescriptor
+  74          *         Issues Descriptor command to the device. Once the response received,
+  75          *         it parses the descriptor and updates the status.
+  76          * @param  pdev: Selected device
+  77          * @param  req_type: Descriptor type
+  78          * @param  value_idx: wValue for the GetDescriptr request
+  79          * @param  buff: Buffer to store the descriptor
+  80          * @param  length: Length of the descriptor
+  81          * @retval Status
+  82          */
+  83          USBH_Status USBHC_GetDescriptor(U8_T devinx,U8_T td_id,U8_T req_type,U16_T value_idx,U16_T interface,U16_T
+             - length)
+  84          {
+  85   1        U16_T index;
+  86   1        
+  87   1        //2.Setup Token Parameter
+  88   1        USB_PDevice[devinx].Hc.Control.Setup.b.bmRequestType = USB_D2H | req_type;
+  89   1        USB_PDevice[devinx].Hc.Control.Setup.b.bRequest = USB_REQ_GET_DESCRIPTOR;
+  90   1        USB_PDevice[devinx].Hc.Control.Setup.b.wValue.bw.lsb = value_idx & 0x00ff;
+  91   1        USB_PDevice[devinx].Hc.Control.Setup.b.wValue.bw.msb = (value_idx & 0xff00) >> 8;
+  92   1        if ((value_idx & 0xff00) == USB_DESC_STRING)
+  93   1        {
+  94   2          if ((value_idx & 0x00ff) == 0x00)
+  95   2            index = 0x00;
+  96   2          else
+  97   2            index = 0x0409;
+  98   2        }
+  99   1        else
+ 100   1        {
+ 101   2          index = interface;
+ 102   2        }
+C51 COMPILER V9.60.7.0   USBHC_STDREQ                                                      06/18/2026 10:50:19 PAGE 3   
+
+ 103   1        USB_PDevice[devinx].Hc.Control.Setup.b.wIndex.bw.lsb = index & 0x00ff;
+ 104   1        USB_PDevice[devinx].Hc.Control.Setup.b.wIndex.bw.msb = (index & 0xff00) >> 8;
+ 105   1        USB_PDevice[devinx].Hc.Control.Setup.b.wLength.bw.lsb = length & 0x00ff;
+ 106   1        USB_PDevice[devinx].Hc.Control.Setup.b.wLength.bw.msb = (length & 0xff00) >> 8;
+ 107   1      
+ 108   1        return USBHC_CtlReq(devinx,td_id);
+ 109   1      }
+ 110          
+ 111          /**
+ 112          * @brief  USBHC_Stdreq_GetDevDesc
+ 113          *         Issue Get Device Descriptor command to the device. Once the response 
+ 114          *         received, it parses the device descriptor and updates the status.
+ 115          * @param  pdev: Selected device
+ 116          * @param  dev_desc: Device Descriptor buffer address
+ 117          * @param  pdev->host.Rx_Buffer: Receive Buffer address
+ 118          * @param  length: Length of the descriptor
+ 119          * @retval Status
+ 120          */
+ 121          USBH_Status USBHC_Stdreq_GetDevDesc(U8_T devinx,U8_T td_id,U16_T length)
+ 122          {
+ 123   1        //1.Host Channel Paramter
+ 124   1        HCTD_Channel_Table[td_id].TD_Length = USBHC_SETUP_PKT_SIZE; //receive the length this time
+ 125   1        HCTD_Channel_Table[td_id].Current_Length = 0; // no data stage
+ 126   1        HCTD_Channel_Table[td_id].Total_Length = length; // data stage yes
+ 127   1        
+ 128   1        return USBHC_GetDescriptor(devinx,td_id,
+ 129   1        USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_STANDARD,USB_DESC_DEVICE,0,length);
+ 130   1      }
+ 131          
+ 132          /**
+ 133          * @brief  USBHC_Stdreq_GetCfgDesc
+ 134          *         Issues Configuration Descriptor to the device. Once the response 
+ 135          *         received, it parses the configuartion descriptor and updates the 
+ 136          *         status.
+ 137          * @param  pdev: Selected device
+ 138          * @param  cfg_desc: Configuration Descriptor address
+ 139          * @param  itf_desc: Interface Descriptor address
+ 140          * @param  ep_desc: Endpoint Descriptor address
+ 141          * @param  length: Length of the descriptor
+ 142          * @retval Status
+ 143          */
+ 144          USBH_Status USBHC_Stdreq_GetCfgDesc(U8_T devinx,U8_T td_id,U16_T length)
+ 145          {
+ 146   1        //1.TD Parameter
+ 147   1        HCTD_Channel_Table[td_id].TD_Length = USBHC_SETUP_PKT_SIZE; //receive the length this time
+ 148   1        HCTD_Channel_Table[td_id].Current_Length = 0; // no data tage
+ 149   1        HCTD_Channel_Table[td_id].Total_Length = length; // data stage yes
+ 150   1        
+ 151   1        //2.Descriptor Read
+ 152   1        return USBHC_GetDescriptor(devinx,td_id,
+ 153   1        USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_STANDARD,USB_DESC_CONFIGURATION,0,length);
+ 154   1      }
+ 155          
+ 156          /**
+ 157          * @brief  USBHC_Stdreq_SetCfg
+ 158          *         The command sets the configuration value to the connected device
+ 159          * @param  pdev: Selected device
+ 160          * @param  cfg_idx: Configuration value
+ 161          * @retval Status
+ 162          */
+ 163          USBH_Status USBHC_Stdreq_SetCfg(U8_T devinx,U8_T td_id,U8_T cfg_idx)
+ 164          {
+C51 COMPILER V9.60.7.0   USBHC_STDREQ                                                      06/18/2026 10:50:19 PAGE 4   
+
+ 165   1        //1.Fill up Host Channel Table
+ 166   1        HCTD_Channel_Table[td_id].TD_Length = USBHC_SETUP_PKT_SIZE;
+ 167   1        HCTD_Channel_Table[td_id].Total_Length = 0; // no data stage
+ 168   1        HCTD_Channel_Table[td_id].Current_Length = 0;
+ 169   1        HCTD_Channel_Table[td_id].Endp_Size = USBHC_MAX_PACKET_SIZE;
+ 170   1        USB_PDevice[devinx].Hc.Control.Setup.b.bmRequestType = USB_H2D | USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_
+             -STANDARD;
+ 171   1        USB_PDevice[devinx].Hc.Control.Setup.b.bRequest = USB_REQ_SET_CONFIGURATION;
+ 172   1        USB_PDevice[devinx].Hc.Control.Setup.b.wValue.w = Big_Endian_16_Convert((U16_T)cfg_idx);
+ 173   1        USB_PDevice[devinx].Hc.Control.Setup.b.wIndex.w = 0;
+ 174   1        USB_PDevice[devinx].Hc.Control.Setup.b.wLength.w = 0;
+ 175   1        
+ 176   1        return USBHC_CtlReq(devinx,td_id);
+ 177   1      }
+ 178          
+ 179          /**
+ 180          * @brief  USBHC_Stdreq_SetFeature
+ 181          *         The command sets the feature to the connected device
+ 182          * @param  pdev: Selected device
+ 183          * @param  cfg_idx: Configuration value
+ 184          * @retval Status
+ 185          */
+ 186          USBH_Status USBHC_Stdreq_SetFeature(U8_T devinx,U8_T td_id,U8_T receipient,U16_T wvalue,U16_T windex)
+ 187          {
+ 188   1        //1.Fill up Host Channel Table
+ 189   1        HCTD_Channel_Table[td_id].TD_Length = USBHC_SETUP_PKT_SIZE;
+ 190   1        HCTD_Channel_Table[td_id].Total_Length = 0; // no data stage
+ 191   1        HCTD_Channel_Table[td_id].Current_Length = 0;
+ 192   1        HCTD_Channel_Table[td_id].Endp_Size = USBHC_MAX_PACKET_SIZE;
+ 193   1      
+ 194   1        USB_PDevice[devinx].Hc.Control.Setup.b.bmRequestType = USB_H2D | receipient | USB_REQ_TYPE_STANDARD;
+ 195   1        USB_PDevice[devinx].Hc.Control.Setup.b.bRequest = USB_REQ_SET_FEATURE;
+ 196   1        USB_PDevice[devinx].Hc.Control.Setup.b.wValue.w = Big_Endian_16_Convert(wvalue);
+ 197   1        USB_PDevice[devinx].Hc.Control.Setup.b.wIndex.w = Big_Endian_16_Convert(windex);
+ 198   1        USB_PDevice[devinx].Hc.Control.Setup.b.wLength.w = 0;
+ 199   1        
+ 200   1        return USBHC_CtlReq(devinx,td_id);
+ 201   1      }
+ 202          
+ 203          /**
+ 204          * @brief  USBHC_Stdreq_SetFeature
+ 205          *         The command sets the feature to the connected device
+ 206          * @param  pdev: Selected device
+ 207          * @param  cfg_idx: Configuration value
+ 208          * @retval Status
+ 209          */
+ 210          //USBH_Status USBHC_Stdreq_ClearFeature(U8_T devinx,U8_T td_id,U8_T receipient,U16_T wvalue,U16_T windex)
+ 211          //{
+ 212            //1.Fill up Host Channel Table
+ 213          //  HCTD_Channel_Table[td_id].TD_Length = USBHC_SETUP_PKT_SIZE;
+ 214          //  HCTD_Channel_Table[td_id].Total_Length = 0; // no data stage
+ 215          //  HCTD_Channel_Table[td_id].Current_Length = 0;
+ 216          //  HCTD_Channel_Table[td_id].Endp_Size = USBHC_MAX_PACKET_SIZE;
+ 217          
+ 218          //  USB_PDevice[devinx].Hc.Control.Setup.b.bmRequestType = USB_H2D | receipient | USB_REQ_TYPE_STANDARD;
+ 219          //  USB_PDevice[devinx].Hc.Control.Setup.b.bRequest = USB_REQ_CLEAR_FEATURE;
+ 220          //  USB_PDevice[devinx].Hc.Control.Setup.b.wValue.w = Big_Endian_16_Convert(wvalue);
+ 221          //  USB_PDevice[devinx].Hc.Control.Setup.b.wIndex.w = Big_Endian_16_Convert(windex);
+ 222          //  USB_PDevice[devinx].Hc.Control.Setup.b.wLength.w = 0;
+ 223            
+ 224          //  return USBHC_CtlReq(devinx,td_id);
+ 225          //}
+C51 COMPILER V9.60.7.0   USBHC_STDREQ                                                      06/18/2026 10:50:19 PAGE 5   
+
+ 226          
+ 227          /**
+ 228          * @brief  USBH_Get_StringDesc
+ 229          *         Issues string Descriptor command to the device. Once the response 
+ 230          *         received, it parses the string descriptor and updates the status.
+ 231          * @param  pdev: Selected device
+ 232          * @param  string_index: String index for the descriptor
+ 233          * @param  buff: Buffer address for the descriptor
+ 234          * @param  length: Length of the descriptor
+ 235          * @retval Status
+ 236          */
+ 237          USBH_Status USBHC_Stdreq_GetStringDesc(U8_T devinx,U8_T td_id,U8_T string_idx,U8_T length)
+ 238          {
+ 239   1        //1.Fill up Host Channel Table
+ 240   1        HCTD_Channel_Table[td_id].TD_Length = USBHC_SETUP_PKT_SIZE;
+ 241   1        HCTD_Channel_Table[td_id].Total_Length = length; // no data stage
+ 242   1        HCTD_Channel_Table[td_id].Current_Length = 0;
+ 243   1        
+ 244   1        //2.Descriptor Read
+ 245   1        return USBHC_GetDescriptor(devinx,td_id,
+ 246   1        USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_STANDARD,USB_DESC_STRING | string_idx,0,length);
+ 247   1      }
+ 248          
+ 249          /**
+ 250          * @brief  USBHC_Stdreq_SetInterface
+ 251          *         The command sets the feature to the connected device
+ 252          * @param  pdev: Selected device
+ 253          * @param  cfg_idx: Configuration value
+ 254          * @retval Status
+ 255          */
+ 256          USBH_Status USBHC_Stdreq_SetInterface(U8_T devinx,U8_T td_id,U8_T wvalue,U8_T windex)
+ 257          {
+ 258   1        //1.Fill up Host Channel Table
+ 259   1        HCTD_Channel_Table[td_id].TD_Length = USBHC_SETUP_PKT_SIZE;
+ 260   1        HCTD_Channel_Table[td_id].Total_Length = 0; // no data stage
+ 261   1        HCTD_Channel_Table[td_id].Current_Length = 0;
+ 262   1        HCTD_Channel_Table[td_id].Endp_Size = USBHC_MAX_PACKET_SIZE;
+ 263   1        
+ 264   1        USB_PDevice[devinx].Hc.Control.Setup.b.bmRequestType = USB_H2D | USB_REQ_RECIPIENT_INTERFACE | USB_REQ_TY
+             -PE_STANDARD;
+ 265   1        USB_PDevice[devinx].Hc.Control.Setup.b.bRequest = USB_REQ_SET_INTERFACE;
+ 266   1        USB_PDevice[devinx].Hc.Control.Setup.b.wValue.w = Big_Endian_16_Convert((U16_T)wvalue);
+ 267   1        USB_PDevice[devinx].Hc.Control.Setup.b.wIndex.w = Big_Endian_16_Convert((U16_T)windex);
+ 268   1        USB_PDevice[devinx].Hc.Control.Setup.b.wLength.w = 0;
+ 269   1        
+ 270   1        return USBHC_CtlReq(devinx,td_id);
+ 271   1      }
+ 272          
+ 273          /**
+ 274          * @brief  USBHC_Stdreq_PatternCommand
+ 275          * @param  devinx: Selected device
+ 276          * @param  td_id: 
+ 277          * @param  setup: setup packet
+ 278          * @param  length: Length of the setup packet
+ 279          * @retval Status
+ 280          */
+ 281          USBH_Status USBHC_Stdreq_PatternCommand(U8_T devinx,U8_T td_id,U8_T *setup,U16_T length)
+ 282          {
+ 283   1        //USBH_Status status;
+ 284   1        //1.Fill up Host Channel Table
+ 285   1        HCTD_Channel_Table[td_id].TD_Length = USBHC_SETUP_PKT_SIZE;
+ 286   1        HCTD_Channel_Table[td_id].Total_Length = length; // no data stage
+C51 COMPILER V9.60.7.0   USBHC_STDREQ                                                      06/18/2026 10:50:19 PAGE 6   
+
+ 287   1        HCTD_Channel_Table[td_id].Current_Length = 0;
+ 288   1        
+ 289   1        //2.Setup Token Parameter
+ 290   1        memcpy((U8_T *)(&USB_PDevice[devinx].Hc.Control.Setup),setup,8);
+ 291   1        USB_PDevice[devinx].Hc.Control.State = CTRL_SETUP;
+ 292   1        TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_USBHC_Handle_Control_ID,td_id,devinx,1,1); // Generate the Setup S
+             -end command
+ 293   1        return USBH_OK; 
+ 294   1      }
+ 295          
+ 296          /* End of usbhc_stdreq.c */
+ 297          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1303    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      41
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

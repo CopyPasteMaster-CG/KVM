@@ -1,0 +1,730 @@
+C51 COMPILER V9.60.7.0   TASK_MAIN                                                         06/18/2026 10:50:16 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE TASK_MAIN
+OBJECT MODULE PLACED IN .\task_main.obj
+COMPILER INVOKED BY: C:\Users\Administrator\AppData\Local\Keil_v5\C51\BIN\C51.EXE ..\Src\task_man\task_main.c LARGE OMF2
+                    - ROM(D16M) OPTIMIZE(9,SIZE) BROWSE NOAREGS INCDIR(..\src\main\;..\src\cpu\;..\src\flash\;..\src\uart\;..\src\swdma\;..\s
+                    -rc\mstimer\;..\src\i2c\;..\src\spi\;..\src\task_man\;..\src\project\;..\Src\ps2_host;..\Src\console_edid;..\Src\storage;
+                    -..\Src\data_stream;..\Src\kvm_control\kvm_hotkey;..\Src\kvm_control\kvm_console;..\Src\kvm_control\kvm_button;..\Src\kvm
+                    -_control\kvm_edid;..\Src\kvm_control\kvm_buzzer;..\src\gpio\;..\Src\hardware_ps2;..\Src\usbdc;..\Src\usbdc\usbdc_virtual
+                    -;..\Src\usb_std;..\Src\usbhc;..\Src\kvm_control\power_saving;..\Src\usbhc\MSC;..\Src\usbhc\AUDIO;..\Src\usbhc\HUB;..\Src
+                    -\usbhc\HID;..\Src\usbhc\HID_PARSER;..\Src\usbhc\ROOT_HUB;..\Src\usbdc\usbdc_hub;..\Src\usbdc\usbdc_hid;..\Src\kvm_contro
+                    -l\kvm_storage\spi_flash;..\Src\usbdc\usbdc_msc\usb_scsi;..\Src\usbdc\usbdc_msc;..\Src\handler\logitech;..\Src\handler\A4
+                    -_Tech;..\Src\usbdc\usbdc_vendor;..\Src\hsur;..\Src\extender\core;..\Src\extender\receiver;..\Src\uart_console;..\Src\kvm
+                    -_control\km_sync;..\Src\hsur;..\Src\kvm_control\km_log;..\Src\kvm_control\km_api;..\Src\kvm_control\kvm_ir;..\Src\kvm_co
+                    -ntrol\kvm_rtc;..\Src\i2c;..\Src\kvm_control\kvm_multiview) STRING(FAR) DEFINE(RuntimeCodeAt0KH,MCU_TYPE_AX68004,KVM,HC_T
+                    -IMEOUT=10000,VHID,HID_PARSER_CORE_KB,HID_PARSER_CORE_MS,API,NO_AUDIO,NO_MSC,NO_EDID,HUART_BAUD=HUART_115K,SYNC,CROSS_JUM
+                    -P_MAP0,VPID_CHANGER,SYNC_KB_HOTKEY,SYNC_MS_HOTKEY,REPEAT_MODE=1,HSUART,MULTIVIEW) VARBANKING DEBUG PRINT(.\task_main.lst
+                    -) TABS(2) OBJECT(.\task_main.obj)
+
+line level    source
+
+   1          /*
+   2           ******************************************************************************
+   3           *     Copyright (c) 2014 ASIX Electronic Corporation      All rights reserved.
+   4           *
+   5           *     This is an proprietary source code of ASIX Electronic Corporation
+   6           *
+   7           *     The copyright notice above does not evidence any actual or intended
+   8           *     publication of such source code.
+   9           ******************************************************************************
+  10           */
+  11           /*============================================================================
+  12           * Module Name: task_main.c
+  13           * Purpose:
+  14           * Author:
+  15           * Date:
+  16           * Notes:
+  17           *=============================================================================
+  18           */
+  19          /*
+  20           
+  21          */
+  22          /* INCLUDE FILE SECTION */
+  23          /* INCLUDE FILE DECLARATIONS */
+  24          #include  <stdio.h>
+  25          #include  <string.h>
+  26          #include  <stdlib.h>
+  27          #include  "project_include.h"
+  28          
+  29          /* NAMING CONSTANT DECLARATIONS */
+  30          #define TaskControlEnable 0
+  31          
+  32          /* GLOBAL VARIABLES DECLARATIONS */
+  33          bit  Task_MS_Period_Flag;
+  34          U8_T Task_Table_Max;
+  35          U8_T TASK_Type=0,TASK_Event;
+  36          U8_T  TASK_Register0,TASK_Register1,TASK_Register2,TASK_Register3,TASK_Register4,TASK_Active_ID;
+  37          U8_T  Task_Current_Active_ID;
+  38          // Possible ISR Used ------------------------------------------------------------------------
+  39          
+  40          idata volatile U8_T Task_MS_Period_Table_RP, Task_MS_Period_Table_WP;
+  41          idata volatile U8_T Task_Event_Table_RP, Task_Event_Table_WP;
+  42          idata volatile U8_T Task_USB_Table_RP, Task_USB_Table_WP;
+C51 COMPILER V9.60.7.0   TASK_MAIN                                                         06/18/2026 10:50:16 PAGE 2   
+
+  43          idata volatile U8_T Task_USB_Counter, Task_Event_Counter;
+  44          volatile U8_T Task_Search[TASK_SEARCH_MAX];
+  45          
+  46          
+  47          TASK_TypeDef Task_Table[TASK_TABLE_MAX];
+  48          U8_T  Task_MS_Period_Table[TASK_TABLE_MS_PERIOD_MAX];
+  49          U8_T  Task_Event_Table[TASK_TABLE_EVENT_MAX];
+  50          U8_T  Task_USB_Table[TASK_TABLE_USB_MAX];
+  51          
+  52          TASK_ActiveTable_TypeDef    Task_Active_Table[TASK_ACTIVE_MAX];
+  53          
+  54          /* LOCAL VARIABLES DECLARATIONS */
+  55          /* LOCAL SUBPROGRAM DECLARATIONS */
+  56          U8_T TASK_Malloc(U8_T *freeid); 
+  57          void TASK_Free(U8_T freeid); 
+  58          /* EXTERNAL GLOBAL VARIABLES DECLARATIONS */
+  59          /* EXTERNAL SUBPROGRAM DECLARATIONS */
+  60          
+  61          /*
+  62           * ----------------------------------------------------------------------------
+  63           * Function Name: Task_Init
+  64           * Purpose: initial the task manager system  
+  65           * Params:  NONE
+  66           * Returns: NONE
+  67           * Note:
+  68           * ----------------------------------------------------------------------------
+  69           */
+  70          void TASK_Init(void)
+  71          {
+  72   1        Task_Table_Max = 0;
+  73   1        Task_MS_Period_Table_RP = 0;
+  74   1        Task_MS_Period_Table_WP = 0;
+  75   1        Task_Event_Table_RP = 0;
+  76   1        Task_Event_Table_WP = 0;
+  77   1        Task_USB_Table_RP = 0;
+  78   1        Task_USB_Table_WP = 0;
+  79   1        Task_MS_Period_Flag = 0;
+  80   1        Task_Event_Counter = 0;
+  81   1        Task_USB_Counter = 0;  
+  82   1        memset(Task_Search,0x00,sizeof(Task_Search));
+  83   1      }
+  84          
+  85          /*
+  86           * ----------------------------------------------------------------------------
+  87           * void TASK_Kill_MS_Period(U8_T taskid)
+  88           * Purpose: internal used in task system control, this function will
+  89           *          remove the task, and adjust the table
+  90           * Params:  taskid: the active task id need to be free
+  91           * Returns: NONE
+  92           * Note:
+  93           * ----------------------------------------------------------------------------
+  94           */
+  95          void TASK_Kill_MS_Period(U8_T taskid)
+  96          {
+  97   1        U8_T remain,wp;
+  98   1      
+  99   1        TASK_Free(taskid);
+ 100   1        wp = Task_MS_Period_Table_WP - 1;
+ 101   1        for (remain = Task_MS_Period_Table_RP; remain < wp ; remain++)
+ 102   1        {
+ 103   2          Task_MS_Period_Table[remain] = Task_MS_Period_Table[remain+1];
+ 104   2        }
+C51 COMPILER V9.60.7.0   TASK_MAIN                                                         06/18/2026 10:50:16 PAGE 3   
+
+ 105   1        Task_MS_Period_Table_WP = wp;
+ 106   1      }
+ 107          
+ 108          /*
+ 109           * ----------------------------------------------------------------------------
+ 110           * Function Name: TASK_Period_MS_Maintain
+ 111           * Purpose: MS period Table maitain
+ 112           * Params:  NONE
+ 113           * Returns: NONE
+ 114           * Note:
+ 115           * ----------------------------------------------------------------------------
+ 116           */
+ 117          void TASK_Period_MS_Maintain(void)
+ 118          {
+ 119   1        U8_T activeId, index, found=0;
+ 120   1      
+ 121   1        for (index=0; index < Task_MS_Period_Table_WP; index++)
+ 122   1        {
+ 123   2          activeId = Task_MS_Period_Table[index];
+ 124   2          if (Task_Active_Table[activeId].Task_Interval.w)
+ 125   2          {
+ 126   3            Task_Active_Table[activeId].Task_Interval.w--;
+ 127   3          }
+ 128   2          /* Update the pointer to point to the first task of time expired */
+ 129   2          if (!found && Task_Active_Table[activeId].Task_Interval.w == 0)
+ 130   2          {
+ 131   3      #if (TaskControlEnable)
+                    if (Task_Active_Table[activeId].taskCtrl & TASK_EVENT_SKIP == 0) //for external kill
+              #else
+ 134   3            if ((Task_Active_Table[activeId].Task_Event & TASK_EVENT_SKIP) == 0)
+ 135   3      #endif
+ 136   3            {
+ 137   4              Task_MS_Period_Table_RP = index;
+ 138   4              found = 1;
+ 139   4            }
+ 140   3          }
+ 141   2        }
+ 142   1      }
+ 143          
+ 144          /*
+ 145           * ----------------------------------------------------------------------------
+ 146           * Function Name: Task_Period_MS_Main
+ 147           * Purpose: MS period Table management mian program
+ 148           * Params:  NONE
+ 149           * Returns: NONE
+ 150           * Note:
+ 151           * ----------------------------------------------------------------------------
+ 152           */
+ 153          void TASK_MS_Period_Main(void)
+ 154          {
+ 155   1        U8_T taskid;
+ 156   1      
+ 157   1        taskid = Task_MS_Period_Table[Task_MS_Period_Table_RP];
+ 158   1      #if (TaskControlEnable)
+                if ((Task_Active_Table[taskid].taskCtrl & (TASK_EVENT_DESTORY|TASK_EVENT_SKIP)) == 0x00)
+              #else
+ 161   1        if ((Task_Active_Table[taskid].Task_Event & (TASK_EVENT_DESTORY|TASK_EVENT_SKIP)) == 0x00)
+ 162   1      #endif
+ 163   1        {
+ 164   2          if (Task_Active_Table[taskid].Task_Interval.w == 0)
+ 165   2          {
+ 166   3            TASK_Event = Task_Active_Table[taskid].Task_Event;
+C51 COMPILER V9.60.7.0   TASK_MAIN                                                         06/18/2026 10:50:16 PAGE 4   
+
+ 167   3            TASK_Register0 = Task_Active_Table[taskid].Task_Para;
+ 168   3            TASK_Active_ID = taskid;
+ 169   3            TASK_Type = TASK_TYPE_INTERVAL_MS;
+ 170   3            Task_Table[Task_Active_Table[taskid].Task_ID].Task_FunctionP();
+ 171   3      
+ 172   3            // Check for next loop still active control status
+ 173   3      #if (TaskControlEnable)
+                    if ((Task_Active_Table[taskid].taskCtrl & TASK_EVENT_ACTIVE) == 0x00)
+              #else
+ 176   3            if ((Task_Active_Table[taskid].Task_Event & TASK_EVENT_ACTIVE) == 0x00)
+ 177   3      #endif
+ 178   3            {
+ 179   4              Task_Active_Table[taskid].Task_Interval.w = Task_Active_Table[taskid].Task_Reload.w;
+ 180   4            }
+ 181   3            else
+ 182   3            {
+ 183   4      #if (TaskControlEnable)
+                      Task_Active_Table[taskid].taskCtrl &= ~TASK_EVENT_ACTIVE;
+              #else
+ 186   4              Task_Active_Table[taskid].Task_Event &= ~TASK_EVENT_ACTIVE;
+ 187   4      #endif
+ 188   4            }
+ 189   3          }
+ 190   2        }
+ 191   1      #if (TaskControlEnable)
+                else if (Task_Active_Table[taskid].taskCtrl & TASK_EVENT_SKIP)
+              #else
+ 194   1        else if (Task_Active_Table[taskid].Task_Event & TASK_EVENT_SKIP)
+ 195   1      #endif
+ 196   1        {
+ 197   2          if (Task_Active_Table[taskid].Task_Interval.w == 0)
+ 198   2            Task_Active_Table[taskid].Task_Interval.w = Task_Active_Table[taskid].Task_Reload.w;
+ 199   2        }
+ 200   1        // Check for Task Destory status
+ 201   1      #if (TaskControlEnable)
+                if (Task_Active_Table[taskid].taskCtrl & TASK_EVENT_DESTORY) //for external kill
+              #else
+ 204   1        if (Task_Active_Table[taskid].Task_Event & TASK_EVENT_DESTORY) //for external kill
+ 205   1      #endif
+ 206   1        {
+ 207   2          TASK_Kill_MS_Period(taskid);
+ 208   2        }
+ 209   1        else
+ 210   1        {
+ 211   2          Task_MS_Period_Table_RP++;
+ 212   2        }
+ 213   1        
+ 214   1        if (Task_MS_Period_Table_RP >= Task_MS_Period_Table_WP)
+ 215   1        {
+ 216   2          Task_MS_Period_Table_RP = 0;
+ 217   2        }
+ 218   1      }
+ 219          
+ 220          /*
+ 221           * ----------------------------------------------------------------------------
+ 222           * Function Name: Task_Event_Main
+ 223           * Purpose: Event Task management main program
+ 224           * Params:  NONE
+ 225           * Returns: NONE
+ 226           * Note:
+ 227           * ----------------------------------------------------------------------------
+ 228           */
+C51 COMPILER V9.60.7.0   TASK_MAIN                                                         06/18/2026 10:50:16 PAGE 5   
+
+ 229          void TASK_Event_Main(void)
+ 230          {
+ 231   1        U8_T activeId;
+ 232   1      
+ 233   1        activeId = Task_Event_Table[Task_Event_Table_RP];
+ 234   1      #if (TaskControlEnable)
+                if ((Task_Active_Table[activeId].taskCtrl & (TASK_EVENT_DESTORY | TASK_EVENT_SKIP)) == 0)
+              #else
+ 237   1        if ((Task_Active_Table[activeId].Task_Event & (TASK_EVENT_DESTORY|TASK_EVENT_SKIP)) == 0x00)
+ 238   1      #endif
+ 239   1        {
+ 240   2          TASK_Type = TASK_TYPE_EVENT;
+ 241   2          TASK_Event = Task_Active_Table[activeId].Task_Event;
+ 242   2          TASK_Register0 = Task_Active_Table[activeId].Task_Para;
+ 243   2          TASK_Register1 = Task_Active_Table[activeId].Task_Interval.bw.msb;
+ 244   2          TASK_Register2 = Task_Active_Table[activeId].Task_Interval.bw.lsb;
+ 245   2          TASK_Register3 = Task_Active_Table[activeId].Task_Reload.bw.msb;
+ 246   2          TASK_Register4 = Task_Active_Table[activeId].Task_Reload.bw.lsb;
+ 247   2          TASK_Active_ID = activeId;
+ 248   2          Task_Table[Task_Active_Table[activeId].Task_ID].Task_FunctionP();
+ 249   2      #if (TaskControlEnable)
+                  if (Task_Active_Table[activeId].taskCtrl & TASK_EVENT_WAIT)
+              #else
+ 252   2          if (Task_Active_Table[activeId].Task_Event & TASK_EVENT_WAIT)
+ 253   2      #endif
+ 254   2          {
+ 255   3      #if (TaskControlEnable)
+                    Task_Active_Table[activeId].taskCtrl &= ~TASK_EVENT_WAIT;
+              #else
+ 258   3            Task_Active_Table[activeId].Task_Event &= ~TASK_EVENT_WAIT;
+ 259   3      #endif
+ 260   3            if (Task_Event_Counter < (TASK_TABLE_EVENT_MAX - 1))
+ 261   3            {
+ 262   4              Task_Event_Table[Task_Event_Table_WP] = TASK_Active_ID;
+ 263   4              if (++Task_Event_Table_WP >= TASK_TABLE_EVENT_MAX)
+ 264   4              {
+ 265   5                Task_Event_Table_WP = 0;
+ 266   5              }
+ 267   4              Task_Event_Counter++;
+ 268   4            }
+ 269   3            else
+ 270   3            {
+ 271   4              printf("TASK_Event_Main(): !!! SYSTEM ERROR:TASK_EVENT OVERFLOW[%bu] !!!\n\r",Task_Active_Table[active
+             -Id].Task_ID);
+ 272   4              TASK_Free(activeId);
+ 273   4      #if (SYSTEM_TASK_DUMP_SUPPORT)
+                      TASK_Table_Dump(TASK_TYPE_EVENT);
+                      Main_System_Halt();
+              #endif
+ 277   4            }
+ 278   3          }
+ 279   2          else
+ 280   2          {
+ 281   3            TASK_Free(activeId);
+ 282   3          }
+ 283   2        }
+ 284   1        else
+ 285   1        {
+ 286   2          TASK_Free(activeId);
+ 287   2        }
+ 288   1      
+ 289   1        if (Task_Event_Counter)
+C51 COMPILER V9.60.7.0   TASK_MAIN                                                         06/18/2026 10:50:16 PAGE 6   
+
+ 290   1        {
+ 291   2          Task_Event_Counter--;
+ 292   2        }
+ 293   1      
+ 294   1        //Chek next task
+ 295   1        if (++Task_Event_Table_RP >= TASK_TABLE_EVENT_MAX)
+ 296   1        {
+ 297   2          Task_Event_Table_RP = 0;
+ 298   2        }
+ 299   1      }
+ 300          
+ 301          /*
+ 302           * ----------------------------------------------------------------------------
+ 303           * Function Name: Task_USB_Main
+ 304           * Purpose: USB Task management main program
+ 305           * Params:  NONE
+ 306           * Returns: NONE
+ 307           * Note:
+ 308           * ----------------------------------------------------------------------------
+ 309           */
+ 310          void TASK_USB_Main(void)
+ 311          {
+ 312   1        U8_T taskid;
+ 313   1      
+ 314   1        taskid = Task_USB_Table[Task_USB_Table_RP];
+ 315   1      #if (TaskControlEnable)
+                if ((Task_Active_Table[taskid].taskCtrl & (TASK_EVENT_DESTORY|TASK_EVENT_SKIP)) == 0)
+              #else
+ 318   1        if ((Task_Active_Table[taskid].Task_Event & (TASK_EVENT_DESTORY|TASK_EVENT_SKIP)) == 0x00)
+ 319   1      #endif
+ 320   1        { 
+ 321   2          TASK_Type = TASK_TYPE_USB;
+ 322   2          TASK_Event = Task_Active_Table[taskid].Task_Event;
+ 323   2          TASK_Register0 = Task_Active_Table[taskid].Task_Para;
+ 324   2          TASK_Register1 = Task_Active_Table[taskid].Task_Interval.bw.msb;
+ 325   2          TASK_Register2 = Task_Active_Table[taskid].Task_Interval.bw.lsb;
+ 326   2          TASK_Register3 = Task_Active_Table[taskid].Task_Reload.bw.msb;
+ 327   2          TASK_Register4 = Task_Active_Table[taskid].Task_Reload.bw.lsb;
+ 328   2          TASK_Active_ID = taskid;
+ 329   2          Task_Table[Task_Active_Table[taskid].Task_ID].Task_FunctionP();
+ 330   2        }
+ 331   1      
+ 332   1        TASK_Free(taskid);
+ 333   1        Task_USB_Table_RP++;  //Chek next task
+ 334   1        if (Task_USB_Table_RP >= TASK_TABLE_USB_MAX)
+ 335   1        {
+ 336   2          Task_USB_Table_RP = 0;
+ 337   2        }
+ 338   1      
+ 339   1        if (Task_USB_Counter)
+ 340   1          Task_USB_Counter--; // reset the counter
+ 341   1      
+ 342   1      }
+ 343          
+ 344          /*
+ 345           * ----------------------------------------------------------------------------
+ 346           * Function Name: TASK_Active
+ 347           * Purpose: Append a Task to task manager
+ 348           * Params: $task_type-TASK_TYPE_INTERVAL_MS
+ 349           *          TASK_TYPE_EVENT
+ 350           *          TASK_TYPE_USB
+ 351           *      $task_id- 0~255
+C51 COMPILER V9.60.7.0   TASK_MAIN                                                         06/18/2026 10:50:16 PAGE 7   
+
+ 352           *      $task_interval- 1~65535
+ 353           *      $task_reload- 1~65535
+ 354           * Returns: 1-Success
+ 355           * Note:
+ 356           * ----------------------------------------------------------------------------
+ 357           */
+ 358          U8_T TASK_Active(U8_T task_type,U8_T task_id,U8_T task_event,U8_T task_para,U16_T task_interval,U16_T task
+             -_reload)
+ 359          { 
+ 360   1        U8_T rtn_id=0,freeid; 
+ 361   1      
+ 362   1        if (TASK_Malloc(&freeid))
+ 363   1        {
+ 364   2          rtn_id = freeid;
+ 365   2          Task_Active_Table[freeid].Task_ID = task_id;
+ 366   2          Task_Active_Table[freeid].Task_Event = task_event;
+ 367   2          Task_Active_Table[freeid].taskCtrl = 0;
+ 368   2          Task_Active_Table[freeid].Task_Para = task_para;
+ 369   2          Task_Active_Table[freeid].Task_Interval.w = task_interval;
+ 370   2          Task_Active_Table[freeid].Task_Reload.w = task_reload;
+ 371   2          switch(task_type)
+ 372   2          {
+ 373   3            case TASK_TYPE_USB:
+ 374   3              if (Task_USB_Counter < (TASK_TABLE_USB_MAX-1))
+ 375   3              {
+ 376   4                Task_USB_Table[Task_USB_Table_WP] = freeid;
+ 377   4                Task_USB_Table_WP++;
+ 378   4                if (Task_USB_Table_WP >= TASK_TABLE_USB_MAX)
+ 379   4                  Task_USB_Table_WP = 0;
+ 380   4      
+ 381   4                Task_USB_Counter++;
+ 382   4              }
+ 383   3              else
+ 384   3              {
+ 385   4                
+ 386   4                printf("!!! SYSTEM ERROR:TASK_USB OVERFLOW !!!\n\r");
+ 387   4                TASK_Free(freeid);
+ 388   4      #if (SYSTEM_TASK_DUMP_SUPPORT)
+                        TASK_Table_Dump(TASK_TYPE_USB);
+                        Main_System_Halt();
+              #endif
+ 392   4                return 0xff;
+ 393   4              }
+ 394   3              break;
+ 395   3            case TASK_TYPE_EVENT:
+ 396   3              if (Task_Event_Counter < (TASK_TABLE_EVENT_MAX-1))
+ 397   3              {
+ 398   4                Task_Event_Table[Task_Event_Table_WP] = freeid;
+ 399   4                if (++Task_Event_Table_WP >= TASK_TABLE_EVENT_MAX)
+ 400   4                {
+ 401   5                  Task_Event_Table_WP = 0;
+ 402   5                }
+ 403   4                Task_Event_Counter++; 
+ 404   4                break;
+ 405   4              }
+ 406   3              else
+ 407   3              {
+ 408   4                printf("TASK_Active(): !!! SYSTEM ERROR:TASK_EVENT OVERFLOW[%bu] !!!\n\r",freeid);
+ 409   4                TASK_Free(freeid);
+ 410   4      #if (SYSTEM_TASK_DUMP_SUPPORT)
+                        TASK_Table_Dump(TASK_TYPE_EVENT);
+                        Main_System_Halt();
+C51 COMPILER V9.60.7.0   TASK_MAIN                                                         06/18/2026 10:50:16 PAGE 8   
+
+              #endif
+ 414   4                return 0xff;
+ 415   4              }
+ 416   3              break;
+ 417   3            case TASK_TYPE_INTERVAL_MS:
+ 418   3              if (Task_MS_Period_Table_WP < TASK_TABLE_MS_PERIOD_MAX)
+ 419   3              {
+ 420   4                Task_MS_Period_Table[Task_MS_Period_Table_WP] = freeid;
+ 421   4                Task_MS_Period_Table_WP++;
+ 422   4              }
+ 423   3              else
+ 424   3              {         
+ 425   4                printf("!!! SYSTEM ERROR:TASK_MS_INTERVAL OVERFLOW !!!\n\r");
+ 426   4                TASK_Free(freeid);
+ 427   4      #if (SYSTEM_TASK_DUMP_SUPPORT)
+                        TASK_Table_Dump(TASK_TYPE_INTERVAL_MS);
+                        Main_System_Halt();
+              #endif
+ 431   4                return 0xff;
+ 432   4              }
+ 433   3              break;
+ 434   3          }
+ 435   2        }
+ 436   1        else
+ 437   1        {   
+ 438   2          printf("!!! TASK_ERROR:TASK_Malloc(),NO FREE ID !!!\n\r");
+ 439   2          return 0xff;
+ 440   2        }
+ 441   1        return rtn_id;
+ 442   1      }
+ 443          
+ 444          /*
+ 445           * ----------------------------------------------------------------------------
+ 446           * Function Name: Task_Kill
+ 447           * Purpose: Create a task in Task_Table
+ 448           * Returns: 1-Success
+ 449           * Note:
+ 450           * ----------------------------------------------------------------------------
+ 451           */
+ 452          U8_T TASK_Create(void *functionp)
+ 453          {
+ 454   1        if (Task_Table_Max >= TASK_TABLE_MAX)
+ 455   1        {
+ 456   2          return 0;
+ 457   2        }
+ 458   1      
+ 459   1        Task_Table[Task_Table_Max].Task_FunctionP = functionp;
+ 460   1        Task_Table_Max++;
+ 461   1      
+ 462   1        return (Task_Table_Max-1);
+ 463   1      }
+ 464          
+ 465          /*
+ 466           * ----------------------------------------------------------------------------
+ 467           * Function Name: TASK_Table_Dump
+ 468           * Purpose: routine 1 sec task
+ 469           * Params: $task_type-TASK_TYPE_INTERVAL_MS
+ 470           *          TASK_TYPE_EVENT
+ 471           *          TASK_TYPE_USB
+ 472           *      $task_id- 0~255
+ 473           *      $task_interval- 1~65535
+ 474           *      $task_reload- 1~65535
+C51 COMPILER V9.60.7.0   TASK_MAIN                                                         06/18/2026 10:50:16 PAGE 9   
+
+ 475           * Returns: 1-Success
+ 476           * Note:
+ 477           * ----------------------------------------------------------------------------
+ 478           */
+ 479          #if (SYSTEM_TASK_DUMP_SUPPORT)
+              void TASK_Table_Dump(U8_T task_type)
+              {
+                U8_T rp;
+              
+                if (task_type == TASK_TYPE_USB)
+                {
+                  printf("--------------------\n\r");
+                  printf("|  Task USB Table  |\n\r");
+                  printf("--------------------\n\r");
+                  printf("No TaskID Event Para\n\r");
+                  printf("== ====== ===== ====\n\r");
+                  rp = Task_USB_Table_RP;
+                  while (rp != Task_USB_Table_WP)
+                  {
+                    printf("%02bu "   ,rp);
+                    printf("  %02bu  ",Task_USB_Table[rp]);     
+                    printf("%02bu\n\r",Task_Active_Table[Task_USB_Table[rp]].Task_ID);      
+                    ++rp;
+                    if (rp >= TASK_TABLE_USB_MAX)
+                      rp = 0;
+                  }
+                  return;
+                }
+              
+                if (task_type == TASK_TYPE_EVENT)
+                {
+                  printf("--------------------\n\r");
+                  printf("| Task Event Table |\n\r");
+                  printf("\n\r");
+                  printf("No TaskID Event Para\n\r");
+                  printf("== ====== ===== ====\n\r");
+                  rp = Task_Event_Table_RP;
+                  while (rp != Task_Event_Table_WP)
+                  {
+                    printf("%02bu "   ,rp);
+                    printf("  %02bu " ,Task_Event_Table[rp]);     
+                    printf("%02bu\n\r",Task_Active_Table[Task_Event_Table[rp]].Task_ID);      
+                    ++rp;
+                    if (rp >= TASK_TABLE_EVENT_MAX)
+                      rp = 0;
+                  }
+                  return;
+                }
+              
+                if (task_type == TASK_TYPE_INTERVAL_MS)
+                {
+                  printf("-------------------------------------\n\r");
+                  printf("        Task MS Period Table         \n\r");
+                  printf("\n\r");
+                  printf("No TaskID Event Para Interval Reload\n\r");
+                  printf("== ====== ===== ==== ======== ======\n\r");
+                  rp = 0;
+                  for (rp=0; rp < Task_MS_Period_Table_WP ; rp++)
+                  {
+                    printf("%02bu   " ,rp);
+                    printf("%02bu   " ,Task_MS_Period_Table[rp]);     
+                    printf("%02bu\n\r",Task_Active_Table[Task_MS_Period_Table[rp]].Task_ID);
+C51 COMPILER V9.60.7.0   TASK_MAIN                                                         06/18/2026 10:50:16 PAGE 10  
+
+                  }
+                  return;
+                }
+              }
+              #endif
+ 542          
+ 543          /*
+ 544           * ----------------------------------------------------------------------------
+ 545           * Function Name: TASK_Destory_Current
+ 546           * Purpose: Destory the current task, only type of INTERVLA_MS
+ 547           * Returns: void
+ 548           * Note:
+ 549           * ----------------------------------------------------------------------------
+ 550           */
+ 551          void TASK_Destory_Current(void)
+ 552          {
+ 553   1      #if (TaskControlEnable)
+                Task_Active_Table[TASK_Active_ID].taskCtrl |= TASK_EVENT_DESTORY;
+              #else
+ 556   1        Task_Active_Table[TASK_Active_ID].Task_Event |= TASK_EVENT_DESTORY;
+ 557   1      #endif
+ 558   1      }
+ 559          
+ 560          /*
+ 561           * ----------------------------------------------------------------------------
+ 562           * Function Name: TASK_Destory_Task
+ 563           * Purpose: Destory the specific task
+ 564           * Returns: void
+ 565           * Note:
+ 566           * ----------------------------------------------------------------------------
+ 567           */
+ 568          void TASK_Destory_Task(U8_T taskId)
+ 569          {
+ 570   1      #if (TaskControlEnable)
+                Task_Active_Table[taskId].taskCtrl |= TASK_EVENT_DESTORY;
+              #else
+ 573   1        Task_Active_Table[taskId].Task_Event |= TASK_EVENT_DESTORY;
+ 574   1      #endif
+ 575   1      }
+ 576          
+ 577          /*
+ 578           * ----------------------------------------------------------------------------
+ 579           * Function Name: TASK_Wait_Current
+ 580           * Purpose: Keep alive and wait for next time
+ 581           * Returns: void
+ 582           * Note:
+ 583           * ----------------------------------------------------------------------------
+ 584           */
+ 585          void TASK_Wait_Current(void)
+ 586          {
+ 587   1      #if (TaskControlEnable)
+                Task_Active_Table[TASK_Active_ID].taskCtrl |= TASK_EVENT_WAIT;
+              #else
+ 590   1        Task_Active_Table[TASK_Active_ID].Task_Event |= TASK_EVENT_WAIT;
+ 591   1      #endif
+ 592   1      }
+ 593          
+ 594          /*
+ 595           * ----------------------------------------------------------------------------
+ 596           * U8_T TASK_Malloc(U8_T *freeid)
+ 597           * Purpose: 
+ 598           * Returns:
+C51 COMPILER V9.60.7.0   TASK_MAIN                                                         06/18/2026 10:50:16 PAGE 11  
+
+ 599           * Note:
+ 600           * ----------------------------------------------------------------------------
+ 601           */
+ 602          static U8_T TASK_Malloc(U8_T *freeid)
+ 603          {
+ 604   1        U8_T index,bidx,bitmap;
+ 605   1      
+ 606   1        for(index=0; index < TASK_SEARCH_MAX ; index++)
+ 607   1        {
+ 608   2          if (Task_Search[index] != 0xff )
+ 609   2          {
+ 610   3            for (bidx=0; bidx < 8 ; bidx++)
+ 611   3            {
+ 612   4              bitmap = 0x01 << bidx;
+ 613   4              if ((Task_Search[index] & bitmap) == 0x00)
+ 614   4              {
+ 615   5                Task_Search[index] |= bitmap;
+ 616   5                *freeid = (index <<3) + bidx;
+ 617   5                return 1;
+ 618   5              }
+ 619   4            }
+ 620   3          }
+ 621   2        }
+ 622   1      
+ 623   1        return 0;
+ 624   1      }
+ 625          
+ 626          /*
+ 627           * ----------------------------------------------------------------------------
+ 628           * void TASK_Free(U8_T freeid)
+ 629           * Purpose: Free the task from active table
+ 630           * Returns: void
+ 631           * Note:
+ 632           * ----------------------------------------------------------------------------
+ 633           */
+ 634          static void TASK_Free(U8_T freeid)
+ 635          {
+ 636   1        U8_T byte_inx,bitmpa;
+ 637   1      
+ 638   1        byte_inx = freeid >> 3;
+ 639   1        bitmpa = 0x01 << (freeid & 0x07);
+ 640   1        Task_Search[byte_inx] &= ~bitmpa;
+ 641   1      #if (TaskControlEnable)
+                Task_Active_Table[freeid].taskCtrl |= TASK_EVENT_DESTORY;
+              #else
+ 644   1        Task_Active_Table[freeid].Task_Event |= TASK_EVENT_DESTORY;
+ 645   1      #endif
+ 646   1      }
+ 647          
+ 648          /*
+ 649           * ----------------------------------------------------------------------------
+ 650           * U8_T TASK_Run(TASK_ActiveTable_TypeDef *task)
+ 651           * Purpose: 
+ 652           * Returns: 
+ 653           * Note:
+ 654           * ----------------------------------------------------------------------------
+ 655           */
+ 656          U8_T TASK_Run(TASK_ActiveTable_TypeDef *task)
+ 657          {
+ 658   1        U8_T rtn_id;
+ 659   1      
+ 660   1        rtn_id = TASK_Active(task->Task_Type,task->Task_ID,task->Task_Event,task->Task_Para,task->Task_Interval.w
+C51 COMPILER V9.60.7.0   TASK_MAIN                                                         06/18/2026 10:50:16 PAGE 12  
+
+             -,task->Task_Reload.w);
+ 661   1      
+ 662   1        return rtn_id;
+ 663   1      }
+ 664          
+ 665          /* End of task_main.c */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1581    ----
+   CONSTANT SIZE    =    266    ----
+   XDATA SIZE       =   1754      19
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =      8    ----
+   BIT SIZE         =      1    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =    266    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

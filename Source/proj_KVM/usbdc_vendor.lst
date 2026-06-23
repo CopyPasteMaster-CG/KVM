@@ -1,0 +1,209 @@
+C51 COMPILER V9.60.7.0   USBDC_VENDOR                                                      06/18/2026 10:50:21 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBDC_VENDOR
+OBJECT MODULE PLACED IN .\usbdc_vendor.obj
+COMPILER INVOKED BY: C:\Users\Administrator\AppData\Local\Keil_v5\C51\BIN\C51.EXE ..\Src\usbdc\usbdc_vendor\usbdc_vendor
+                    -.c LARGE OMF2 ROM(D16M) OPTIMIZE(9,SIZE) BROWSE NOAREGS INCDIR(..\src\main\;..\src\cpu\;..\src\flash\;..\src\uart\;..\sr
+                    -c\swdma\;..\src\mstimer\;..\src\i2c\;..\src\spi\;..\src\task_man\;..\src\project\;..\Src\ps2_host;..\Src\console_edid;..
+                    -\Src\storage;..\Src\data_stream;..\Src\kvm_control\kvm_hotkey;..\Src\kvm_control\kvm_console;..\Src\kvm_control\kvm_butt
+                    -on;..\Src\kvm_control\kvm_edid;..\Src\kvm_control\kvm_buzzer;..\src\gpio\;..\Src\hardware_ps2;..\Src\usbdc;..\Src\usbdc\
+                    -usbdc_virtual;..\Src\usb_std;..\Src\usbhc;..\Src\kvm_control\power_saving;..\Src\usbhc\MSC;..\Src\usbhc\AUDIO;..\Src\usb
+                    -hc\HUB;..\Src\usbhc\HID;..\Src\usbhc\HID_PARSER;..\Src\usbhc\ROOT_HUB;..\Src\usbdc\usbdc_hub;..\Src\usbdc\usbdc_hid;..\S
+                    -rc\kvm_control\kvm_storage\spi_flash;..\Src\usbdc\usbdc_msc\usb_scsi;..\Src\usbdc\usbdc_msc;..\Src\handler\logitech;..\S
+                    -rc\handler\A4_Tech;..\Src\usbdc\usbdc_vendor;..\Src\hsur;..\Src\extender\core;..\Src\extender\receiver;..\Src\uart_conso
+                    -le;..\Src\kvm_control\km_sync;..\Src\hsur;..\Src\kvm_control\km_log;..\Src\kvm_control\km_api;..\Src\kvm_control\kvm_ir;
+                    -..\Src\kvm_control\kvm_rtc;..\Src\i2c;..\Src\kvm_control\kvm_multiview) STRING(FAR) DEFINE(RuntimeCodeAt0KH,MCU_TYPE_AX6
+                    -8004,KVM,HC_TIMEOUT=10000,VHID,HID_PARSER_CORE_KB,HID_PARSER_CORE_MS,API,NO_AUDIO,NO_MSC,NO_EDID,HUART_BAUD=HUART_115K,S
+                    -YNC,CROSS_JUMP_MAP0,VPID_CHANGER,SYNC_KB_HOTKEY,SYNC_MS_HOTKEY,REPEAT_MODE=1,HSUART,MULTIVIEW) VARBANKING DEBUG PRINT(.\
+                    -usbdc_vendor.lst) TABS(2) OBJECT(.\usbdc_vendor.obj)
+
+line level    source
+
+   1          /*
+   2           ******************************************************************************
+   3           *     Copyright (c) 2014 ASIX Electronic Corporation      All rights reserved.
+   4           *
+   5           *     This is an proprietary source code of ASIX Electronic Corporation
+   6           *
+   7           *     The copyright notice above does not evidence any actual or intended
+   8           *     publication of such source code.
+   9           ******************************************************************************
+  10           */
+  11           /*============================================================================
+  12           * Module Name: usbdc_vendor.c
+  13           * Purpose: The USB DC Vendor Command Control & Managment program
+  14           * Author:
+  15           * Date:
+  16           * Notes:
+  17           *============================================================================= 
+  18           Offset Field         Size Value Description 
+  19           ------ ------------- ---- -----------------------------------------------------
+  20           Value  => LSB=Command,MSB=Paramter
+  21            0x01 => Report
+  22                 MSB--------------------------------------
+  23               0x01=> Boot Loader Version Number Report
+  24               0x02=> KVM Firmware System Version Number Report
+  25               0x03=> Ative Port Report
+  26               0x04=> Host Status Report => INDEX=PortID
+  27            
+  28            0x02 => System Control
+  29               MSB--------------------------------------
+  30               0x01=> System Configuration Table Read
+  31               0x02=> AutoScan Start
+  32               0x03=> AutoScan Stop
+  33               0x04=> Autoscan Inverval Setting
+  34               0x05=> Beeper Control => INDEX=ON/OFF
+  35               0x06=> Beeper Sound   => INDEX=Counter
+  36               0x07=> Pen Drive Enable => INDEX=Port Number
+  37               0x08=> Pen Drive Disable
+  38               0x09=> MSC Devcie Enable => INDEX=Port Number
+  39               0x0a=> MSC Devcie Disable
+  40               0x0b=> Audio+Port Combo Switch => INDEX=ON/OFF
+  41               .
+  42               .
+C51 COMPILER V9.60.7.0   USBDC_VENDOR                                                      06/18/2026 10:50:21 PAGE 2   
+
+  43               .
+  44               .
+  45               .
+  46               
+  47            0x03 => Switch Control
+  48                 MSB--------------------------------------
+  49               0x01=> KVM Active Port Switch  
+  50               0x02=> Audio Switch  
+  51               0x03=> MSC Switch
+  52               0x04=> PEN Drive Switch    
+  53               
+  54               
+  55            0x04 => Register Read
+  56               MSB--------------------------------------
+  57               0x01=> Register Address
+  58            
+  59            0x05 => Register Write    
+  60                 MSB--------------------------------------
+  61               0x01=> Register Address   
+  62           
+  63           */
+  64          /*
+  65           
+  66          */
+  67          /* INCLUDE FILE SECTION               */
+  68          #include  <string.h>
+  69          #include  <stdio.h>
+  70          #include  <stdlib.h>
+  71          #include  <absacc.h>
+  72          #include  "project_include.h"
+  73          
+  74          #if (SYSTEM_VENDOR_COMMAND_SUPPORT)
+              /* NAMING CONSTANT DECLARATIONS           */
+              /* GLOBAL VARIABLES DECLARATIONS          */
+              U8_T  KVM_Vendor_State[10];
+              /* LOCAL VARIABLES DECLARATIONS           */
+              /* LOCAL SUBPROGRAM DECLARATIONS          */ 
+              /* EXTERNAL GLOBAL VARIABLES DECLARATIONS       */
+              /* EXTERNAL SUBPROGRAM DECLARATIONS         */
+              
+              /*******************************************************************************
+              * Function Name  : USBDC_Vendor_Command_Handle.
+              * Description    : Handle the Vendor Command
+              * Input          : None.
+              * Output         : None.
+              * Return         : None.
+              *******************************************************************************/
+              RESULT USBDC_Vendor_Command_Handle(U8_T devinx,U8_T port)
+              {
+              #ifdef RuntimeCodeAt12KH
+                U8_T indx;
+              #endif
+                RESULT result=USB_UNSUPPORT;
+                
+                switch(wValue_L) //command
+                {
+                  case VENDOR_REPORT:
+                    switch(wValue_H)
+                    {
+              #ifdef RuntimeCodeAt12KH
+                      case REPROT_BOOTLOADER_VERSION:
+                        for (indx=0; indx < 10; indx++)
+C51 COMPILER V9.60.7.0   USBDC_VENDOR                                                      06/18/2026 10:50:21 PAGE 3   
+
+                          KVM_Vendor_State[indx] = FCVAR(U8_T, 0x2000 + indx);
+              
+                        USBDC_Device[devinx].Ctrl_TotalByte[port]  = 10; //only answer one byte 
+                        USBDC_Device[devinx].Control_EndpBuf[port] = KVM_Vendor_State; //Get a memory to store data
+                        USBDC_Device[devinx].Ctrl_CurrentByte[port] = 0;
+                        result=USB_SUCCESS;
+                        break;
+              #endif
+                      case REPROT_SYSTEM_VERSION:
+                        break;
+                      case REPROT_ACTIVE_PORT:
+                        USBDC_Device[devinx].Ctrl_TotalByte[port]  = 4; //only answer one byte 
+                        USBDC_Device[devinx].Control_EndpBuf[port] = KVM_Vendor_State; //Get a memory to store data
+                        USBDC_Device[devinx].Control_EndpBuf[port][0]= KVM_CurrentHost;
+                        #if (SYSTEM_AUDIO_DEVICE_SUPPORT)
+                        USBDC_Device[devinx].Control_EndpBuf[port][1]= KVM_CurrentAudio;
+                        #else
+                        USBDC_Device[devinx].Control_EndpBuf[port][1]= 0xff; //not support
+                        #endif
+                        
+                        #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+                        USBDC_Device[devinx].Control_EndpBuf[port][2]=  KVM_CurrentUSBAudio;
+                        #else
+                        USBDC_Device[devinx].Control_EndpBuf[port][2]= 0xff; //not support
+                        #endif
+                        
+                        #if (SYSTEM_MSC_DEVICE_SUPPORT)
+                        USBDC_Device[devinx].Control_EndpBuf[port][3]= KVM_CurrentMSC;
+                        #else
+                        USBDC_Device[devinx].Control_EndpBuf[port][3]= 0xff;
+                        #endif
+                        
+                        #if (SYSTEM_USB_PEN_DRIVE_SUPPORT)
+                        USBDC_Device[devinx].Control_EndpBuf[port][4]= KVM_CurrentPEN;
+                        #else
+                        USBDC_Device[devinx].Control_EndpBuf[port][4]= 0xff;
+                        #endif
+                        
+                        USBDC_Device[devinx].Ctrl_CurrentByte[port] = 0;
+                        result=USB_SUCCESS;
+                        break;
+                      case REPROT_HOST_STATE:
+                        break;      
+                    }
+                    break;
+                  case VENDOR_SYSTEM_CONTROL:
+                    break;
+                  case VENDOR_SWITCH_CONTROL:
+                    break;
+                  case VENDOR_REGISTER_READ:
+                    break;      
+                  case VENDOR_REGISTER_WRITE:
+                    break;      
+                }
+                return result;
+              }
+              #endif /* End  of SYSTEM_VENDOR_COMMAND_SUPPORT */ 
+ 162          
+ 163          /* End of usbdc_vendor.c */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+C51 COMPILER V9.60.7.0   USBDC_VENDOR                                                      06/18/2026 10:50:21 PAGE 4   
+
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

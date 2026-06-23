@@ -1,0 +1,2161 @@
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KVM_CONSOLE
+OBJECT MODULE PLACED IN .\kvm_console.obj
+COMPILER INVOKED BY: C:\Users\Administrator\AppData\Local\Keil_v5\C51\BIN\C51.EXE ..\Src\kvm_control\kvm_console\kvm_con
+                    -sole.c LARGE OMF2 ROM(D16M) OPTIMIZE(9,SIZE) BROWSE NOAREGS INCDIR(..\src\main\;..\src\cpu\;..\src\flash\;..\src\uart\;.
+                    -.\src\swdma\;..\src\mstimer\;..\src\i2c\;..\src\spi\;..\src\task_man\;..\src\project\;..\Src\ps2_host;..\Src\console_edi
+                    -d;..\Src\storage;..\Src\data_stream;..\Src\kvm_control\kvm_hotkey;..\Src\kvm_control\kvm_console;..\Src\kvm_control\kvm_
+                    -button;..\Src\kvm_control\kvm_edid;..\Src\kvm_control\kvm_buzzer;..\src\gpio\;..\Src\hardware_ps2;..\Src\usbdc;..\Src\us
+                    -bdc\usbdc_virtual;..\Src\usb_std;..\Src\usbhc;..\Src\kvm_control\power_saving;..\Src\usbhc\MSC;..\Src\usbhc\AUDIO;..\Src
+                    -\usbhc\HUB;..\Src\usbhc\HID;..\Src\usbhc\HID_PARSER;..\Src\usbhc\ROOT_HUB;..\Src\usbdc\usbdc_hub;..\Src\usbdc\usbdc_hid;
+                    -..\Src\kvm_control\kvm_storage\spi_flash;..\Src\usbdc\usbdc_msc\usb_scsi;..\Src\usbdc\usbdc_msc;..\Src\handler\logitech;
+                    -..\Src\handler\A4_Tech;..\Src\usbdc\usbdc_vendor;..\Src\hsur;..\Src\extender\core;..\Src\extender\receiver;..\Src\uart_c
+                    -onsole;..\Src\kvm_control\km_sync;..\Src\hsur;..\Src\kvm_control\km_log;..\Src\kvm_control\km_api;..\Src\kvm_control\kvm
+                    -_ir;..\Src\kvm_control\kvm_rtc;..\Src\i2c;..\Src\kvm_control\kvm_multiview) STRING(FAR) DEFINE(RuntimeCodeAt0KH,MCU_TYPE
+                    -_AX68004,KVM,HC_TIMEOUT=10000,VHID,HID_PARSER_CORE_KB,HID_PARSER_CORE_MS,API,NO_AUDIO,NO_MSC,NO_EDID,HUART_BAUD=HUART_11
+                    -5K,SYNC,CROSS_JUMP_MAP0,VPID_CHANGER,SYNC_KB_HOTKEY,SYNC_MS_HOTKEY,REPEAT_MODE=1,HSUART,MULTIVIEW) VARBANKING DEBUG PRIN
+                    -T(.\kvm_console.lst) TABS(2) OBJECT(.\kvm_console.obj)
+
+line level    source
+
+   1          /*
+   2           *********************************************************************************
+   3           *     Copyright (c) 2014 ASIX Electronic Corporation      All rights reserved.
+   4           *
+   5           *     This is unpublished proprietary source code of ASIX Electronic Corporation
+   6           *
+   7           *     The copyright notice above does not evidence any actual or intended
+   8           *     publication of such source code.
+   9           *********************************************************************************
+  10           */
+  11          /*================================================================================
+  12           * Module Name : kvm_console.c
+  13           * Purpose     : This module handles the kvm console & control function include
+  14           *               1).Hotkey Control
+  15           *               2).KVM switch control
+  16           *               3).LED & Button access & KVM control
+  17           *               4).Autoscan control
+  18           *               5).Mouse/Keyboard control(only Active Port)
+  19           *
+  20           * Author      : Jack Wang
+  21           * Date        :
+  22           * Notes       : 
+  23           *
+  24           *================================================================================
+  25           */
+  26          
+  27          /* INCLUDE FILE DECLARATIONS */
+  28          /* KEIL Header File Section */
+  29          #include  "stdio.h"
+  30          #include  "string.h"
+  31          
+  32          /* System Relate Header File Seciton */
+  33          #include "project_include.h"
+  34          /* NAMING CONSTANT DECLARATIONS */
+  35          #if (PROJECT_KVM_CONSOLE_ENABLE)
+  36          #ifdef MCU_TYPE_AX68002
+              code GPIO_TypeDef *VGA_CONTROL_PORT[] = {PORT2,PORT2};
+              code GPIO_PinTypeDef VGA_CONTROL_PIN[] =
+              {
+                GPIO_Pin_0,
+                GPIO_Pin_1,
+                GPIO_Pin_2,
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 2   
+
+                GPIO_Pin_3,
+                GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3
+              };
+              #endif
+  47          
+  48          #ifdef MCU_TYPE_AX68004
+  49          code GPIO_TypeDef *VGA_CONTROL_PORT[] = {PORT1,PORT1,PORT1,PORT1};
+  50          code GPIO_PinTypeDef VGA_CONTROL_PIN[] =
+  51          {
+  52            GPIO_Pin_0,
+  53            GPIO_Pin_1,
+  54            GPIO_Pin_2,
+  55            GPIO_Pin_3,
+  56            GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3
+  57          };
+  58          #endif
+  59          
+  60          #ifdef MCU_TYPE_AX68002 
+              code GPIO_TypeDef *SELECT_LED_PORT[]={PORT2,PORT2}; 
+              code GPIO_PinTypeDef SELECT_LED[] =
+              {
+                GPIO_Pin_0,
+                GPIO_Pin_2, 
+              };  
+              #else 
+  68          code GPIO_TypeDef *SELECT_LED_PORT[]={PORT2,PORT2,PORT2,PORT2}; 
+  69          code GPIO_PinTypeDef SELECT_LED[] =
+  70          {
+  71            GPIO_Pin_0,
+  72            #if (PCB_TEST_BOARD)
+  73            GPIO_Pin_4,
+  74            GPIO_Pin_2,
+  75            #else
+                GPIO_Pin_2,
+                GPIO_Pin_4,
+                #endif
+  79            GPIO_Pin_6,
+  80            GPIO_Pin_0|GPIO_Pin_2|GPIO_Pin_4|GPIO_Pin_6
+  81          };
+  82          #endif 
+  83          
+  84          #ifdef MCU_TYPE_AX68002 
+              code GPIO_TypeDef *HOST_LED_PORT[]={PORT2,PORT2}; 
+              code GPIO_PinTypeDef HOST_LED[] =
+              {
+                GPIO_Pin_1,
+                GPIO_Pin_3, 
+              };
+              #else
+  92          code GPIO_TypeDef *HOST_LED_PORT[]={PORT2,PORT2,PORT2,PORT2}; 
+  93          code GPIO_PinTypeDef HOST_LED[] =
+  94          {
+  95            GPIO_Pin_1,
+  96            #if (PCB_TEST_BOARD)
+  97            GPIO_Pin_5,
+  98            GPIO_Pin_3,
+  99            #else
+                GPIO_Pin_3,
+                GPIO_Pin_5,
+                #endif
+ 103            GPIO_Pin_7, 
+ 104          };
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 3   
+
+ 105          #endif /* 
+ 106          /* STATIC VARIABLE DECLARATIONS */
+ 107          #if (SYSTEM_PS2_HOST_ENABLE)
+              bit TASK_KVM_CONSOLE_PS2_KBLed_Control_Flag;
+              #endif
+ 110          bit   KVM_Plug_In_Jump_Flag;
+ 111          bit   KVM_System_Not_Ready_Flag;
+ 112          bit   KVM_Event_Control_Flag;
+ 113          #if (SYSTEM_PS2_HOST_ENABLE)
+              bit   KVM_PS2_HotkeySwitch_Flag;
+              #endif
+ 116          
+ 117          #define VS4210_1_Mode   1 //Single Monitor Mode
+ 118          #define VS4210_4_Mode0    2 //4 equal Monitor Mode
+ 119          
+ 120          U8_T  KVM_VS4210_Mode=VS4210_1_Mode;
+ 121          U8_T  cModifiers;
+ 122          U8_T  KVM_HostLed[KVM_MAX_PORT];
+ 123          U8_T  KVM_CurrentHost,KVM_CurrentAudio,KVM_CurrentMSC;
+ 124          U8_T  KVM_CurrentUSBAudio;
+ 125          U8_T  KVM_NextHost,KVM_NextAudio,KVM_NextAnalogAudio;
+ 126          //U8_T  KVM_Mouse_Disable_Flag;
+ 127          U8_T  TASK_KVM_EVENT_CONTROL_ID;
+ 128          #if (SYSTEM_PS2_HOST_ENABLE)
+              U8_T  cPS2_KB_PressCnt;
+              #endif
+ 131          U8_T  cUSB_KB_PressCnt; // PS/2 key press and release counter 
+ 132          U8_T  TASK_KVM_AUTOSCAN_ID;
+ 133          U8_T  TASK_KVM_AUTOSCAN_ACTIVE_ID;
+ 134          U8_T  TASK_KVM_CONSOLE_PS2_KBLed_Control_ID;
+ 135          U8_T  TASK_KVM_VGA_Switch_ID;
+ 136          U8_T  TASK_KVM_ACCESSORY_ID;
+ 137          U16_T KVM_Control_Status;
+ 138          
+ 139          //---------------------------
+ 140          // For Autoscan 
+ 141          U16_T iAutoScanSecCnt;
+ 142          U8_T  cAutoScanCurrentHost;
+ 143          U8_T  cAutoScanNextHost;
+ 144          //---------------------------
+ 145          
+ 146          #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT) && (SYSTEM_SWITCH_AUDIO_DELAY)
+              U8_T KVM_Console_Switch_Audio_Delay_Task_ID;     
+              U8_T KVM_Console_Switch_Audio_Delay_Task_ActiveID=0;
+              #endif
+ 150          
+ 151          static U8_T kvmVgaSwitchCnt;
+ 152          
+ 153          struct  _KVM_Flash KVM_Flash;
+ 154          struct  _KVM_Flash KVM_FlashTemporary;
+ 155          
+ 156          TASK_ActiveTable_TypeDef  TASK_KVM_Switch_Event_Control_Task =
+ 157          {
+ 158            TASK_TYPE_INTERVAL_MS, // Task Type
+ 159            0, // Task ID from 0~255
+ 160            0, // Task Wait for Semaphore to active
+ 161            0, // Task Event
+ 162            0, // Task transfer parameter
+ 163            KVM_SW_INTERVAL_TIME, // Task Interval time from 0~65535(ms/us)
+ 164            KVM_SW_INTERVAL_TIME, // Task Interval Reload
+ 165          };
+ 166          
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 4   
+
+ 167          #if (KVM_BUTTON_SUPPORT) && (KVM_BUTTON_RELEASE_DELAY_INTERVAL) 
+              TASK_ActiveTable_TypeDef TASK_KVM_Button_Release_Delay_Task = 
+              {
+                TASK_TYPE_INTERVAL_MS, // Task Type
+                0, // Task ID from 0~255
+                0, // Task Wait for Semaphore to active
+                0, // Task Event
+                0, // Task transfer parameter
+                KVM_BUTTON_RELEASE_DELAY_INTERVAL, // Task Interval time from 0~65535(ms/us)
+                100, // Task Interval Reload
+              };
+              #endif
+ 179          
+ 180          /* LOCAL SUBPROGRAM DECLARATIONS */
+ 181          //void  KVM_Select_Led_Control(U8_T,U8_T);
+ 182          void  KVM_Host_Led_Control(U8_T,U8_T);
+ 183          void  TASK_KVM_CONSOLE_PS2_KBLed_Control(void);
+ 184          void  TASK_KVM_VGA_Switch_Control(void);
+ 185          void  TASK_KVM_Accessory(void);
+ 186          U8_T  KVM_GetUsbDcEndp(U8_T devIndex, U8_T infIndex, U8_T endpIndex);
+ 187          
+ 188          /* LOCAL SUBPROGRAM BODIES */
+ 189          U8_T  KVM_Check_SOF_Count;
+ 190          #if (KVM_BUTTON_SUPPORT) && (KVM_BUTTON_RELEASE_DELAY_INTERVAL) 
+              void  TASK_KVM_Button_Release_Delay(void);
+              #endif
+ 193          
+ 194          #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT) && (SYSTEM_SWITCH_AUDIO_DELAY)
+              void TASK_KVM_CONSOLE_Switch_Port_Audio_Control(void);
+              #endif
+ 197          
+ 198          extern U8_T   TASK_KVM_HotkeyFork_Timeout_ID;
+ 199          
+ 200          /*
+ 201           *--------------------------------------------------------------------------------
+ 202           * void KVM_Console_Init(void)
+ 203           * Purpose : KVM Console Init procedure( should read from some where? Flash?)
+ 204           * Params  : None.
+ 205           * Returns : None.
+ 206           * Note    : None.
+ 207           *--------------------------------------------------------------------------------
+ 208           */
+ 209          void KVM_Console_Init(void)
+ 210          {
+ 211   1        U8_T  index;
+ 212   1      
+ 213   1      #if (SYSTEM_STORAGE_DEVICE_SUPPORT)
+ 214   1        STORAGE_Init();
+ 215   1      
+ 216   1        #if (SYSTEM_STORAGE_FLASH)
+ 217   1          STORAGE_SoftwareConfigurationCheck(0);
+ 218   1        #endif //End of (SYSTEM_STORAGE_FLASH)
+ 219   1      
+ 220   1      #else
+                /* KVM Console control relative */
+                /* Autoscan interval time */
+                KVM_Flash.AutoScanInterval = 5; // 0-1 defautl 5 second
+                KVM_Flash.AutoScanStopCode = 0xff; // any key
+                KVM_Flash.AutoScanStop_JumpCode = CHAR_SPACE;
+                /* Control relative */
+                KVM_Flash.cSystemFlag0 = SYSTEM_BEEPER_MASK; // 3 System Flag
+                KVM_Flash.cSystemFlag1 = 0; // 4 System Flag2
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 5   
+
+                KVM_Flash.PowerSavingMode = SYSTEM_POWER_STOP_MODE;   // Stop Mode
+              #endif //#if (SYSTEM_STORAGE_DEVICE_SUPPORT)
+ 231   1      
+ 232   1      #ifdef KM104U
+                KVM_Flash.cSystemFlag2 |= (SYSTEM_ALL_SYNC_MASK | SYSTEM_KB_SYNC_MASK | SYSTEM_MS_SYNC_MASK);
+                if (KVM_Flash.cSystemFlag3 & KM_HOTKEY_MASK)
+                  KM_SYNC_Sync_KB_HotkeyChar = CHAR_PAD_STAR;
+                else
+                  KM_SYNC_Sync_KB_HotkeyChar = CHAR_SCROLL_LOCK;
+                //printf("HotkeyValue=%02bx\n\r",KM_SYNC_Sync_KB_HotkeyChar);
+              #endif
+ 240   1        
+ 241   1      #ifdef KMLOG
+                KVM_Flash.cSystemFlag2 &= ~(SYSTEM_ALL_SYNC_MASK | SYSTEM_KB_SYNC_MASK | SYSTEM_MS_SYNC_MASK);  
+              #endif  
+ 244   1      
+ 245   1      #if (SYSTEM_USB_PEN_DRIVE_SUPPORT)
+                if (KVM_Flash.cSystemFlag1 & SYSTEM_PEN_DRIVE_WRITE_MASK)
+                  scsi_Flash_Write_Protect_Flag = 1;
+                else
+                  scsi_Flash_Write_Protect_Flag = 0;
+              #endif    
+ 251   1      
+ 252   1        /* Hotkey Indicate Control */
+ 253   1        for (index = 0; index < KVM_MAX_PORT; index++)
+ 254   1        {
+ 255   2          KVM_HostLed[index] = 0;
+ 256   2          KVM_Select_Led_Control(index,LED_OFF);
+ 257   2          KVM_Host_Led_Control(index,LED_OFF);
+ 258   2        }
+ 259   1      
+ 260   1        KVM_CurrentHost = 0;
+ 261   1        KVM_CurrentAudio = 0;
+ 262   1        KVM_CurrentUSBAudio = 0;
+ 263   1        KVM_CurrentMSC = 0x00;  
+ 264   1        KVM_Select_Led_Control(KVM_CurrentHost,LED_ON);
+ 265   1        KVM_Event_Control_Flag = 0;
+ 266   1        KVM_Control_Status = KVM_IDLE_STATUS;
+ 267   1        KVM_Plug_In_Jump_Flag = 0;
+ 268   1      
+ 269   1        /* keyboad press counter */
+ 270   1      #if (SYSTEM_PS2_HOST_ENABLE)
+                cPS2_KB_PressCnt = 0; // PS/2 key press and release counter
+              #endif
+ 273   1        cUSB_KB_PressCnt = 0; // USB key press and release counter
+ 274   1      //  KVM_CONSOLE_KB_Led_Inhibit_Flag = 0;
+ 275   1      #if (SYSTEM_PS2_HOST_ENABLE)
+                KVM_Mouse_Disable_Flag = 0;
+                TASK_KVM_CONSOLE_PS2_KBLed_Control_Flag = 0;
+                KVM_PS2_HotkeySwitch_Flag = 0;
+              #endif
+ 280   1        KVM_System_Not_Ready_Flag = 1;
+ 281   1        kvmVgaSwitchCnt = 0;
+ 282   1        /* Other */
+ 283   1        KVM_Check_SOF_Count = 0;
+ 284   1      
+ 285   1        /* do Hotkey init */
+ 286   1      #if (KVM_HOTKEY_SUPPORT)  
+ 287   1        HOTKEY_Init();
+ 288   1        TASK_HOTKEY_LED_INDICATE_ID = TASK_Create(TASK_HOTKEY_Active_Led_Indicate);
+ 289   1        TASK_KVM_HotkeyFork_Timeout_ID = TASK_Create(TASK_KVM_HotkeyFork_Timeout);
+ 290   1      #endif /* #if (KVM_HOTKEY_SUPPORT) */
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 6   
+
+ 291   1        TASK_KVM_EVENT_CONTROL_ID = TASK_Create(TASK_KVM_Event_Control);
+ 292   1        TASK_KVM_Switch_Event_Control_Task.Task_ID = TASK_Create(TASK_KVM_Switch_Event_Control);
+ 293   1        TASK_KVM_AUTOSCAN_ID = TASK_Create(TASK_KVM_Autoscan_Event_Control);
+ 294   1      //#ifdef KM104U 
+ 295   1        TASK_KVM_VGA_Switch_ID = TASK_Create(TASK_KVM_VGA_Switch_Control);
+ 296   1      //#endif  
+ 297   1        TASK_KVM_ACCESSORY_ID = TASK_Create(TASK_KVM_Accessory);
+ 298   1      
+ 299   1      #if (KVM_BUTTON_SUPPORT) && (KVM_BUTTON_RELEASE_DELAY_INTERVAL) 
+                TASK_KVM_Button_Release_Delay_Task.Task_ID = TASK_Create(TASK_KVM_Button_Release_Delay);
+              #endif
+ 302   1        
+ 303   1      #if (SYSTEM_PS2_HOST_ENABLE)
+                TASK_KVM_CONSOLE_PS2_KBLed_Control_ID = TASK_Create(TASK_KVM_CONSOLE_PS2_KBLed_Control);
+              #endif //#if (SYSTEM_PS2_HOST_ENABLE)
+ 306   1      
+ 307   1      #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT) && (SYSTEM_SWITCH_AUDIO_DELAY)
+                KVM_Console_Switch_Audio_Delay_Task_ID = TASK_Create(TASK_KVM_CONSOLE_Switch_Port_Audio_Control);
+              #endif
+ 310   1      
+ 311   1      #if (SYSTEM_TASK_DUMP_SUPPORT)
+                printf("TASK_HOTKEY_LED_INDICATE_ID=%bu\n\r",TASK_HOTKEY_LED_INDICATE_ID);
+                printf("TASK_KVM_HotkeyFork_Timeout_ID=%bu\n\r",TASK_KVM_HotkeyFork_Timeout_ID);
+                printf("TASK_KVM_EVENT_CONTROL_ID=%bu\n\r",TASK_KVM_EVENT_CONTROL_ID);
+                printf("TASK_KVM_Switch_Event_Control_Task.Task_ID=%bu\n\r",TASK_KVM_Switch_Event_Control_Task.Task_ID);
+                printf("TASK_KVM_AUTOSCAN_ID=%bu\n\r",TASK_KVM_AUTOSCAN_ID);
+                printf("TASK_KVM_VGA_Switch_ID=%bu\n\r",TASK_KVM_VGA_Switch_ID);
+                printf("TASK_KVM_ACCESSORY_ID=%bu\n\r",TASK_KVM_ACCESSORY_ID);
+              #if (SYSTEM_PS2_HOST_ENABLE)
+                printf("TASK_KVM_CONSOLE_PS2_KBLed_Control_ID=%bu\n\r",TASK_KVM_CONSOLE_PS2_KBLed_Control_ID);
+              #endif //#if (SYSTEM_PS2_HOST_ENABLE) 
+              #endif
+ 323   1      
+ 324   1      #ifndef HID_PARSER_CORE_MS
+                KVM_Flash.cSystemFlag2 |= SYSTEM_MS_DN_MASK;
+              #endif  
+ 327   1      }
+ 328          
+ 329          /*
+ 330           *--------------------------------------------------------------------------------
+ 331           * void KVM_CheckPS2Modifiers(U8_T,U8_T)
+ 332           * Purpose : check kvm modifier key
+ 333           * Params  : None.
+ 334           * Returns : None.
+ 335           * Note    : None.
+ 336           *--------------------------------------------------------------------------------
+ 337           */
+ 338          #if (SYSTEM_PS2_HOST_ENABLE)
+              void KVM_CheckPS2Modifiers(U8_T keytype,U8_T keycode)
+              {
+                U8_T  cmodifier;
+                
+                cmodifier = 0;
+                if ( keytype <= KB_TYPE_BREAK_F0 )
+                {
+                  switch (keycode)
+                  {
+                    case 0x11 : // left alt
+                      cmodifier = 0x04;
+                      break;
+                    case 0x12 : // left shift
+                      cmodifier = 0x02;
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 7   
+
+                      break;
+                    case 0x14 : // left ctrl cModifiers == 0x02
+                      cmodifier = 0x01;
+                      break;
+                    case 0x59 : // right shift
+                      cmodifier = 0x20;
+                      break;
+                  }
+                }
+                else
+                {
+                  if ( keytype <= KB_TYPE_BREAK_E0 )
+                  {
+                    switch (keycode)
+                    {
+                      case 0x27 : // right GUI
+                        cmodifier = 0x80; 
+                        break;
+                      case 0x1f : // left GUI
+                        cmodifier = 0x08; 
+                        break;
+                      case 0x11 : // right alt
+                        cmodifier = 0x40; 
+                        break;
+                      case 0x14 : // right ctrl
+                        cmodifier = 0x10;
+                        break;
+                    }
+                  }
+                }
+                
+                if ( (keytype == KB_TYPE_MAKE_E0) || (keytype == KB_TYPE_MAKE_F0) )
+                  cModifiers |= cmodifier;
+                else
+                  cModifiers &= ~cmodifier;
+              }
+              
+              /*
+               *--------------------------------------------------------------------------------
+               * void KVM_Hostkey_LED_PS2_Convert(U8_T kvm_led)
+               * Purpose : check convert usb led format to ps/2 format
+               * Params  : None.
+               * Returns : None.
+               * Note    : None.
+               *--------------------------------------------------------------------------------
+               */ 
+              U8_T KVM_Hostkey_LED_PS2_Convert(U8_T kvm_led)
+              {
+                U8_T  led = 0;
+                
+                if (kvm_led & KVM_LED_NUM_LOCK)
+                {
+                  led |= KVM_LED_PS2_NUM_LOCK;
+                }
+                
+                if (kvm_led & KVM_LED_CAPS_LOCK)
+                {
+                  led |= KVM_LED_PS2_CAPS_LOCK;
+                }
+                
+                if (kvm_led & KVM_LED_SCROLL_LOCK)
+                {
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 8   
+
+                  led |= KVM_LED_PS2_SCROLL_LOCK;
+                }
+                
+                return led;
+              }
+              #endif
+ 421          
+ 422          /*
+ 423           *--------------------------------------------------------------------------------
+ 424           * void KVM_Select_Led_Control(U8_T port,U8_T led_control)
+ 425           * Purpose : Control the Select LED Port
+ 426           * Params  : NONE
+ 427           * Returns : None.
+ 428           * Note    : None.
+ 429           *--------------------------------------------------------------------------------
+ 430           */
+ 431          void KVM_Select_Led_Control(U8_T port,U8_T led_control)
+ 432          {
+ 433   1        GPIO_SetOneBit(SELECT_LED_PORT[port],SELECT_LED[port],led_control);
+ 434   1      }
+ 435          
+ 436          #if (KVM_HOTKEY_SUPPORT)
+ 437          /*
+ 438           *--------------------------------------------------------------------------------
+ 439           * void KVM_Autoscan_KB_Handle(U8_T codetype,U8_T keycode)
+ 440           * Purpose : 
+ 441           * Params  : NONE
+ 442           * Returns : None.
+ 443           * Note    : None.
+ 444           *--------------------------------------------------------------------------------
+ 445           */
+ 446          void KVM_Autoscan_KB_Handle(U8_T codetype,U8_T keycode)
+ 447          {
+ 448   1        bit result = 0;
+ 449   1      
+ 450   1        if (KVM_Control_Status & KVM_AUTOSCAN_MASK)
+ 451   1        {
+ 452   2          if ((codetype & 0x01)) // key break type
+ 453   2          {
+ 454   3            if (KVM_Flash.AutoScanStop_JumpCode && (KVM_Flash.AutoScanStop_JumpCode == keycode))
+ 455   3            {
+ 456   4              KVM_AutoscanStop_Jump(1,cAutoScanCurrentHost);
+ 457   4              result = 1;
+ 458   4            }
+ 459   3            else
+ 460   3            {
+ 461   4              if ((KVM_Flash.AutoScanStopCode & keycode) == keycode)
+ 462   4              {
+ 463   5                result = 1;
+ 464   5              }
+ 465   4            }
+ 466   3            
+ 467   3            if (result)
+ 468   3            {
+ 469   4              KVM_Autoscan_Mode_Contorl(0);
+ 470   4              //KVM_Control_Status &= ~KVM_AUTOSCAN_MASK; // clear the autoscan flag
+ 471   4              //Task_Active_Table[TASK_KVM_AUTOSCAN_ACTIVE_ID].Task_Interval.w = 1; //wait for 1 ms
+ 472   4            }
+ 473   3          }
+ 474   2        }
+ 475   1      }
+ 476          #endif /* KVM_HOTKEY_SUPPORT */
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 9   
+
+ 477          /*
+ 478           *--------------------------------------------------------------------------------
+ 479           * void KVM_Host_Led_Control(U8_T port,U8_T led_control)
+ 480           * Purpose : Control the Select LED Port
+ 481           * Params  : None
+ 482           * Returns : None.
+ 483           * Note    : None.
+ 484           *--------------------------------------------------------------------------------
+ 485           */
+ 486          void KVM_Host_Led_Control(U8_T port,U8_T led_control)
+ 487          {   
+ 488   1      #ifdef SYNC_SELECT_LED_ONLY   
+                port = 0;
+                led_control = 0;      
+              #else
+ 492   1        GPIO_SetOneBit(HOST_LED_PORT[port],HOST_LED[port],led_control);
+ 493   1      #endif
+ 494   1        
+ 495   1      #ifdef SYNC
+ 496   1        KM_SYNC_KM_SyncModeLed(LED_ON);
+ 497   1      #endif
+ 498   1      }
+ 499          
+ 500          /*
+ 501           *--------------------------------------------------------------------------------
+ 502           * void LIB_Get_Bit_Status(void)
+ 503           * Purpose : Handle the hotkey mode deactive control
+ 504           * Params  : NONE
+ 505           * Returns : None.
+ 506           * Note    : None.
+ 507           *--------------------------------------------------------------------------------
+ 508           */
+ 509          U8_T LIB_Get_Bit_Status(U8_T *table, U8_T index)
+ 510          {
+ 511   1        U8_T  base_byte, search_bit;
+ 512   1      
+ 513   1        base_byte = index >> 3; //8 bit as unit
+ 514   1        search_bit = 0x01 << (index & 0x07);  //the compare bit
+ 515   1      
+ 516   1        if (table[base_byte] & search_bit)
+ 517   1        {
+ 518   2          return 1;
+ 519   2        }
+ 520   1        return 0;
+ 521   1      }
+ 522          /*
+ 523           *--------------------------------------------------------------------------------
+ 524           * void KVM_GetNextConnect(U8_T currenthost,U8_T *nexthost)
+ 525           * Purpose : 
+ 526           * Params  : NONE
+ 527           * Returns : None.
+ 528           * Note    : None.
+ 529           *--------------------------------------------------------------------------------
+ 530           */
+ 531          U8_T KVM_GetNextConnect(U8_T currenthost,U8_T *nexthost)
+ 532          {
+ 533   1        U8_T  index;
+ 534   1      
+ 535   1        // look backward
+ 536   1        for (index = (currenthost+1); index < KVM_MAX_PORT; index++)
+ 537   1        {
+ 538   2          if (USBDC_UpPortState[index] & USBDC_ROOTHUB_ATTACHED_MASK)
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 10  
+
+ 539   2          {
+ 540   3            *nexthost = index;
+ 541   3            return 1;
+ 542   3          }
+ 543   2        }
+ 544   1      
+ 545   1        // look forward
+ 546   1        for (index = 0; index < currenthost; index++)
+ 547   1        {
+ 548   2          if (USBDC_UpPortState[index] & USBDC_ROOTHUB_ATTACHED_MASK)
+ 549   2          {
+ 550   3            *nexthost = index;
+ 551   3            return 1;
+ 552   3          }
+ 553   2        }
+ 554   1      
+ 555   1        *nexthost = currenthost;
+ 556   1        return 0;
+ 557   1      }
+ 558          
+ 559          /*
+ 560           *--------------------------------------------------------------------------------
+ 561           * void KVM_GetNextAutoScanHost(U8_T currenthost,U8_T *nexthost)
+ 562           * Purpose : 
+ 563           * Params  : NONE
+ 564           * Returns : None.
+ 565           * Note    : None.
+ 566           *--------------------------------------------------------------------------------
+ 567           */
+ 568          U8_T KVM_GetNextAutoScanHost(U8_T currenthost,U8_T *nexthost)
+ 569          {
+ 570   1        /* if Free Scan Mode */
+ 571   1        if ((KVM_Flash.cSystemFlag0 & SYSTEM_AUTOSCAN_MODE_MASK) == SYSTEM_AUTOSCAN_MODE_FREE)
+ 572   1        {
+ 573   2          *nexthost = currenthost+1;
+ 574   2          if (*(nexthost) >= KVM_MAX_PORT)
+ 575   2          {
+ 576   3            *nexthost = 0;
+ 577   3          }
+ 578   2          return 1;
+ 579   2        }
+ 580   1        /* if Scan Mode with Power status */
+ 581   1        if ((KVM_Flash.cSystemFlag0 & SYSTEM_AUTOSCAN_MODE_MASK) == SYSTEM_AUTOSCAN_MODE_POWER)
+ 582   1        {
+ 583   2          if (KVM_GetNextConnect(currenthost,nexthost))
+ 584   2          {
+ 585   3            return 1;
+ 586   3          }
+ 587   2        }
+ 588   1        return 0;
+ 589   1      }
+ 590          
+ 591          /*
+ 592           *--------------------------------------------------------------------------------
+ 593           * void TASK_KVM_Autoscan_Event_Control(void)
+ 594           * Purpose : Handle the hotkey mode deactive control
+ 595           * Params  : NONE
+ 596           * Returns : None.
+ 597           * Note    : None.
+ 598           *--------------------------------------------------------------------------------
+ 599           */
+ 600          void TASK_KVM_Autoscan_Event_Control(void)
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 11  
+
+ 601          {
+ 602   1        if (KVM_Control_Status & KVM_AUTOSCAN_MASK)
+ 603   1        {
+ 604   2          iAutoScanSecCnt++;
+ 605   2          if ((iAutoScanSecCnt >> 1) >= KVM_Flash.AutoScanInterval)
+ 606   2          {
+ 607   3            //1.Changed the LED status
+ 608   3            iAutoScanSecCnt = 0; // reset the autoscan second counter
+ 609   3            if (KVM_GetNextAutoScanHost(cAutoScanCurrentHost,&cAutoScanNextHost))
+ 610   3            {
+ 611   4              KVM_Select_Led_Control(cAutoScanCurrentHost,LED_OFF);
+ 612   4              cAutoScanCurrentHost = cAutoScanNextHost;
+ 613   4              KVM_Select_Led_Control(cAutoScanCurrentHost,LED_ON);
+ 614   4              KVM_CONSOLE_Vga_Control(cAutoScanCurrentHost,VGA_ON);
+ 615   4            }
+ 616   3          }
+ 617   2          else
+ 618   2          {
+ 619   3            if (iAutoScanSecCnt & 0x01)
+ 620   3            {
+ 621   4              KVM_Select_Led_Control(cAutoScanCurrentHost,LED_OFF);
+ 622   4            }
+ 623   3            else
+ 624   3            {
+ 625   4              KVM_Select_Led_Control(cAutoScanCurrentHost,LED_ON);
+ 626   4            }
+ 627   3          }
+ 628   2        }
+ 629   1        else
+ 630   1        {
+ 631   2          KVM_Select_Led_Control(cAutoScanCurrentHost,LED_OFF);
+ 632   2          if ((KVM_Control_Status & KVM_PORT_SW_MASK) == 0x00) // if not in autoscan stop & jump mode
+ 633   2          {
+ 634   3            KVM_Select_Led_Control(KVM_CurrentHost,LED_ON);
+ 635   3            KVM_CONSOLE_Vga_Control(KVM_CurrentHost,VGA_ON);
+ 636   3            
+ 637   3      #if (KVM_BUZZER_SUPPORT)
+ 638   3            BUZZER_Script_Active(AutoScan_Sound_Stop);
+ 639   3      #endif
+ 640   3          }
+ 641   2          TASK_Destory_Current();
+ 642   2        }
+ 643   1      }
+ 644          
+ 645          
+ 646          /*
+ 647           *--------------------------------------------------------------------------------
+ 648           * U8_T KVM_GetUsbDcEndp(U8_T devIndex, U8_T infIndex, U8_T endpIndex)
+ 649           * Purpose : Get USB DC endp index
+ 650           * Params  : devIndex : USB_PDevice[] index.
+ 651           *           infIndex : USB HC interface number.
+ 652           *           endpIndex : USB HC endpoint number.
+ 653           * Returns : None.
+ 654           * Note    : None.
+ 655           *--------------------------------------------------------------------------------
+ 656           */
+ 657          U8_T KVM_GetUsbDcEndp(U8_T devIndex, U8_T infIndex, U8_T endpIndex)
+ 658          {
+ 659   1        U8_T  intt_id;
+ 660   1        
+ 661   1        intt_id = USB_PDevice[devIndex].EndpType[infIndex][endpIndex] & 0x1f;
+ 662   1          
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 12  
+
+ 663   1        return ((HC_IntTransfer_Table[intt_id].EndpIdx & USBDC_DEV_ENDPINX_MASK ) >> 4);
+ 664   1      }
+ 665          
+ 666          /*
+ 667           *--------------------------------------------------------------------------------
+ 668           * void TASK_KVM_Switch_Event_Control(void)
+ 669           * Purpose : Handle the hotkey mode deactive control
+ 670           * Params  : None.
+ 671           * Returns : None.
+ 672           * Note    : None.
+ 673           *--------------------------------------------------------------------------------
+ 674           */
+ 675          void TASK_KVM_Switch_Event_Control(void)
+ 676          {
+ 677   1        U8_T  device;
+ 678   1      #if (SYSTEM_KVM)  
+ 679   1        U8_T  dev_index;
+ 680   1        U8_T  inf_index;
+ 681   1        U8_T  end_index;
+ 682   1        U8_T  interfacenum;
+ 683   1        U8_T  endpidx;
+ 684   1      #endif
+ 685   1      
+ 686   1      #if (SYSTEM_HARDWARE_PS2_ENABLE) && (SYSTEM_KVM) && (!SYSTEM_EXTENDER_SUPPORT)
+                // Check if any characters comes from PS2 keyboard
+                if (cPS2_KB_PressCnt)
+                {
+                  DATAST_Send_Kb_Break(KVM_CurrentHost,USBDC_VHID_DEVINX, USBDC_VHID_KB_ENDP_NUM, 0, 8);
+                }
+              #endif
+ 693   1      
+ 694   1      
+ 695   1        // Check if any characters comes from USB keyboard 
+ 696   1      #if (SYSTEM_KVM)
+ 697   1        if (cUSB_KB_PressCnt)
+ 698   1        {
+ 699   2          for (dev_index = 0; dev_index < USB_HC_MAX_DEVICE; dev_index++)   // polling USB_PDevice[] to find keyboa
+             -rd device
+ 700   2          {
+ 701   3            if (USB_PDevice[dev_index].HID_Kb_Press_Cnt == 0)
+ 702   3              continue;
+ 703   3              
+ 704   3            interfacenum = USB_PDevice[dev_index].InterfaceNum & USBHC_DEVICE_INTERFACENUM_MASK;
+ 705   3            for (inf_index = 0; inf_index < interfacenum; inf_index++) // Check Eache Interface
+ 706   3            {
+ 707   4              for (end_index=0; end_index < USB_PDevice[dev_index].EndpNum[inf_index]; end_index++) // Check all the
+             - endpoint in this interface
+ 708   4              {
+ 709   5                if (USB_PDevice[dev_index].InfProtocol[inf_index] == INF_KEYBOARD)
+ 710   5                {
+ 711   6                  if ((USB_PDevice[dev_index].idVendor == A4TECH_IVENDOR) &&(USB_PDevice[dev_index].idProduct == A4TEC
+             -H_IPORDUCT_GV800V))
+ 712   6                  {
+ 713   7                    endpidx = KVM_GetUsbDcEndp (dev_index, inf_index, end_index);
+ 714   7                    DATAST_Send_Kb_Break(KVM_CurrentHost,dev_index, endpidx, 1, 13);
+ 715   7                  }
+ 716   6                  else
+ 717   6                  {
+ 718   7                    endpidx = KVM_GetUsbDcEndp (dev_index, inf_index, end_index);
+ 719   7                    DATAST_Send_Kb_Break(KVM_CurrentHost,dev_index, endpidx, 0, 8);
+ 720   7                  }
+ 721   6                }
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 13  
+
+ 722   5                else
+ 723   5                {
+ 724   6                  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 725   6                  //1.Special handle for Gigabyte
+ 726   6                  if ((USB_PDevice[dev_index].idVendor == 0x060b) &&(USB_PDevice[dev_index].idProduct == 0x2270))
+ 727   6                  {
+ 728   7                    if (USB_PDevice[dev_index].HID_Gigabyte_Kb_04_Cnt && USB_PDevice[dev_index].HID_Gigabyte_Kb_03_Flag
+             - == 1)  // already send report ID 03
+ 729   7                    {
+ 730   8                      endpidx = KVM_GetUsbDcEndp (dev_index, inf_index, end_index);
+ 731   8                      DATAST_Send_Kb_Break(KVM_CurrentHost,dev_index, endpidx, 4, 8);
+ 732   8                      USB_PDevice[dev_index].HID_Gigabyte_Kb_03_Flag = 0;
+ 733   8                      continue;
+ 734   8                    }                 
+ 735   7      
+ 736   7                    if (USB_PDevice[dev_index].HID_Gigabyte_Kb_03_Cnt && USB_PDevice[dev_index].HID_Gigabyte_Kb_03_Flag
+             - == 0) // first time send report ID 03
+ 737   7                    {
+ 738   8                      endpidx = KVM_GetUsbDcEndp (dev_index, inf_index, end_index);
+ 739   8                      DATAST_Send_Kb_Break(KVM_CurrentHost,dev_index, endpidx, 3, 8);
+ 740   8                      USB_PDevice[dev_index].HID_Gigabyte_Kb_03_Flag = 1;
+ 741   8                    }
+ 742   7                        
+ 743   7                    if (USB_PDevice[dev_index].HID_Gigabyte_Kb_04_Cnt && USB_PDevice[dev_index].HID_Gigabyte_Kb_03_Flag
+             - == 1)
+ 744   7                    {
+ 745   8                      return;
+ 746   8                    }
+ 747   7                    USB_PDevice[dev_index].HID_Gigabyte_Kb_03_Flag = 0;
+ 748   7                      
+ 749   7                    if (USB_PDevice[dev_index].HID_Gigabyte_Kb_04_Cnt)  // only need to send report ID 04
+ 750   7                    {
+ 751   8                      endpidx = KVM_GetUsbDcEndp (dev_index, inf_index, end_index);
+ 752   8                      DATAST_Send_Kb_Break(KVM_CurrentHost,dev_index, endpidx, 4, 8);
+ 753   8                    }
+ 754   7                  }
+ 755   6                }
+ 756   5              }
+ 757   4            }
+ 758   3          }
+ 759   2          cUSB_KB_PressCnt = 0;
+ 760   2        }
+ 761   1      #endif /* #if (SYSTEM_HARDWARE_PS2_ENABLE) && (SYSTEM_KVM) && (!SYSTEM_EXTENDER_SUPPORT) */
+ 762   1        /* Check if previous KVM switching task still process */
+ 763   1        if (TASK_USBHC_KVM_Switch_Check_Start_Flag)
+ 764   1        {
+ 765   2          //TASK_Destory_Current();
+ 766   2          return;
+ 767   2        }
+ 768   1      
+ 769   1      #if (PROJECT_USB_GENERIC_HID_ENABLE)
+ 770   1        /* Clear KB & Mouse output Queue */
+ 771   1        DATAST_Reset_GenericQueue();
+ 772   1      #endif /* #if (PROJECT_USB_GENERIC_HID_ENABLE) */ 
+ 773   1        
+ 774   1        /* Disable the old state for LED */
+ 775   1      #if (SYSTEM_PS2_HOST_ENABLE)
+                KVM_PS2_HotkeySwitch_Flag = 0;
+              #endif
+ 778   1        KVM_Control_Status &= ~KVM_PORT_SW_MASK;
+ 779   1        KVM_Select_Led_Control(KVM_CurrentHost,LED_OFF);
+ 780   1        
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 14  
+
+ 781   1      #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT) && (SYSTEM_SWITCH_AUDIO_DELAY)
+                if (KVM_Flash.cSystemFlag1 & SYSTEM_AUDIOCOMBO_MASK)
+                { 
+                  KVM_CONSOLE_Switch_Port_Audio_Control(KVM_CurrentHost);
+                } 
+              #endif
+ 787   1        
+ 788   1        /* Update current host and check if the host needs to wake up */
+ 789   1        KVM_CurrentHost = TASK_Register0;
+ 790   1      
+ 791   1      // #if (KVM_CONSOLE_DEBUG_MODE)
+ 792   1        printf("CG<P:%bu>\n\r",KVM_CurrentHost);
+ 793   1        //printf("DEBUG:KVM_Console: Port:%bu,switched(%bu)\n\r",KVM_CurrentHost,(U8_T)KM_SYNC_HOTKEY_Skip_Flag);
+ 794   1      // #endif
+ 795   1      
+ 796   1        /* Update the new state for LED */
+ 797   1        KVM_Select_Led_Control(KVM_CurrentHost,LED_ON);
+ 798   1        KVM_CONSOLE_Vga_Control(KVM_CurrentHost,VGA_ON);
+ 799   1      #if (SYSTEM_PS2_HOST_ENABLE)
+                TASK_KVM_CONSOLE_PS2_KBLed_Control_Flag = 0;
+              #endif
+ 802   1      
+ 803   1        KVM_CONSOLE_Keyboard_Led_Control(KVM_HostLed[KVM_CurrentHost]);
+ 804   1      
+ 805   1      #if (SYSTEM_EXTENDER_TRANSMITTER)
+                ExtenderT_KVM_KB_Led_Check(KVM_CurrentHost);
+              #endif
+ 808   1      
+ 809   1      #if (SYSETM_GPIO_EEPROM_ENABLE)
+                GPIO_WriteEEprom(); 
+              #endif
+ 812   1      
+ 813   1      #if (KVM_BUTTON_SUPPORT)
+ 814   1      #if (KVM_BUTTON_RELEASE_DELAY_INTERVAL)
+                TASK_Run(&TASK_KVM_Button_Release_Delay_Task);
+              #else
+ 817   1        BTN_Processing_Flag = 0;
+ 818   1      #endif /* #if (KVM_BUTTON_SUPPORT) */
+ 819   1      #endif /*   #if (KVM_BUTTON_RELEASE_DELAY_INTERVAL) */
+ 820   1      
+ 821   1        TASK_Destory_Current();
+ 822   1      
+ 823   1      #if (KVM_BUZZER_SUPPORT)
+ 824   1        #ifdef SYNC
+ 825   1        if ((Coordinate_State & MOUSE_JUMP_MASK) == 0)
+ 826   1        #endif  
+ 827   1        {
+ 828   2          BUZZER_Script_Active(PortSwitch_Sound);
+ 829   2        } 
+ 830   1      #endif //#if (KVM_BUZZER_SUPPORT)
+ 831   1        device = (USB_HC_MAX_DEVICE << 4) | USBDC_VIRTUAL_DEVINX;
+ 832   1        TASK_Active(TASK_TYPE_EVENT,TASK_USBHC_KVM_Switch_Check_ID,0x00,device,KVM_CurrentHost,0); //Generate the
+             - task, for next Event check
+ 833   1      
+ 834   1      #ifdef SYNC
+ 835   1      #ifdef HID_PARSER_CORE_MS 
+ 836   1        KM_SYNC_Mouse_Jump_State_Reset();
+ 837   1      #endif
+ 838   1      #endif
+ 839   1      }
+ 840          
+ 841          /*--------------------------------------------------------------------------------
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 15  
+
+ 842           * void TASK_KVM_Accessory(void)
+ 843           * Purpose : Check the system ready(for button) or SOF from upper system
+ 844           * Params  : None.
+ 845           * Returns : None.
+ 846           * Note    : None.
+ 847           *-------------------------------------------------------------------------------*/
+ 848          void TASK_KVM_Accessory(void)
+ 849          {
+ 850   1        if (KVM_System_Not_Ready_Flag)
+ 851   1        {
+ 852   2          /* Set system ready */
+ 853   2          KVM_System_Not_Ready_Flag = 0;
+ 854   2          USBDC_Resume_Task_ActiveID[TASK_Register0] = 0;
+ 855   2        }
+ 856   1        else
+ 857   1        {
+ 858   2          /* Check SOF of assigned upstream port */
+ 859   2      #if (SYSTEM_EXTENDER_RECEIVER)
+                  if (TASK_Register0 != REMOTE_HOST_PORT)
+              #endif //#if (SYSTEM_EXTENDER_RECEIVER)
+ 862   2          {
+ 863   3            if (USBDC_HAL_Port_Check_SOF(TASK_Register0))
+ 864   3            {
+ 865   4              //printf("> DC_Port:%bu,SOF detected\n\r",TASK_Register0);
+ 866   4              USBDC_Port_Normal(TASK_Register0);
+ 867   4              KVM_Check_SOF_Count = 0;
+ 868   4              USBDC_Resume_Task_ActiveID[TASK_Register0] = 0;
+ 869   4              TASK_Destory_Current();
+ 870   4            }
+ 871   3            else
+ 872   3            {
+ 873   4              if (++KVM_Check_SOF_Count >= 20)
+ 874   4              {
+ 875   5                KVM_Check_SOF_Count = 0;
+ 876   5                USBDC_Resume_Task_ActiveID[TASK_Register0] = 0;
+ 877   5                TASK_Destory_Current();
+ 878   5              }
+ 879   4            }
+ 880   3          }
+ 881   2        }
+ 882   1      }
+ 883          
+ 884          void KVM_Autoscan_Mode_Contorl(U8_T control)
+ 885          {
+ 886   1        if (control) // autoscan mode start
+ 887   1        {
+ 888   2          if (KVM_Control_Status & KVM_AUTOSCAN_MASK)
+ 889   2            return;
+ 890   2          KVM_Control_Status |= KVM_AUTOSCAN_MASK;
+ 891   2          iAutoScanSecCnt = 0;
+ 892   2          cAutoScanCurrentHost = KVM_CurrentHost;
+ 893   2          TASK_KVM_AUTOSCAN_ACTIVE_ID = TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_KVM_AUTOSCAN_ID,0,0,500,500); // no
+             -w aticev the process for time out event
+ 894   2      #if (KVM_BUZZER_SUPPORT)
+ 895   2          BUZZER_Script_Active(AutoScan_Sound_Start);
+ 896   2      #endif //#if (KVM_BUZZER_SUPPORT)   
+ 897   2        }
+ 898   1        else
+ 899   1        {
+ 900   2          if ((KVM_Control_Status & KVM_AUTOSCAN_MASK) == 0x00)
+ 901   2            return;
+ 902   2          
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 16  
+
+ 903   2          KVM_Control_Status &= ~KVM_AUTOSCAN_MASK; // clear the autoscan flag
+ 904   2          Task_Active_Table[TASK_KVM_AUTOSCAN_ACTIVE_ID].Task_Interval.w = 1; //wait for 1 ms
+ 905   2        }   
+ 906   1      } 
+ 907          /*
+ 908           *--------------------------------------------------------------------------------
+ 909           * void TASK_KVM_Event_Control(void)
+ 910           * Purpose : Handle the hotkey mode deactive control
+ 911           * Params  : NONE
+ 912           * Returns : None.
+ 913           * Note    : None.
+ 914           *--------------------------------------------------------------------------------
+ 915           */
+ 916          void TASK_KVM_Event_Control(void)
+ 917          {
+ 918   1        bit   system_config_changed = 0;
+ 919   1      #if (KVM_HOTKEY_SUPPORT)
+ 920   1        U8_T  result = 0;
+ 921   1      #endif
+ 922   1      
+ 923   1      #if (ENABLE_HOTKEY_FUN_AUDIO_SW && SYSTEM_AUDIO_MAX != 0) 
+                U8_T    tempi;
+              #endif
+ 926   1        
+ 927   1        if (KVM_Event_Control_Flag)
+ 928   1        {
+ 929   2      #if (KVM_HOTKEY_SUPPORT)
+ 930   2          printf("HK exec: fun=%bx val=%d vidx=%bx\n\r",
+ 931   2            HOTKEY_Funciton_Code,
+ 932   2            HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex],
+ 933   2            HOTKEY_Funciton_PerformValueIndex);
+ 934   2          switch (HOTKEY_Funciton_Code)
+ 935   2          {
+ 936   3            #ifdef SYNC
+ 937   3            case  HOTKEY_FUN_MS_ROAMING_MODE:
+ 938   3              printf("HK exec: roaming=%d\n\r", HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex]);
+ 939   3              KM_SYNC_ModeAccross_Control(HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex]);
+ 940   3              break;
+ 941   3            case  HOTKEY_FUN_MS_SYNC_MODE:
+ 942   3              printf("HK exec: sync=%d\n\r", HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex]);
+ 943   3              KM_SYNC_ModeSync_Control(HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex]);                
+ 944   3              break;
+ 945   3            case HOTKEY_FUN_MS_RELATIVE_MODE:
+ 946   3              printf("HK exec: mouse relative\n\r");
+ 947   3              KM_SYNC_Mouse_Relative_Mode();
+ 948   3              break;
+ 949   3            case HOTKEY_FUN_MS_ABSOLUTE_MODE:
+ 950   3              printf("HK exec: mouse absolute\n\r");
+ 951   3              KM_SYNC_Mouse_Absolute_Mode();
+ 952   3              break;
+ 953   3            #endif
+ 954   3          //-----------------------------------------------------------------------
+ 955   3          // Port Switching Control 
+ 956   3          //-----------------------------------------------------------------------
+ 957   3            case HOTKEY_FUN_ALTERNAMTE_CONTROL:
+ 958   3              if (HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex])
+ 959   3              {
+ 960   4                KVM_Flash.cSystemFlag0 |= SYSTEM_HOTKEY_ALTERNATE_MASK;
+ 961   4              }
+ 962   3              else
+ 963   3              {
+ 964   4                KVM_Flash.cSystemFlag0 &= ~SYSTEM_HOTKEY_ALTERNATE_MASK;
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 17  
+
+ 965   4              }
+ 966   3              break;
+ 967   3            case HOTKEY_FUN_PORT_SW_NUMERIC:
+ 968   3            case HOTKEY_FUN_PORT_SW_NONUM:
+ 969   3              KVM_NextHost = HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex]-1;       
+ 970   3              printf("HK exec: port jump value=%d next=%bx\n\r",
+ 971   3                HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex],
+ 972   3                KVM_NextHost);
+ 973   3              KVM_Console_Port_Jump(KVM_NextHost);
+ 974   3              /*
+ 975   3              if ((KVM_Control_Status & KVM_PORT_SW_MASK) == 0)
+ 976   3              {         
+ 977   3                if (KVM_CurrentHost != KVM_NextHost ) // changed active port id
+ 978   3                {           
+ 979   3                  if (KVM_Power_Jump_Check(KVM_NextHost,0)) 
+ 980   3                  {         
+ 981   3                    KVM_Port_Jump(KVM_NextHost);                  
+ 982   3                  }
+ 983   3                }
+ 984   3              }
+ 985   3              */
+ 986   3              break;
+ 987   3          //-----------------------------------------------------------------------
+ 988   3          // Audio Control & Switching
+ 989   3          //-----------------------------------------------------------------------
+ 990   3      #if (SYSTEM_AUDIO_DEVICE_SUPPORT) || (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+              #if (ENABLE_HOTKEY_FUN_AUTOAUDIO_SW)
+                    case HOTKEY_FUN_AUTOAUDIO_SW: //Auto Switch Audio when port switching       
+                      if (HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex])
+                      {
+                        KVM_Flash.cSystemFlag1 |= SYSTEM_AUDIOCOMBO_MASK;
+                      }
+                      else
+                      {
+                        KVM_Flash.cSystemFlag1 &= ~SYSTEM_AUDIOCOMBO_MASK;
+                      }
+              
+                      //After the combo switch mode is on,check the current audio portid
+                      if (KVM_Flash.cSystemFlag1 & SYSTEM_AUDIOCOMBO_MASK)
+                      {
+                        KVM_Audio_Combo_Switch_Check(KVM_CurrentHost);          
+                      }
+                      system_config_changed = 1;        
+                      break;
+              #endif //#if (ENABLE_HOTKEY_FUN_AUTOAUDIO_SW)
+              
+              #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+              #if (ENABLE_HOTKEY_FUN_USBAUDIO_SW) 
+                    case HOTKEY_FUN_USBAUDIO_SW: //USB Audio device Switch Control
+                      if ((KVM_Flash.cSystemFlag1 & SYSTEM_AUDIOCOMBO_MASK) == 0)
+                      {
+                        KVM_NextAudio = HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex]-1;
+                        USBHC_Audio_Hotkey_Sw_Flag = 1;
+                        USBHC_AUDIO_Switch(KVM_NextAudio);
+                      }
+                      break;
+              #endif //#if (ENABLE_HOTKEY_FUN_USBAUDIO_SW)
+              #endif //#if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+              
+              #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+              #if (ENABLE_HOTKEY_FUN_USBAUDIO_REPORT)
+                    case HOTKEY_FUN_USBAUDIO_REPORT_CONTROL: //USB Audio device report rule control
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 18  
+
+                      if (HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex] == 0) 
+                      {
+                        if (KVM_Flash.cSystemFlag0 & SYSTEM_AUDIO_REPORT_ALL_MASK)
+                        {
+                          USBHC_AUDIO_ReportModeChanged_Mount_Control(USBAUDIO_REPORT_SINGLE);
+                          KVM_Flash.cSystemFlag0 &= ~SYSTEM_AUDIO_REPORT_ALL_MASK;
+                          system_config_changed = 1;
+                        }             
+                      } 
+                      else if (HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex] == 1)
+                      { 
+                        if ((KVM_Flash.cSystemFlag0 & SYSTEM_AUDIO_REPORT_ALL_MASK) == 0x00)
+                        { 
+                          USBHC_AUDIO_ReportModeChanged_Mount_Control(USBAUDIO_REPORT_ALL); 
+                          KVM_Flash.cSystemFlag0 |= SYSTEM_AUDIO_REPORT_ALL_MASK;
+                          system_config_changed = 1;
+                        } 
+                      } 
+                      break;
+              #endif //#if (ENABLE_HOTKEY_FUN_USBAUDIO_REPORT)
+              #endif //#if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+              
+              #if (SYSTEM_AUDIO_DEVICE_SUPPORT)
+              #if (ENABLE_HOTKEY_FUN_AUDIO_SW && SYSTEM_AUDIO_MAX != 0)
+                    case HOTKEY_FUN_AUDIO_SW: //Analog Switch Control
+                      //BUZZER_Adjust_Factor = HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex]-1
+                      //Btn_Active_Sound.Keeptime = BUZZER_Factor_Table[BUZZER_Adjust_Factor];
+                      //printf("Curent Buzzer Setting = %bu\n\r",BUZZER_Adjust_Factor);
+                      tempi = HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex]-1;
+                      KVM_Audio_Switch(tempi);
+                      break;
+              #endif //#if (ENABLE_HOTKEY_FUN_AUDIO_SW)
+              #endif //#if (SYSTEM_AUDIO_DEVICE_SUPPORT)
+              #endif //#if ((SYSTEM_USBAUDIO_DEVICE_SUPPORT) || (SYSTEM_AUDIO_DEVICE_SUPPORT)
+1061   3      
+1062   3          //-----------------------------------------------------------------------
+1063   3          // Buzzer Control
+1064   3          //-----------------------------------------------------------------------
+1065   3      #if (ENABLE_HOTKEY_FUN_BUZZER_CONTROL)
+1066   3            case HOTKEY_FUN_BUZZER_CONTROL_TOGGLE:
+1067   3              if (HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex]) // USB PEN Drive is Disattached
+1068   3              {
+1069   4                printf("Buzzer ON\n\r");
+1070   4                KVM_Flash.cSystemFlag0 |= SYSTEM_BEEPER_MASK;
+1071   4      #if (KVM_BUZZER_SUPPORT)
+1072   4                BUZZER_Script_Active(Hotkey_Active_Sound);
+1073   4      #endif //#if (KVM_BUZZER_SUPPORT)
+1074   4              }
+1075   3              else
+1076   3              {
+1077   4                printf("Buzzer OFF\n\r");
+1078   4                KVM_Flash.cSystemFlag0 &= ~SYSTEM_BEEPER_MASK;
+1079   4              }
+1080   3              system_config_changed = 1;        
+1081   3              break;
+1082   3      #endif //#if (ENABLE_HOTKEY_FUN_BUZZER_CONTROL)
+1083   3      
+1084   3          //-----------------------------------------------------------------------
+1085   3          // Autoscan Control & Interval
+1086   3          //-----------------------------------------------------------------------
+1087   3            case HOTKEY_FUN_AUTOSCAN_CONTROL:
+1088   3              printf("HK exec: autoscan start\n\r");
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 19  
+
+1089   3              KVM_Autoscan_Mode_Contorl(1);   
+1090   3              //KVM_Control_Status |= KVM_AUTOSCAN_MASK;
+1091   3              //iAutoScanSecCnt = 0;
+1092   3              //cAutoScanCurrentHost = KVM_CurrentHost;
+1093   3              //TASK_KVM_AUTOSCAN_ACTIVE_ID = TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_KVM_AUTOSCAN_ID,0,0,500,500); /
+             -/ now aticev the process for time out event
+1094   3      #if (KVM_BUZZER_SUPPORT)
+1095   3              //BUZZER_Script_Active(AutoScan_Sound_Start);
+1096   3      #endif //#if (KVM_BUZZER_SUPPORT)
+1097   3              break;
+1098   3            case HOTKEY_FUN_AUTOSCAN_INTERVAL:        
+1099   3              KVM_Flash.AutoScanInterval = HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex];
+1100   3              printf("HK exec: autoscan interval=%d\n\r", KVM_Flash.AutoScanInterval);
+1101   3              system_config_changed = 1;
+1102   3              break;
+1103   3      
+1104   3          //-----------------------------------------------------------------------
+1105   3          // Switch High Speed HUB
+1106   3          //-----------------------------------------------------------------------
+1107   3      #if (ENABLE_HOTKEY_FUN_HUB_SW)
+1108   3            case HOTKEY_FUN_HUB_SW:
+1109   3              break;
+1110   3      #endif //#if (ENABLE_HOTKEY_FUN_HUB_SW)
+1111   3          
+1112   3          //-----------------------------------------------------------------------
+1113   3          // Upstream port reset control
+1114   3          //-----------------------------------------------------------------------
+1115   3      #if (ENABLE_HOTKEY_FUN_PORT_RESET)
+                    case HOTKEY_FUN_PORT_RESET:
+                      break;
+              #endif //#if (ENABLE_HOTKEY_FUN_PORT_RESET)
+1119   3      
+1120   3          //-----------------------------------------------------------------------
+1121   3          // Power Jump Setting control
+1122   3          //-----------------------------------------------------------------------
+1123   3      #if (ENABLE_HOTKEY_FUN_POWER_JUMP_SW)
+1124   3            case HOTKEY_FUN_PORT_JUMP_POWER_CONTROL:
+1125   3              if (HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex])
+1126   3              {
+1127   4                KVM_Flash.cSystemFlag0 |= (SYSTEM_JUMP_MODE_MASK|SYSTEM_AUTOSCAN_MODE_POWER);
+1128   4                KVM_Power_Jump_Check(KVM_CurrentHost,1); 
+1129   4              }
+1130   3              else
+1131   3              {
+1132   4                KVM_Flash.cSystemFlag0 &= ~(SYSTEM_JUMP_MODE_MASK|SYSTEM_AUTOSCAN_MODE_POWER);
+1133   4              }
+1134   3              system_config_changed = 1;
+1135   3              break;
+1136   3      #endif //#if (ENABLE_HOTKEY_FUN_POWER_JUMP_SW)
+1137   3          
+1138   3          //-----------------------------------------------------------------------
+1139   3          // Plug In Jump Setting control
+1140   3          //-----------------------------------------------------------------------
+1141   3      #if (ENABLE_HOTKEY_FUN_PLUGIN_JUMP_SW)
+1142   3            case HOTKEY_FUN_PLUGIN_JUMP_CONTROL:
+1143   3              if (HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex])
+1144   3              {
+1145   4                KVM_Flash.cSystemFlag1 |= SYSTEM_PLUGIN_JUMP_MASK;
+1146   4              }
+1147   3              else
+1148   3              {
+1149   4                KVM_Flash.cSystemFlag1 &= ~SYSTEM_PLUGIN_JUMP_MASK;
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 20  
+
+1150   4              }
+1151   3              system_config_changed = 1;
+1152   3              break;
+1153   3      #endif //#if (ENABLE_HOTKEY_FUN_PLUGIN_JUMP_SW)
+1154   3          
+1155   3          //-----------------------------------------------------------------------
+1156   3          // Plug In Jump Mode Control
+1157   3          //-----------------------------------------------------------------------
+1158   3      #if (ENABLE_HOTKEY_FUN_PLUGIN_JUMP_SW)
+1159   3            case HOTKEY_FUN_PLUGIN_JUMP_MODE:
+1160   3              if (HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex])
+1161   3              {
+1162   4                KVM_Flash.cSystemFlag1 |= SYSTEM_PLUGIN_JUMP_MODE;
+1163   4                if ((USBDC_UpPortState[KVM_CurrentHost] & USBDC_ROOTHUB_ATTACHED_MASK) == 0X00)
+1164   4                {
+1165   5                  KVM_Jump_Next_Power_Port(KVM_CurrentHost);  
+1166   5                } 
+1167   4              }
+1168   3              else
+1169   3              {
+1170   4                KVM_Flash.cSystemFlag1 &= ~SYSTEM_PLUGIN_JUMP_MODE;
+1171   4              }
+1172   3              system_config_changed = 1;
+1173   3              break;
+1174   3      #endif //#if (ENABLE_HOTKEY_FUN_PLUGIN_JUMP_SW)
+1175   3          //----------------------------------------------------------------------- 
+1176   3          // MSC Devcie Control
+1177   3          //-----------------------------------------------------------------------
+1178   3      #if (SYSTEM_EXTENDER_MSC_SUPPORT)
+              #if (ENABLE_HOTKEY_T_MSC_SW)
+                    case HOTKEY_FUN_T_MSC_SW:       
+                      if (USBHC_MSC_Device_Cnt) // if msc has plug in         
+                      {                 
+                        ExtenderR_Transmitter_MscSw_Control((U8_T)HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIn
+             -dex]);  
+                      } 
+                      break;
+              #endif  /* #if (EXTENDER_USB_T_MSC_SW) */ 
+              
+              #if (ENABLE_HOTKEY_FUN_MSC_CONTROL && SYSTEM_MSC_MAX != 0) //if system suport the msc device
+                    case HOTKEY_FUN_MSC_CONTRL:
+                      if (HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex])
+                      {
+                        KVM_Flash.cSystemFlag1 &= ~SYSTEM_MSC_NOSUPPORT_MASK;
+                      }
+                      else
+                      {
+                        KVM_Flash.cSystemFlag1 |= SYSTEM_MSC_NOSUPPORT_MASK;
+                      }
+                      system_config_changed = 1;        
+                      break;
+              #endif
+              #endif //#if (SYSTEM_EXTENDER_MSC_SUPPORT)
+1202   3      
+1203   3      #if (ENABLE_HOTKEY_FUN_MSC_SW)
+                    case HOTKEY_FUN_MSC_SW:
+                      result = HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex] - 1;
+                      if (KVM_CurrentMSC != result) // changed active port id
+                      {           
+                        USBHC_MSC_Port_Switch(USBHC_MSC_Devinx, result);
+                      }       
+                      break;
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 21  
+
+              #endif //#if (ENABLE_HOTKEY_FUN_MSC_SW)
+1212   3      
+1213   3          
+1214   3          //-----------------------------------------------------------------------
+1215   3          // Power Saving Mode Control
+1216   3          //-----------------------------------------------------------------------
+1217   3      #if (ENABLE_HOTKEY_FUN_PWSAVING_CONTROL)
+                    case HOTKEY_FUN_POWER_SAVING_CONTROL:
+                      if (HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex])
+                      { 
+                        KVM_Flash.cSystemFlag1 |= SYSTEM_POWERSAVING_MASK;
+                      }
+                      else
+                      {
+                        KVM_Flash.cSystemFlag1 &= ~SYSTEM_POWERSAVING_MASK;
+                      }
+                      //printf("Power Saving Mode=%s\n\r",(KVM_Flash.cSystemFlag1 & SYSTEM_POWERSAVING_MASK) ? "Y" : "N");
+                      system_config_changed = 1;    
+                      break;
+              #endif
+1231   3          
+1232   3          //-----------------------------------------------------------------------
+1233   3          // Pen Drive Control
+1234   3          //-----------------------------------------------------------------------
+1235   3      #if (ENABLE_HOTKEY_FUN_PEN_SW)
+                    case HOTKEY_FUN_PEN_SW:
+              #if (SYSTEM_USB_PEN_DRIVE_SUPPORT)
+                      if ((KVM_Flash.cSystemFlag1 & SYSTEM_PEN_DRIVE_ATTACH_MASK) == 0x00)
+                      {
+                        break; // not vaild port number
+                      }
+                      result = HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex] - 1;
+                      USBDC_VMSC_Port_Switch(result);
+              #endif /* (SYSTEM_USB_PEN_DRIVE_SUPPORT) */
+                      break;
+              #endif // #if (ENABLE_HOTKEY_FUN_PEN_SW)
+1247   3      
+1248   3      #if (ENABLE_HOTKEY_FUN_PEN_CONTROL)
+                    case HOTKEY_FUN_PEN_CONTROL:
+              #if (SYSTEM_USB_PEN_DRIVE_SUPPORT)
+                      if (HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex] == 0) // USB PEN Drive is Disattac
+             -hed
+                      {
+                        USBDC_VMSC_Stop();
+                      }
+                      else if (HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex] == 1) // USB PEN Drive is att
+             -ached
+                      {
+                        //2013-12-19 ----------------------------------------------------------
+                        //Avoid more than one device active
+                        if (KVM_Flash.cSystemFlag1 & SYSTEM_PEN_DRIVE_ATTACH_MASK)
+                        {
+              #if (KVM_BUZZER_SUPPORT)
+                          BUZZER_Script_Active(Error_Sound);
+              #endif //#if (KVM_BUZZER_SUPPORT)
+                        }         
+                        else
+                        {
+                          KVM_CurrentPEN = KVM_CurrentHost;
+                          USBDC_VMSC_Start();
+                        }
+                      }
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 22  
+
+              #endif // #if (SYSTEM_USB_PEN_DRIVE_SUPPORT)
+                      break;
+              #endif // #if (ENABLE_HOTKEY_FUN_PEN_CONTROL)
+1274   3          
+1275   3          //-----------------------------------------------------------------------
+1276   3          // Flash Storage Control
+1277   3          //-----------------------------------------------------------------------
+1278   3      #if (ENABLE_HOTKEY_FUN_FLASH_DEFAULT)
+1279   3            case HOTKEY_FUN_FLASH_DEFAULT:
+1280   3      #if (SYSTEM_STORAGE_DEVICE_SUPPORT)
+1281   3              STORAGE_Default_Initial();
+1282   3              system_config_changed = 1;
+1283   3      #endif //#if (SYSTEM_STORAGE_DEVICE_SUPPORT)
+1284   3              break;
+1285   3      #endif //#if (ENABLE_HOTKEY_FUN_FLASH_DEFAULT)
+1286   3          
+1287   3          //-----------------------------------------------------------------------
+1288   3          // Control EDID Control
+1289   3          //-----------------------------------------------------------------------
+1290   3      #if (SYSETM_CONSOLE_EDID_CONTROL_ENABLE)
+              #if (ENABLE_HOTKEY_FUN_EDID_REREAD)
+                    case HOTKEY_FUN_EDID_REREAD:
+                      //printf("EDID Reread\n\r");
+                      //EDID_ctrl.EdidReloadRequest++;
+                      break;
+              #endif //(ENABLE_HOTKEY_FUN_EDID_REREAD)
+              #endif //(SYSETM_CONSOLE_EDID_CONTROL_ENABLE)
+1298   3          
+1299   3          //-----------------------------------------------------------------------
+1300   3          // Port Switching Control
+1301   3          //-----------------------------------------------------------------------
+1302   3      #if (ENABLE_HOTKEY_FUN_RAPID_SW)
+1303   3            case HOTKEY_FUN_RAPID_SW:
+1304   3              KVM_Jump_Next_Power_Port(KVM_CurrentHost);
+1305   3              break;
+1306   3      #endif //#if (ENABLE_HOTKEY_FUN_RAPID_SW)
+1307   3      
+1308   3            case HOTKEY_FUN_UPDATE_FIRMWARE:              
+1309   3              FirmwareUpgradeFlag[0] = 'i';
+1310   3              FirmwareUpgradeFlag[1] = 'a';
+1311   3              FirmwareUpgradeFlag[2] = 'p';       
+1312   3              CPU_SoftReboot();
+1313   3              break;
+1314   3              
+1315   3      #if  (SYSTEM_EXTENDER_RECEIVER)
+              #if (ENABLE_HOTKEY_FUN_T_PORT_SW)
+                    case HOTKEY_FUN_TRANSMITTER_PORT_SW:        
+                      ExtenderR_Transmitter_Port_Switch((U8_T)HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex
+             -]);        
+                      break; 
+              #endif  
+              #endif /* SYSTEM_EXTENDER_RECEIVER */
+1322   3      
+1323   3      #if  (SYSTEM_EXTENDER_RECEIVER)
+              #if (ENABLE_HOTKEY_FUN_T_BUZZER_CONTROL)
+                    case HOTKEY_FUN_TX_BUZZER_CONTROL:        
+                      ExtenderR_Transmitter_Buzzer_Control((U8_T)HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIn
+             -dex]);        
+                      break;        
+              #endif /* #if (SYSTEM_EXTENDER_RECEIVER) */
+              
+              #if (ENABLE_HOTKEY_T_AUDIO_AUTO_SW)
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 23  
+
+                    case HOTKEY_FUN_T_USBAUDIO_AUTOSW:
+                      ExtenderR_Transmitter_AudioComboSw_Control((U8_T)HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformV
+             -alueIndex]);        
+                      break;
+              #endif /* #if (ENABLE_HOTKEY_T_AUDIO_AUTO_SW) */
+              
+              #if (ENABLE_HOTKEY_T_USBAUDIO_SW)
+                    case HOTKEY_FUN_T_USBAUDIO_SW:
+                      if ((KVM_Flash.cSystemFlag2 & SYSTEM_TX_AUDIOCOMBO_MASK) == 0x00) //if transmitter is not is auto sw m
+             -ode
+                      {
+                        ExtenderR_Transmitter_AudioSw_Control((U8_T)HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValue
+             -Index]);  
+                      } 
+                      break;
+              #endif  /* #if (ENABLE_HOTKEY_T_USBAUDIO_SW) */     
+              #endif /* #if (SYSTEM_EXTENDER_RECEIVER) */
+1345   3      
+1346   3      #if  (SYSTEM_EXTENDER_RECEIVER)
+              #if (EXTENDER_ISL59920_SUPPORT)
+                    case HOTKEY_FUN_R_DELAY_PLUS:
+                      ISL59920_Color_Delay_Setting(R_COLOR,OPERATION_PLUS);               
+                      break;
+                    case HOTKEY_FUN_G_DELAY_PLUS:
+                      ISL59920_Color_Delay_Setting(G_COLOR,OPERATION_PLUS);                       
+                      break;
+                    case HOTKEY_FUN_B_DELAY_PLUS:
+                      ISL59920_Color_Delay_Setting(B_COLOR,OPERATION_PLUS);                               
+                      break;
+                    case HOTKEY_FUN_R_DELAY_MINUS:
+                      ISL59920_Color_Delay_Setting(R_COLOR,OPERATION_MINUS);                                        
+                      break;      
+                    case HOTKEY_FUN_G_DELAY_MINUS:
+                      ISL59920_Color_Delay_Setting(G_COLOR,OPERATION_MINUS);                                                
+                      break;      
+                    case HOTKEY_FUN_B_DELAY_MINUS:
+                      ISL59920_Color_Delay_Setting(B_COLOR,OPERATION_MINUS);                
+                      break;          
+              #endif  /* #if (EXTENDER_ISL59920_SUPPORT) */ 
+                    
+              #if (ENABLE_HOTKEY_FUN_RTC_CONTROL)
+                    case HOTKEY_FUN_RTC_CONTROL:
+                      if (HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex])
+                      { 
+                        KVM_Flash.cSystemFlag2 |= SYSTEM_RTC_MASK;
+                      } 
+                      else
+                      { 
+                        KVM_Flash.cSystemFlag2 &= ~SYSTEM_RTC_MASK;
+                      }
+                      system_config_changed = 1;
+                      ExtenderR_Transmit_RTC_Contorl();
+                      break;
+              #endif
+                    
+              #endif  /* #if (SYSTEM_EXTENDER_RECEIVER) */  
+1384   3      #ifdef SYNC
+1385   3            case HOTKEY_FUN_ALL_SYNC:
+1386   3            case HOTKEY_FUN_KB_SYNC:
+1387   3            case HOTKEY_FUN_MS_SYNC:
+1388   3              // system_config_changed = KM_SYNC_Setting(HOTKEY_Funciton_Code,HOTKEY_Funciton_PerformValue[HOTKEY_Fu
+             -nciton_PerformValueIndex]);               
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 24  
+
+1389   3              break;          
+1390   3      #endif
+1391   3            
+1392   3      #ifdef MSWITCH //Mouse switch mode      
+                    case HOTKEY_FUN_MS_SWITCH:
+                      if (HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex])
+                      { 
+                        KVM_Flash.cSystemFlag3 |= SYSTEM_MOUSE_SW_MASK;
+                      } 
+                      else
+                      { 
+                        KVM_Flash.cSystemFlag3 &= ~SYSTEM_MOUSE_SW_MASK;
+                      }
+                      system_config_changed = 1;
+                      break;
+              #endif      
+1405   3            default:
+1406   3      //        printf("[XXX]");
+1407   3              break;
+1408   3          }
+1409   2      #endif /* #if (KVM_HOTKEY_SUPPORT) */
+1410   2      
+1411   2      #if (SYSTEM_STORAGE_DEVICE_SUPPORT)
+1412   2          if (system_config_changed)
+1413   2          {
+1414   3            STORAGE_Write(sizeof(KVM_Flash),(U8_T *)&KVM_Flash);
+1415   3          }
+1416   2      #endif //#if (SYSTEM_STORAGE_DEVICE_SUPPORT)    
+1417   2          KVM_Event_Control_Flag = 0;
+1418   2        }
+1419   1      }
+1420          
+1421          /*
+1422           *--------------------------------------------------------------------------------
+1423           * void KVM_Check_KB_Skip_Condition(void)
+1424           * Purpose : Handle the hotkey mode deactive control
+1425           * Params  : NONE
+1426           * Returns : None.
+1427           * Note    : None.
+1428           *--------------------------------------------------------------------------------
+1429           */
+1430          U8_T KVM_Check_KB_Skip_Condition(void)
+1431          {
+1432   1      #if (PROJECT_KVM_CONSOLE_ENABLE)
+1433   1        /*1.Check Autoscan Status */
+1434   1        if (KVM_Control_Status & KVM_AUTOSCAN_MASK)
+1435   1          return 1;
+1436   1        
+1437   1        /*2.Check Hotkey Status Status */
+1438   1      #if (KVM_HOTKEY_SUPPORT)
+1439   1        if (HOTKEY_Control_Status & KVM_HOTKEY_ACTIVE) /* hotkey actived */
+1440   1        {
+1441   2          if(HOTKEY_Control_Status_Last & KVM_HOTKEY_ACTIVE)
+1442   2            return 1;
+1443   2          else
+1444   2            HOTKEY_Control_Status_Last |= KVM_HOTKEY_ACTIVE;
+1445   2        }
+1446   1      #endif /* #if (KVM_HOTKEY_SUPPORT) */
+1447   1      #endif /* #if (PROJECT_KVM_CONSOLE_ENABLE) */
+1448   1        return 0;
+1449   1      }
+1450          
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 25  
+
+1451          /*
+1452           *--------------------------------------------------------------------------------
+1453           * void KVM_Check_MS_Skip_Condition(void)
+1454           * Purpose : Handle the hotkey mode deactive control
+1455           * Params  : NONE
+1456           * Returns : None.
+1457           * Note    : None.
+1458           *--------------------------------------------------------------------------------
+1459           */
+1460          U8_T KVM_Check_MS_Skip_Condition(void)
+1461          {
+1462   1      #if (PROJECT_KVM_CONSOLE_ENABLE)
+1463   1        /*1.Check Autoscan Status */
+1464   1        if (KVM_Control_Status & KVM_AUTOSCAN_MASK)
+1465   1          return 1;
+1466   1      #endif /* #if (PROJECT_KVM_CONSOLE_ENABLE) */
+1467   1      
+1468   1        //if (LIB_Get_Bit_Status(&KVM_Mouse_Disable_Flag,KVM_CurrentHost) == 0x01)
+1469   1        //  return 1;
+1470   1      
+1471   1        return 0;
+1472   1      }
+1473          
+1474          /*
+1475           *--------------------------------------------------------------------------------
+1476           * void KVM_CONSOLE_Vga_Control(U8_T port,U8_T led_control)
+1477           * Purpose : Control the current VGA Port
+1478           * Params  : NONE
+1479           * Returns : None.
+1480           * Note    : None.
+1481           *--------------------------------------------------------------------------------
+1482           */
+1483          void KVM_CONSOLE_Vga_Control(U8_T port,U8_T vga_control)
+1484          {
+1485   1      #ifdef KMLOG
+                vga_control = port = 0;
+              #else 
+1488   1        #ifdef KM104U 
+                  port = 0;
+                  vga_control = 0;
+                #else 
+1492   1          #ifdef KMLOG
+                  port = 0;
+                  vga_control = 0;
+                  
+                  #else //none KMLOG
+1497   1          #ifdef MCU_TYPE_AX68002   
+                    GPIO_SetOneBit(VGA_CONTROL_PORT[0],GPIO_Pin_4,0);
+                    GPIO_SetOneBit(VGA_CONTROL_PORT[1],GPIO_Pin_5,0);  
+                  #else
+1501   1            U8_T  index;
+1502   1            
+1503   1            //1.Clear All the VGA port
+1504   1            for (index = 0; index < KVM_MAX_PORT; index++)
+1505   1            {
+1506   2              GPIO_SetOneBit(VGA_CONTROL_PORT[index],VGA_CONTROL_PIN[index],1);
+1507   2            }
+1508   1          #endif
+1509   1            
+1510   1            //2.Enable the target VGA port
+1511   1            if (vga_control == VGA_ON)
+1512   1            {
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 26  
+
+1513   2              TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_KVM_VGA_Switch_ID,0,port,50,15);  //switch vga port to on after
+             - 50 ms
+1514   2              kvmVgaSwitchCnt++;
+1515   2            }
+1516   1          #endif  
+1517   1        #endif  /* #ifdef KM104U */
+1518   1      #endif  /* #ifdef KMLOG */  
+1519   1      }
+1520          
+1521          /*
+1522           *--------------------------------------------------------------------------------
+1523           * void KVM_CONSOLE_Keyboard_Led_Control(void)
+1524           * Purpose : Handle the hotkey mode deactive control
+1525           * Params  : NONE
+1526           * Returns : None.
+1527           * Note    : None.
+1528           *--------------------------------------------------------------------------------
+1529           */
+1530          void KVM_CONSOLE_Keyboard_Led_Control(U8_T kbled)
+1531          {
+1532   1      #if (SYSTEM_PS2_HOST_ENABLE)
+                U8_T  led,dindex;
+                
+                /* Handle PS/2 device led command */
+                for (dindex=0; dindex < PS2_PORT_MAX_NUM ; dindex++)
+                {
+                  if (PS2_Control[dindex] == PS2_KB)
+                  {
+                    led = ((KVM_Hostkey_LED_PS2_Convert(kbled)) << 4) | dindex;
+                    TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_KVM_CONSOLE_PS2_KBLed_Control_ID,0,led,1,1); //after 100ms, star
+             -t power on all port
+                  }
+                }
+              #endif
+1545   1      
+1546   1        USBHC_KB_Led_Brocast(kbled); // this will boardcast the led to USB HC
+1547   1      }
+1548          
+1549          /*--------------------------------------------------------------------------------
+1550           * void TASK_KVM_CONSOLE_PS2_KBLed_Control(void)
+1551           * Purpose : Handle the hotkey mode deactive control
+1552           * Params  : NONE
+1553           * Returns : None.
+1554           * Note    : None.
+1555           *-------------------------------------------------------------------------------
+1556           */
+1557          #if (SYSTEM_PS2_HOST_ENABLE)
+              void TASK_KVM_CONSOLE_PS2_KBLed_Control(void)
+              {
+                U8_T  ps2inx;
+                U8_T  led;
+              
+                if (TASK_KVM_CONSOLE_PS2_KBLed_Control_Flag == 0)
+                {
+                  led = (TASK_Register0 & 0xf0) >> 4; // get the target ps2 port
+                  ps2inx = TASK_Register0 & 0x0f; // get the target ps2 port
+              
+                  if (PS2_KB_Balance_Cnt[ps2inx] == 0)
+                  {
+                    TASK_KVM_CONSOLE_PS2_KBLed_Control_Flag=1;
+                    PS2_Keyboad_LED_Script(ps2inx,led);
+                    TASK_Destory_Current();
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 27  
+
+                  }
+                }
+              }
+              #endif
+1577          
+1578          /*--------------------------------------------------------------------------------
+1579           * void TASK_KVM_Switch_Event_Control_Fork(U8_T devinx,U8_T interval)
+1580           * Purpose : Reset the Bulk Handle status
+1581           * Params  : NONE
+1582           * Returns : None.
+1583           * Note    : None.
+1584           *-------------------------------------------------------------------------------s*/
+1585          void TASK_KVM_Switch_Event_Control_Fork(U8_T next_port,U8_T interval)
+1586          {
+1587   1        TASK_KVM_Switch_Event_Control_Task.Task_Para = next_port;
+1588   1        TASK_KVM_Switch_Event_Control_Task.Task_Interval.w = interval;
+1589   1        TASK_Run(&TASK_KVM_Switch_Event_Control_Task);
+1590   1      }
+1591          
+1592          /*--------------------------------------------------------------------------------
+1593           * void TASK_KVM_VGA_Switch_Control(void)
+1594           * Purpose : The task to switch on the vga port
+1595           * Params  : NONE
+1596           * Returns : None.
+1597           * Note    : None.
+1598           *-------------------------------------------------------------------------------
+1599           */
+1600          void TASK_KVM_VGA_Switch_Control(void)
+1601          {
+1602   1      #ifdef MCU_TYPE_AX68002
+                #ifdef PCT_MUA22
+                if (TASK_Register0)
+                {
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_4, 1);
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_5, 0);
+                }
+                else
+                {
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_4, 0);
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_5, 1);    
+                }
+                #else   
+                  #if (KVM_2_PORT_HDMI)
+                if (TASK_Register0)
+                {
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_4, 0);
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_5, 1);
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_6, 0);
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_7, 0);
+                }
+                else
+                {
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_4, 1);
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_5, 1);
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_6, 0);
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_7, 0);
+                }
+                #else
+                if (TASK_Register0)
+                {
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_4, 0);
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_5, 1);
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 28  
+
+                }
+                else
+                {
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_4, 1);
+                  GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_5, 0);
+                }
+                #endif
+                  #endif
+              #else 
+1644   1        GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0],VGA_CONTROL_PIN[TASK_Register0],0);
+1645   1      #endif
+1646   1          TASK_Destory_Current();
+1647   1      }   
+1648          
+1649          /*--------------------------------------------------------------------------------
+1650           * void KVM_Port_Jump(U8_T newport)
+1651           * Purpose : This function will jump the kvm port 
+1652           * Params  : NONE
+1653           * Returns : None.
+1654           * Note    : None.
+1655           *-------------------------------------------------------------------------------*/
+1656          void KVM_Port_Jump(U8_T newport)
+1657          {
+1658   1        if (KVM_CurrentHost != newport)
+1659   1        {
+1660   2          KVM_Control_Status |= KVM_PORT_SW_MASK; 
+1661   2          // Prevent PS/2 stick after port switch */
+1662   2      #if (SYSTEM_PS2_HOST_ENABLE)
+                  KVM_PS2_HotkeySwitch_Flag = 1; //it is hotkey switch
+              #endif
+1665   2      #if (PROJECT_USB_GENERIC_HID_ENABLE)
+1666   2          #ifndef SYNC    
+                  DATAST_Generic_KB_IN_WP = DATAST_Generic_KB_IN_RP = 0;
+                  #endif
+1669   2      #endif /* #if (PROJECT_USB_GENERIC_HID_ENABLE) */
+1670   2          KVM_NextHost = newport;
+1671   2          TASK_KVM_Switch_Event_Control_Fork(KVM_NextHost,KVM_SW_INTERVAL_TIME);
+1672   2      #if (!SYSTEM_SWITCH_AUDIO_DELAY)    
+1673   2          KVM_Audio_Combo_Switch_Check(KVM_NextHost);
+1674   2      #endif    
+1675   2        }
+1676   1      }
+1677          
+1678          /*--------------------------------------------------------------------------------
+1679           * void KVM_KM_Port_Jump(U8_T newport)
+1680           * Purpose : This function will jump the km(keyboard and mouse) port 
+1681           * Params  : NONE
+1682           * Returns : None.
+1683           * Note    : None.
+1684           *-------------------------------------------------------------------------------*/
+1685          void KVM_KM_Port_Jump(U8_T newport)
+1686          {
+1687   1        if (KVM_CurrentHost != newport)
+1688   1        {
+1689   2          KVM_Control_Status |= KVM_PORT_SW_MASK; 
+1690   2          // Prevent PS/2 stick after port switch */
+1691   2      #if (SYSTEM_PS2_HOST_ENABLE)
+                  KVM_PS2_HotkeySwitch_Flag = 1; //it is hotkey switch
+              #endif
+1694   2          
+1695   2      #if (PROJECT_USB_GENERIC_HID_ENABLE)
+1696   2          #ifndef SYNC
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 29  
+
+                  DATAST_Generic_KB_IN_WP = DATAST_Generic_KB_IN_RP = 0;
+                  #endif
+1699   2      #endif /* #if (PROJECT_USB_GENERIC_HID_ENABLE) */
+1700   2          KVM_NextHost = newport;
+1701   2          TASK_KVM_Switch_Event_Control_Fork(KVM_NextHost,KVM_SW_INTERVAL_TIME);
+1702   2      #if (!SYSTEM_SWITCH_AUDIO_DELAY)    
+1703   2          KVM_Audio_Combo_Switch_Check(KVM_NextHost);
+1704   2      #endif    
+1705   2        }
+1706   1      }
+1707          
+1708          /*--------------------------------------------------------------------------------
+1709           * void KVM_PlugIn_Jump_Check(U8_T pid)
+1710           * Purpose : This function will check the PlugIn Switch flag, and decide jump 
+1711           *           or stay
+1712           * Params  : NONE
+1713           * Returns : None.
+1714           * Note    : None.
+1715           *-------------------------------------------------------------------------------*/
+1716          void KVM_PlugIn_Jump_Check(U8_T pid) 
+1717          {
+1718   1        if (KVM_Flash.cSystemFlag1 & SYSTEM_PLUGIN_JUMP_MASK)
+1719   1        {
+1720   2              //Check plug in jump mode
+1721   2          if ((KVM_Flash.cSystemFlag1 & SYSTEM_PLUGIN_JUMP_MODE) == 0)  //only jump one time to the first plug in
+1722   2          {
+1723   3            if (KVM_Plug_In_Jump_Flag)
+1724   3            {
+1725   4              return;
+1726   4            }
+1727   3          }
+1728   2          KVM_Plug_In_Jump_Flag = 1;
+1729   2          KVM_Port_Jump(pid);
+1730   2        }
+1731   1      } 
+1732          
+1733          /*--------------------------------------------------------------------------------
+1734           * U8_T KVM_Power_Status_Check(U8_T start_pid,U8_T end_pid)
+1735           * Purpose : This function will check the port vbus status
+1736           * Params  : NONE
+1737           * Returns : None.
+1738           * Note    : None.
+1739           *-------------------------------------------------------------------------------*/
+1740          U8_T KVM_Power_Status_Check(U8_T start_pid,U8_T end_pid)
+1741          { 
+1742   1        while (start_pid < end_pid)
+1743   1        {
+1744   2          if (USBDC_UpPortState[start_pid] & USBDC_ROOTHUB_ATTACHED_MASK)
+1745   2          {
+1746   3            return (start_pid + 1);
+1747   3          }
+1748   2          start_pid++;
+1749   2        }
+1750   1        return 0;
+1751   1      }
+1752          
+1753          /*--------------------------------------------------------------------------------
+1754           * U8_T KVM_Jump_Next_Power_Port(U8_T pid)
+1755           * Purpose : This function will check the port vbus status
+1756           * Params  : NONE
+1757           * Returns : None.
+1758           * Note    : None.
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 30  
+
+1759           *-------------------------------------------------------------------------------*/
+1760          void KVM_Jump_Next_Power_Port(U8_T pid)
+1761          { 
+1762   1        U8_T newport;
+1763   1        
+1764   1        if (KVM_Flash.cSystemFlag0 & SYSTEM_JUMP_MODE_MASK) //jump by power
+1765   1        { 
+1766   2          newport = KVM_Power_Status_Check(pid+1,KVM_MAX_PORT);
+1767   2          if (newport) //check backward
+1768   2          {
+1769   3            KVM_Port_Jump(newport-1);
+1770   3          }             
+1771   2          else
+1772   2          {
+1773   3            newport = KVM_Power_Status_Check(0,pid); //check forward
+1774   3            if (newport)
+1775   3            {
+1776   4              KVM_Port_Jump(newport-1);           
+1777   4            }
+1778   3          }
+1779   2        }
+1780   1        else
+1781   1        {
+1782   2          KVM_NextHost = pid+1;
+1783   2          if (KVM_NextHost >= KVM_MAX_PORT)
+1784   2            KVM_NextHost = 0;       
+1785   2          KVM_Port_Jump(KVM_NextHost);          
+1786   2        }   
+1787   1      }
+1788          
+1789          /*--------------------------------------------------------------------------------
+1790           * U8_T KVM_Power_Jump_Check(U8_T pid)
+1791           * Purpose : This function will check the Power Jump Switch flag, and decide jump 
+1792           *       or stay
+1793           * Params  : NONE
+1794           * Returns : None.
+1795           * Note    : None.
+1796           *-------------------------------------------------------------------------------*/
+1797          U8_T KVM_Power_Jump_Check(U8_T pid,U8_T checknext) 
+1798          {
+1799   1        U8_T port_attached;
+1800   1          
+1801   1        if (KVM_Flash.cSystemFlag0 & SYSTEM_JUMP_MODE_MASK) //jump by power
+1802   1        {     
+1803   2          port_attached = USBDC_UpPortState[pid] & USBDC_ROOTHUB_ATTACHED_MASK;   
+1804   2          if (checknext)
+1805   2          { 
+1806   3            if ((port_attached == 0x00) && (pid == KVM_CurrentHost))
+1807   3            {
+1808   4              KVM_Jump_Next_Power_Port(pid);                        
+1809   4            }
+1810   3            }
+1811   2            else
+1812   2            {
+1813   3              if (port_attached == 0)
+1814   3              {
+1815   4      #if (KVM_BUZZER_SUPPORT)
+1816   4              BUZZER_Script_Active(Error_Sound);
+1817   4      #endif //#if (KVM_BUZZER_SUPPORT)   
+1818   4              }           
+1819   3              return port_attached;
+1820   3            } 
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 31  
+
+1821   2          return 0;
+1822   2        }
+1823   1        else
+1824   1        {
+1825   2          return 1;
+1826   2        }     
+1827   1      } 
+1828          
+1829          /*--------------------------------------------------------------------------------
+1830           * void KVM_Audio_Combo_Switch_Check(void)
+1831           * Purpose : This function will check the Audio Combo Switch condition
+1832           * Params  : NONE
+1833           * Returns : None.
+1834           * Note    : None.
+1835           *-------------------------------------------------------------------------------*/
+1836          void KVM_Audio_Combo_Switch_Check(U8_T newport)
+1837          {
+1838   1        if (KVM_Flash.cSystemFlag1 & SYSTEM_AUDIOCOMBO_MASK) //if audio combo switch has been setting
+1839   1        {
+1840   2          if (KVM_CurrentUSBAudio != newport)
+1841   2          {
+1842   3            KVM_NextAudio = newport;
+1843   3      #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT) 
+                    USBHC_AUDIO_Switch(newport);
+              #endif
+1846   3          }
+1847   2        
+1848   2          if (KVM_CurrentAudio != newport)    
+1849   2          {   
+1850   3            KVM_NextAudio = newport;
+1851   3      #if (SYSTEM_AUDIO_DEVICE_SUPPORT)
+                    KVM_Audio_Switch(newport);
+              #endif      
+1854   3          }
+1855   2        }
+1856   1      }
+1857          
+1858          /*--------------------------------------------------------------------------------
+1859           * void KVM_AutoscanStop_Jump(U8_T jumpflag,U8_T newport)
+1860           * Purpose : Control the port jump operation during autoscan period
+1861           * Params  : NONE
+1862           * Returns : None.
+1863           * Note    : None.
+1864           *-------------------------------------------------------------------------------*/
+1865          void KVM_AutoscanStop_Jump(U8_T jumpflag,U8_T newport)
+1866          {
+1867   1        if (jumpflag && (KVM_CurrentHost != newport))
+1868   1        { 
+1869   2          KVM_Port_Jump(newport);   
+1870   2        }
+1871   1      }
+1872          
+1873          #if (SYSTEM_AUDIO_DEVICE_SUPPORT)
+              /*--------------------------------------------------------------------------------
+               * void KVM_AnalogAudioControl(U8_T newport)
+               * Purpose : This function will switch the analog audio by gpio pin
+               * Params  : NONE
+               * Returns : None.
+               * Note    : None.
+               *-------------------------------------------------------------------------------*/
+              void KVM_AnalogAudioControl(U8_T newport)
+              {
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 32  
+
+                /* Need Add code here */
+                
+                newport = 0;
+              }
+              
+              /*--------------------------------------------------------------------------------
+               * void KVM_Audio_Switch(U8_T newport)
+               * Purpose : This function will switch the analog audio 
+               * Params  : NONE
+               * Returns : None.
+               * Note    : None.
+               *-------------------------------------------------------------------------------*/
+              void KVM_Audio_Switch(U8_T newport)
+              {
+                if (KVM_NextAnalogAudio != newport)
+                {
+                  KVM_NextAnalogAudio = newport;    
+                  KVM_CurrentAudio = newport;    
+                  KVM_AnalogAudioControl(KVM_NextAnalogAudio);    
+                }
+              }
+              #endif //#if (SYSTEM_AUDIO_DEVICE_SUPPORT)
+1905          
+1906          
+1907          
+1908          
+1909          #if (KVM_BUTTON_SUPPORT) && (KVM_BUTTON_RELEASE_DELAY_INTERVAL) 
+              /*--------------------------------------------------------------------------------
+               * void TASK_KVM_Button_Release_Delay(void)
+               * Purpose : 
+               * Params  : NONE
+               * Returns : None.
+               * Note    : None.
+               *-------------------------------------------------------------------------------*/
+              void TASK_KVM_Button_Release_Delay(void)
+              {
+                BTN_Processing_Flag = 0;  
+                TASK_Destory_Current();
+              }
+              #endif /* #if (KVM_BUTTON_SUPPORT) && (KVM_BUTTON_RELEASE_DELAY_INTERVAL)   */
+1923          
+1924          #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT) && (SYSTEM_SWITCH_AUDIO_DELAY)
+              /*
+               *--------------------------------------------------------------------------------
+               * void KVM_CONSOLE_Switch_Port_Audio_Control(U8_T newport)
+               * Purpose : 
+               * Params  : NONE
+               * Returns : None.
+               * Note    : None.
+               *--------------------------------------------------------------------------------
+               */  
+              void KVM_CONSOLE_Switch_Port_Audio_Control(U8_T oldport)
+              {
+                //printf("+-+->  SW_AUDIO: OLD=%bu,",oldport);
+                if (KVM_Console_Switch_Audio_Delay_Task_ActiveID == 0)
+                {
+                  //printf("+-+->  SW_AUDIO: Oringial OLD=%bu,",oldport);
+                  KVM_Console_Switch_Audio_Delay_Task_ActiveID = 
+                    TASK_Active(TASK_TYPE_INTERVAL_MS,KVM_Console_Switch_Audio_Delay_Task_ID,0,oldport,SWITCH_PORT_DELAY_AU
+             -DIO_CNT,SWITCH_PORT_DELAY_AUDIO_CNT);                 
+                  //printf("NEW\n\r");    
+                }
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 33  
+
+                else
+                {
+                  Task_Active_Table[KVM_Console_Switch_Audio_Delay_Task_ActiveID].Task_Interval.w = SWITCH_PORT_DELAY_AUDI
+             -O_CNT;      
+                  //printf("+-+->  SW_AUDIO: OLD=%bu\n\r",oldport);
+                } 
+              }
+              
+              /*
+               *--------------------------------------------------------------------------------
+               * void TASK_KVM_CONSOLE_Switch_Port_Audio_Control(void)
+               * Purpose : 
+               * Params  : NONE
+               * Returns : None.
+               * Note    : None.22
+               *--------------------------------------------------------------------------------
+               */
+              void TASK_KVM_CONSOLE_Switch_Port_Audio_Control(void)
+              { 
+                //printf("+-+->  SW_AUDIO: DONE: Current=%bu,Old=%bu\n\r",KVM_CurrentHost,KVM_CurrentUSBAudio);
+                USBHC_AUDIO_Switch(KVM_CurrentHost);
+                //KVM_Audio_Combo_Switch_Check(KVM_CurrentHost);  
+                TASK_Destory_Current();
+                KVM_Console_Switch_Audio_Delay_Task_ActiveID = 0;
+              }
+              #endif /* #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT) && (SYSTEM_SWITCH_AUDIO_DELAY) */
+1969          
+1970          /**--------------------------------------------------------------------------------
+1971           * U8_T KVM_Console_Port_Jump(U8_T new_port)
+1972           * Purpose : 
+1973           * Params  : 
+1974           *           
+1975           *           
+1976           * Returns : None.
+1977           * Note    : None.
+1978           *--------------------------------------------------------------------------------*/
+1979          U8_T KVM_Console_Port_Jump(U8_T new_port)
+1980          { 
+1981   1      
+1982   1        printf("CurrentHost=%bu, JumpPort=%bu\r\n", KVM_CurrentHost, new_port);
+1983   1        if ((KVM_Control_Status & KVM_PORT_SW_MASK) == 0)
+1984   1        {         
+1985   2          if (KVM_CurrentHost != new_port ) // changed active port id
+1986   2          {           
+1987   3            if (KVM_Power_Jump_Check(new_port,0)) 
+1988   3            {         
+1989   4              KVM_Port_Jump(new_port);                  
+1990   4              return 1;
+1991   4            }
+1992   3          }
+1993   2        }
+1994   1        return 0;
+1995   1      }
+1996          
+1997          /**--------------------------------------------------------------------------------
+1998           * void KVM_CONSOLE_IAP_Mode(void)
+1999           * Purpose : 
+2000           * Params  : 
+2001           *           
+2002           *           
+2003           * Returns : None.
+2004           * Note    : None.
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 34  
+
+2005           *--------------------------------------------------------------------------------*/
+2006          void KVM_CONSOLE_IAP_Mode(void)
+2007          {   
+2008   1        FirmwareUpgradeFlag[0] = 'i';
+2009   1        FirmwareUpgradeFlag[1] = 'a';
+2010   1        FirmwareUpgradeFlag[2] = 'p';           
+2011   1        CPU_SoftReboot();   
+2012   1      } 
+2013          
+2014          /**--------------------------------------------------------------------------------
+2015           * void KVM_System_Config_Write(void)
+2016           * Purpose : 
+2017           * Params  : 
+2018           *           
+2019           *           
+2020           * Returns : None.
+2021           * Note    : None.
+2022           *--------------------------------------------------------------------------------*/
+2023          void KVM_System_Config_Write(void)
+2024          {
+2025   1      #if (SYSTEM_STORAGE_DEVICE_SUPPORT) 
+2026   1        printf("flash write\n\r");
+2027   1        STORAGE_Write(sizeof(KVM_Flash),(U8_T *)&KVM_Flash);
+2028   1      #endif  
+2029   1      }
+2030          #endif /* End of PROJECT_KVM_CONSOLE_ENABLE */
+2031          
+2032          
+2033          /* End of kvm_console.c */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   3213    ----
+   CONSTANT SIZE    =    308    ----
+   XDATA SIZE       =    693      15
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      3       2
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =    308    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

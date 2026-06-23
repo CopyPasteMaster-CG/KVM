@@ -1,0 +1,3881 @@
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBHC
+OBJECT MODULE PLACED IN .\usbhc.obj
+COMPILER INVOKED BY: C:\Users\Administrator\AppData\Local\Keil_v5\C51\BIN\C51.EXE ..\Src\usbhc\usbhc.c LARGE OMF2 ROM(D1
+                    -6M) OPTIMIZE(9,SIZE) BROWSE NOAREGS INCDIR(..\src\main\;..\src\cpu\;..\src\flash\;..\src\uart\;..\src\swdma\;..\src\msti
+                    -mer\;..\src\i2c\;..\src\spi\;..\src\task_man\;..\src\project\;..\Src\ps2_host;..\Src\console_edid;..\Src\storage;..\Src\
+                    -data_stream;..\Src\kvm_control\kvm_hotkey;..\Src\kvm_control\kvm_console;..\Src\kvm_control\kvm_button;..\Src\kvm_contro
+                    -l\kvm_edid;..\Src\kvm_control\kvm_buzzer;..\src\gpio\;..\Src\hardware_ps2;..\Src\usbdc;..\Src\usbdc\usbdc_virtual;..\Src
+                    -\usb_std;..\Src\usbhc;..\Src\kvm_control\power_saving;..\Src\usbhc\MSC;..\Src\usbhc\AUDIO;..\Src\usbhc\HUB;..\Src\usbhc\
+                    -HID;..\Src\usbhc\HID_PARSER;..\Src\usbhc\ROOT_HUB;..\Src\usbdc\usbdc_hub;..\Src\usbdc\usbdc_hid;..\Src\kvm_control\kvm_s
+                    -torage\spi_flash;..\Src\usbdc\usbdc_msc\usb_scsi;..\Src\usbdc\usbdc_msc;..\Src\handler\logitech;..\Src\handler\A4_Tech;.
+                    -.\Src\usbdc\usbdc_vendor;..\Src\hsur;..\Src\extender\core;..\Src\extender\receiver;..\Src\uart_console;..\Src\kvm_contro
+                    -l\km_sync;..\Src\hsur;..\Src\kvm_control\km_log;..\Src\kvm_control\km_api;..\Src\kvm_control\kvm_ir;..\Src\kvm_control\k
+                    -vm_rtc;..\Src\i2c;..\Src\kvm_control\kvm_multiview) STRING(FAR) DEFINE(RuntimeCodeAt0KH,MCU_TYPE_AX68004,KVM,HC_TIMEOUT=
+                    -10000,VHID,HID_PARSER_CORE_KB,HID_PARSER_CORE_MS,API,NO_AUDIO,NO_MSC,NO_EDID,HUART_BAUD=HUART_115K,SYNC,CROSS_JUMP_MAP0,
+                    -VPID_CHANGER,SYNC_KB_HOTKEY,SYNC_MS_HOTKEY,REPEAT_MODE=1,HSUART,MULTIVIEW) VARBANKING DEBUG PRINT(.\usbhc.lst) TABS(2) O
+                    -BJECT(.\usbhc.obj)
+
+line level    source
+
+   1          /*
+   2           *********************************************************************************
+   3           *     Copyright (c) 2014   ASIX Electronic Corporation      All rights reserved.
+   4           *
+   5           *     This is unpublished proprietary source code of ASIX Electronic Corporation
+   6           *
+   7           *     The copyright notice above does not evidence any actual or intended
+   8           *     publication of such source code.
+   9           *********************************************************************************
+  10           */
+  11          /*================================================================================
+  12           * Module Name : usbhc.c
+  13           * Purpose     : The USB host controller with 4 port root hub module driver. 
+  14           *               It manages the TD buffer and handles the ISR. 
+  15           * Author      : Jack Wang
+  16           * Date        :
+  17           * Notes       :
+  18           * no message
+  19           *
+  20           * -------------------------------------------------------------------------------
+  21           *               Standard Request(bRequest)
+  22           *               [v].Get Status(0x00)
+  23           *               [v].Clear Feature(0x01)
+  24           *               [v].Set Feature(0x03)
+  25           *               [v].Set Address(0x05)               wValueH
+  26           *               [v].Get Descriptor(0x06)----------> [v].Device(0x01)
+  27           *               [v].Set Descriptor(0x07)            [v].Config(0x02)
+  28           *               [v].Get Config(0x08)                [v].String(0x03)
+  29           *               [v].Set Config(0x09)                [v].HID(0x021)  
+  30           *               [v].Get Interface(0x0A)             [v].Report(0x22)
+  31           *               [v].Set Interface(0x0B)             [ ].Physical(0x23)
+  32           *               [ ].Sync Frame
+  33           *               [v].Stall
+  34           *================================================================================
+  35           */
+  36          
+  37          /* INCLUDE FILE DECLARATIONS */
+  38          #include  <string.h>
+  39          #include  <stdio.h>
+  40          #include  <stdlib.h>
+  41          #include  "project_include.h"
+  42          
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 2   
+
+  43          /* STATIC VARIABLE DECLARATIONS */ 
+  44          const U8_T          MOUNT_PORT[] = {UDC_PORT0_ACT,UDC_PORT1_ACT,UDC_PORT2_ACT,UDC_PORT3_ACT};
+  45          const U8_T            MicrosoftString[] = {0x14,0x03,0x4D,0x00,0x69,0x00,0x63,0x00,0x72,0x00,0x6F,0x00,0x73,0x
+             -00,0x6F,0x00,0x66,0x00,0x74,0x00};
+  46          //---------------------- I M P O R T A N T -------------------------------------------------
+  47          HCTD_Table_Typedef      HCTD_Table _at_ 0x00000000; //This is for Hardware requirement
+  48          //------------------------------------------------------------------------------------------
+  49          USBHC_TD_Channel_TypeDef  HCTD_Channel_Table[USB_HC_ISTL_MAX+USB_HC_INTL_MAX+USB_HC_ATL_MAX]; // Store the 
+             -device index
+  50          USB_PDevice_TypeDef     USB_PDevice[USB_HC_MAX_DEVICE+USB_HC_MAX_HUB];
+  51          USBHC_IntTransfer_TypeDef HC_IntTransfer_Table[USB_HC_INTL_MAX];
+  52          USBHC_IsoTransfer_TypeDef HC_IsoTransfer_Table[USB_HC_ISTL_MAX];
+  53          
+  54          bit   TASK_USBHC_KVM_Switch_Check_Start_Flag;
+  55          U8_T  TASK_USBHC_Process_ID;
+  56          U8_T  TASK_USBHC_Enumerate_Handle_ID;
+  57          U8_T  TASK_USBHC_Scm_Handle_ID;
+  58          U8_T  TASK_USBHC_Scm_Handle_Start_ID;
+  59          U8_T  USBHC_Enumerate_New_Addr;
+  60          U8_T  USBHC_String_Idx_Fix;
+  61          U8_T  TASK_USBHC_KVM_Switch_Check_ID;
+  62          U8_T  TASK_USBHC_Resume_Command_ID;
+  63          U8_T  USBHC_KVM_Switch_Check_Devinx;
+  64          U8_T  TASK_USBHC_PassThrough_Handle_Start_ID;
+  65          U8_T  TASK_USBHC_PassThrough_Handle_ID;
+  66          U8_T    TASK_USBHC_Audio_DC_Mount_Handle_ID;
+  67          U8_T  USB_PDevice_Reset_Tab[USB_HC_MAX_DEVICE+USB_HC_MAX_HUB];
+  68          U8_T  USBHC_PDevice_ResetIndex;
+  69          U8_T    Hid_Data[64];
+  70          #ifdef SYNC
+  71          U8_T  USBHC_PDevice_SyncInit[USB_HC_MAX_DEVICE];
+  72          #endif /* #ifdef SYNC */
+  73          idata  U16_T  MSC_Class_Page_Size;
+  74          
+  75          /* LOCAL SUBPROGRAM DECLARATIONS */
+  76          void TASK_USBHC_KVM_Switch_Check(void);
+  77          RESULT USBHC_SetAddress(U8_T devinx,U8_T td_id,U8_T emustate);
+  78          RESULT USBHC_GetDevDesc(U8_T devinx,U8_T td_id,U8_T desc_len);
+  79          RESULT USBHC_GetCfgDesc(U8_T devinx,U8_T td_id,U16_T desc_len,U8_T emustate);
+  80          void USBHC_Memory_Fail_Msg(U8_T msgindex);
+  81          RESULT USBHC_SetConfiguration(U8_T devinx,U8_T td_id,U8_T emustate);
+  82          RESULT USBHC_SetDeviceFeature(U8_T devinx,U8_T td_id,U8_T feature,U8_T emustate);
+  83          RESULT USBHC_GetStringDesc(U8_T devinx,U8_T td_id,U8_T stringidx,U8_T desc_len,U8_T emu_process_id);
+  84          void TASK_USBHC_Scm_Handle_Start(void);
+  85          void TASK_USBHC_Resume_Command(void);
+  86          void TASK_USBHC_PassThrough_Handle_Start(void);
+  87          void TASK_USBHC_PassThrough_Handle(void);
+  88          RESULT USBHC_SCM_SetInterface(U8_T devinx,U8_T td_id,U8_T configuration);
+  89          RESULT USBHC_SCM_SetIdle(U8_T devinx,U8_T td_id,U8_T intf_id);
+  90          void USBHC_Set_Dev_Idle(U8_T devinx,U8_T intf);
+  91          RESULT USBHC_SCM_SetHubFeature(U8_T devinx,U8_T td_id,U8_T para2);
+  92          RESULT USBHC_SCM_ClearHubFeature(U8_T devinx,U8_T td_id,U8_T para2);
+  93          void USBHC_Enumerate_Condition_Release(U8_T devinx);
+  94          #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+              void TASK_USBHC_Audio_DC_Mount_Handle(void);
+              #endif
+  97          void USBHC_INTL_SkipMap_Control(U8_T devinx,U8_T value);
+  98          static void USBHC_Channel_Control_Attribute(U8_T devinx,U8_T td_id);
+  99          /* EXTERNAL SUBPROGRAM DECLARATIONS */
+ 100          extern RESULT USBHC_SCM_SetLedReport(U8_T devinx,U8_T td_id);
+ 101          extern RESULT USBHC_SCM_SetProtocol(U8_T devinx,U8_T td_id,U8_T inf,U8_T mode);
+ 102          RESULT      USBHC_SCM_SetConfiguration(U8_T devinx,U8_T td_id,U8_T configuration);
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 3   
+
+ 103          
+ 104          /* EXTERNAL GLOBAL VARIABLES DECLARATIONS */
+ 105          /* LOCAL SUBPROGRAM BODIES */
+ 106          
+ 107          /*
+ 108           * ----------------------------------------------------------------------------
+ 109           * void USBHC_Init(void)
+ 110           * Purpose : 1.Init Memory
+ 111           *           2.Assign TD buffer address into register(0x31)
+ 112           *           3.Assign different TD buffer information into register
+ 113           *             a.
+ 114           * Params  : none
+ 115           * Returns : none
+ 116           * Note    : none
+ 117           * ----------------------------------------------------------------------------
+ 118           */
+ 119          void USBHC_Init(void)
+ 120          {
+ 121   1        //1.Memory Initial operation
+ 122   1        memset((U8_T *)&HCTD_Table,0x00,sizeof(HCTD_Table)); /* TD Table for HC hardware */
+ 123   1        memset((U8_T *)USB_PDevice,0x00,sizeof(USB_PDevice)); /* USB physical device table */
+ 124   1        memset((U8_T *)HC_IntTransfer_Table ,0x00,sizeof(HC_IntTransfer_Table));  /* TD interrupt Transfer Table 
+             -*/
+ 125   1        memset(HCTD_Channel_Table,0x00,sizeof(HCTD_Channel_Table)); /* Logical TD Channel Table */
+ 126   1        //2.Do the HC core hard Init
+ 127   1        USBHC_CORE_Init();
+ 128   1        
+ 129   1        TASK_USBHC_Process_ID = TASK_Create(TASK_USBHC_Process);
+ 130   1        TASK_USBHC_Enumerate_Handle_ID = TASK_Create(TASK_USBHC_Enumerate_Handle);
+ 131   1        TASK_USBHC_PassThrough_Handle_Start_ID = TASK_Create(TASK_USBHC_PassThrough_Handle_Start);
+ 132   1        TASK_USBHC_PassThrough_Handle_ID = TASK_Create(TASK_USBHC_PassThrough_Handle);
+ 133   1        TASK_USBHC_Scm_Handle_ID = TASK_Create(TASK_USBHC_Scm_Handle);
+ 134   1        TASK_USBHC_Scm_Handle_Start_ID = TASK_Create(TASK_USBHC_Scm_Handle_Start);
+ 135   1        TASK_USBHC_KVM_Switch_Check_ID = TASK_Create(TASK_USBHC_KVM_Switch_Check);
+ 136   1        TASK_USBHC_Resume_Command_ID = TASK_Create(TASK_USBHC_Resume_Command);
+ 137   1      #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+                TASK_USBHC_Audio_DC_Mount_Handle_ID = TASK_Create(TASK_USBHC_Audio_DC_Mount_Handle);
+              #endif
+ 140   1        TASK_USBHC_KVM_Switch_Check_Start_Flag = 0;
+ 141   1        
+ 142   1        HID_Class_Enum_Init(); //HID Class Supported
+ 143   1        USBHC_KVM_Switch_Check_Devinx = 0;
+ 144   1        USBHC_HUB_Class_Enum_Init();
+ 145   1      #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+                USBHC_AUDIO_Init();
+              #endif //#if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+ 148   1      
+ 149   1      #if (SYSTEM_MSC_DEVICE_SUPPORT)
+                USBHC_MSC_Init();
+              #endif //#if (SYSTEM_MSC_DEVICE_SUPPORT)
+ 152   1      
+ 153   1      #if (SYSTEM_EXTENDER_MSC_SUPPORT)
+                Extender_MSC_Init(0);
+              #endif /*#if (SYSTEM_EXTENDER_MSC_SUPPORT) */
+ 156   1      
+ 157   1        USBHC_HidParser_Init();
+ 158   1      
+ 159   1      #if (SYSTEM_TASK_DUMP_SUPPORT)
+                printf("TASK_USBHC_Process_ID=%bu\n\r",TASK_USBHC_Process_ID);
+                printf("TASK_USBHC_Enumerate_Handle_ID=%bu\n\r",TASK_USBHC_Enumerate_Handle_ID);
+                printf("TASK_USBHC_PassThrough_Handle_Start_ID=%bu\n\r",TASK_USBHC_PassThrough_Handle_Start_ID);
+                printf("TASK_USBHC_PassThrough_Handle_ID=%bu\n\r",TASK_USBHC_PassThrough_Handle_ID);
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 4   
+
+                printf("TASK_USBHC_Scm_Handle_ID=%bu\n\r",TASK_USBHC_Scm_Handle_ID);
+                printf("TASK_USBHC_Scm_Handle_Start_ID=%bu\n\r",TASK_USBHC_Scm_Handle_Start_ID);
+                printf("TASK_USBHC_KVM_Switch_Check_ID=%bu\n\r",TASK_USBHC_KVM_Switch_Check_ID);
+                printf("TASK_USBHC_Resume_Command_ID=%bu\n\r",TASK_USBHC_Resume_Command_ID);
+              #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+                printf("TASK_USBHC_Audio_DC_Mount_Handle_ID=%bu\n\r",TASK_USBHC_Audio_DC_Mount_Handle_ID);
+              #endif
+              #endif  
+ 172   1      } /* End of USBHC_Init */
+ 173          
+ 174          /**
+ 175          * @brief  TASK_USBHC_Process
+ 176          *         USB Host core main state machine process
+ 177          * @param  None 
+ 178          * @retval None
+ 179          */
+ 180          void TASK_USBHC_Process(void)
+ 181          {
+ 182   1        U8_T  devinx = TASK_Register0;
+ 183   1      
+ 184   1        //Skip task if the device is gone
+ 185   1        if ((USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK) == 0x00)  // Device is gone  
+ 186   1        {
+ 187   2          return;
+ 188   2        }
+ 189   1      
+ 190   1      TASK_USBHC_Process_Restart:
+ 191   1        switch (USB_PDevice[devinx].Hc.gState)
+ 192   1        {
+ 193   2          case HOST_DEV_RESET: // Root hub port reset:Hub Port Status Changed
+ 194   2            //Check Port enable & connect
+ 195   2            break;
+ 196   2          case HOST_DEV_RESET_WAIT: // Root hub port reset:Hub Port Status Changed
+ 197   2            //Check Port enable & connect
+ 198   2            break;
+ 199   2          case HOST_DEV_ATTACHED: // Device attached in root hub downstream port
+ 200   2            // Next step go for enumeration.
+ 201   2            USB_PDevice[devinx].Hc.gState = HOST_ENUMERATION; // start do Enumeration operation
+ 202   2            //USB_PDevice[devinx].Hc.EnumState = ENUM_SET_ADDR; // Do set addressing
+ 203   2            USB_PDevice[devinx].Hc.EnumState = ENUM_START; 
+ 204   2            USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+ 205   2      
+ 206   2          case HOST_ENUMERATION:
+ 207   2            if (USB_PDevice[devinx].Hc.EnumState == ENUM_IDLE) // Do set addressing
+ 208   2            {
+ 209   3              if ( USB_PDevice[devinx].Hc.Control.State == CTRL_FAIL)
+ 210   3              {
+ 211   4                printf("@@ENU@@ ERROR:Devinx:%bd,Skip Next Class Enumerate\n\r", devinx);
+ 212   4                USBHC_RootHub_Bus_Occupy_Flag = 0; //unlock the root hub connection enumeration
+ 213   4                USBHC_HUB_ReleaseEnumerateOperation();
+ 214   4                USB_PDevice[devinx].Hc.EnumState = HID_ENUM_IDLE;
+ 215   4                USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+ 216   4                USBHC_Remove_Device(devinx, 0); //remove the device
+ 217   4              }
+ 218   3              else
+ 219   3              {
+ 220   4                USB_PDevice[devinx].Hc.gState = HOST_HID_CLASS_ENUMERATION;
+ 221   4                goto TASK_USBHC_Process_Restart;
+ 222   4              }
+ 223   3            }
+ 224   2            else
+ 225   2            {
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 5   
+
+ 226   3              TASK_Active(TASK_TYPE_USB,TASK_USBHC_Enumerate_Handle_ID,0,devinx,0,0); // Generate the task
+ 227   3            }
+ 228   2            break;
+ 229   2          case HOST_HID_CLASS_ENUMERATION: // if any interface has claim the hid class, then get the report conten
+             -t now.
+ 230   2            USB_PDevice[devinx].Hc.HID_EnumState = HID_ENUM_SET_IDLE;
+ 231   2            TASK_Active(TASK_TYPE_USB,TASK_USBHC_HID_Class_Enumerate_ID,0,devinx,0x00,0);  // Generate the task
+ 232   2            break;
+ 233   2          case HOST_CLASS_ENUMERATION:
+ 234   2            switch (USB_PDevice[devinx].DevClass)
+ 235   2            {
+ 236   3              case USB_HID_CLASS:
+ 237   3      #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)            
+                      case USB_AUDIO_CLASS:
+              #endif /* #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT) */                     
+ 240   3      #if (SYSTEM_MSC_DEVICE_SUPPORT)
+                      case USB_MSC_CLASS:
+              #endif //#if (SYSTEM_MSC_DEVICE_SUPPORT)
+ 243   3                USB_PDevice[devinx].Hc.gState = HOST_ENUMLATE_TERMINATED;
+ 244   3                goto TASK_USBHC_Process_Restart;
+ 245   3              case USB_HUB_CLASS:         
+ 246   3                USB_PDevice[devinx].Hc.HUB_EnumState = HUB_ENUM_GET_DESC;
+ 247   3                USB_PDevice[devinx].HUB.HC_qt_Bk = HOST_CLASS_ENUMERATION;
+ 248   3                USB_Hub_Class_Enumerate_Fork(devinx);
+ 249   3                break;
+ 250   3              default:          
+ 251   3                /* Class not support */
+ 252   3                USBHC_Enumerate_Condition_Release(devinx);
+ 253   3                USB_PDevice[devinx].Hc.gState = HOST_CLASS_REQUEST;
+ 254   3                //printf("> Class(%02bx) not support\n\r", USB_PDevice[devinx].DevClass);
+ 255   3                break;
+ 256   3            }
+ 257   2            break;
+ 258   2          case HOST_ENUMLATE_TERMINATED:
+ 259   2            USB_PDevice[devinx].Hc.gState = HOST_CLASS_REQUEST; // Class maintain..........
+ 260   2            switch(USB_PDevice[devinx].DevClass)
+ 261   2            {
+ 262   3      #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)        
+                      case USB_AUDIO_CLASS: 
+              #if (SYSTEM_EXTENDER_TRANSMITTER)
+                        if ((USB_PDevice[devinx].DevAttr & DEVATTR_REMOTE_DEV_MASK) == 0x00) //if not extender remote device
+                        {
+                          //printf("Transmitter: Not support local AUDIO class device(%bu)\n\r",devinx);
+                          USBHC_Enumerate_Condition_Release(devinx);
+                          break;
+                        } 
+              #endif  /* #if (SYSTEM_EXTENDER_TRANSMITTER) */           
+              
+              #ifdef DEVICE_GPIO_DEFINE
+                        if (Audio_Device_Support_Gpio != DEVCIE_AUDIO_SUPPORT)
+                        {
+                          //printf("Audio Class not support(%bu)\n\r",devinx);
+                          USBHC_Enumerate_Condition_Release(devinx);
+                          break;
+                        } 
+              #endif        
+                        USBHC_Audio_Device_Cnt++;
+                        if (USBHC_Audio_Device_Cnt > SYSTEM_AUDIO_MAX)
+                        {
+                          //Error Message to Buffer
+              #if (KVM_BUZZER_SUPPORT)
+                          BUZZER_Script_Active(DeviceErrorSound);
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 6   
+
+              #endif //#if (KVM_BUZZER_SUPPORT)
+              #if (SYSTEM_AUDIO_MAX)
+                          //printf("Too many audio device, skip mount\n\r");
+              #endif /* #if (SYSTEM_AUDIO_MAX) */
+                          USBHC_Enumerate_Condition_Release(devinx);
+                        }
+                        else
+                        {
+              #if (SYSTEM_EXTENDER_TRANSMITTER)           
+                          KVM_CurrentUSBAudio = KVM_CurrentHost;
+              #endif            
+                            //if ((KVM_Flash.cSystemFlag0 & SYSTEM_AUDIO_REPORT_ALL_MASK) == 0x00)
+                            {
+              #if (SYSTEM_EXTENDER_RECEIVER)              
+                              KVM_CurrentUSBAudio = KVM_CurrentHost;                
+              #endif              
+              
+              #if (SYSTEM_KVM)
+                            if (USBHC_Audio_Hotkey_Sw_Flag)
+                            { 
+                              //printf("   USB Audio Hotkey Switchn\n\r");
+                              //USBHC_Audio_Switch_In_Processing_Flag = 0;
+                              USBHC_Audio_Hotkey_Sw_Flag = 0;
+                              KVM_CurrentUSBAudio = KVM_NextAudio;
+                            }
+                            else
+                            { 
+                              KVM_CurrentUSBAudio = KVM_CurrentHost;
+                            } 
+              #endif
+                              USBHC_Active_New_Device(devinx,MOUNT_PORT[KVM_CurrentUSBAudio]);
+                          }           
+                          
+              #if (SYSTEM_EXTENDER_RECEIVER)
+                          ETDR_AudioOutHead = 0;
+                          ETDR_AudioOutTail = 0;
+                          ETDR_AudioOutHcDoingFlag = 0;
+                          ETDR_AudioInWaitFlag = 0;
+                          ETDR_AudioInHead = 0;
+                          ETDR_AudioInTail = 0;
+                          ETDR_AudioInTailSkipFlag = 0;
+              #endif /* #if (SYSTEM_EXTENDER_RECEIVER) */
+                        }
+                        break;
+              #endif //#if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)         
+ 332   3              case USB_HUB_CLASS:
+ 333   3                USBHC_Active_New_Device(devinx,UDC_PORT_ALL_ACT);
+ 334   3                break;
+ 335   3              case USB_HID_CLASS:
+ 336   3                USB_PDevice[devinx].Hc.HID_EnumState = HID_ENUM_IDLE; // Enumeration Ternmination
+ 337   3                USBHC_Active_New_Device(devinx,UDC_PORT_ALL_ACT);
+ 338   3                if (USB_PDevice[devinx].DevAttr & DEVATTR_KB_CLASS_MASK) // if the this device contain the keyboard i
+             -nterface
+ 339   3                {
+ 340   4                  if (USBHC_KB_Led_Check(devinx))
+ 341   4                  { 
+ 342   5                    USB_PDevice[devinx].Hc.gState   = HOST_SCM; //go to set the Set Report command
+ 343   5                    USB_PDevice[devinx].Hc.ScmdStep = SCMD_SET_LED_REPORT;
+ 344   5                    goto TASK_USBHC_Process_Restart; // for last command
+ 345   5                  } 
+ 346   4                }
+ 347   3                break;
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 7   
+
+ 348   3      #if (SYSTEM_MSC_DEVICE_SUPPORT)
+                      case USB_MSC_CLASS:
+              #if (SYSTEM_EXTENDER_TRANSMITTER)   
+                        if ((USB_PDevice[devinx].DevAttr & DEVATTR_REMOTE_DEV_MASK) == 0x00) //if not extender remote device
+                        {
+                          //printf("Transmitter: Not support local Mass Storage Class device(%bu)\n\r",devinx);
+                          USBHC_Enumerate_Condition_Release(devinx);
+                          break;
+                        } 
+              #endif  /* #if (SYSTEM_EXTENDER_TRANSMITTER) */   
+              
+              #ifdef DEVICE_GPIO_DEFINE
+                        if (MSC_Device_Support_Gpio != DEVCIE_MSC_SUPPORT)
+                        {
+                          //printf("Storage Class not support(%bu)\n\r",devinx);
+                          USBHC_Enumerate_Condition_Release(devinx);
+                          break;
+                        } 
+              #endif              
+                        USBHC_MSC_Device_Cnt++; // How may msc device has been attached         
+                        //if (USBHC_MSC_Device_Cnt > SYSTEM_MSC_MAX)
+                        if (USBHC_MSC_Devinx != 0xff)
+                        {
+                          //Error Message to Buffer
+              #if (KVM_BUZZER_SUPPORT)
+                          BUZZER_Script_Active(DeviceErrorSound);
+              #endif //#if (KVM_BUZZER_SUPPORT)
+              #if (SYSTEM_MSC_MAX)
+                          //printf("Too many msc device, skip mount\n\r");
+              #else
+                          //printf("Not support msc device, skip mount\n\r");
+              #endif
+                          USBHC_Enumerate_Condition_Release(devinx);
+                          break;
+                        }
+                        else
+                        {
+                          USB_PDevice[devinx].Hc.gState = HOST_CLASS_REQUEST;
+                          if (USBHC_MSC_Class_Verify(devinx) != USB_SUCCESS) //Check the protocol MSC used
+                          {
+                            //printf("> KVM: MSC class type device not supported\n\r");
+                            //Error Message to Buffer
+              #if (KVM_BUZZER_SUPPORT)
+                            BUZZER_Script_Active(MSC_Switch_Error);
+              #endif //#if (KVM_BUZZER_SUPPORT)
+                            USBHC_Enumerate_Condition_Release(devinx);
+                            break;
+                          }
+                          
+                          //Start handling MSC class device
+                          USBHC_MSC_Devinx = devinx;
+                                      
+                          //There are 2 condition will caused the MSC device remount
+                          //1.MSC Switch
+                          //2.MSC Reset by DC port
+                          //Handle the Condition 1
+                          if (KVM_CurrentMSC_Next & BIT7)
+                          {           
+                            KVM_CurrentMSC_Next &= (~BIT7);
+                            KVM_CurrentMSC = KVM_CurrentMSC_Next;
+                          }
+                          else            
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 8   
+
+                          {
+              #if (SYSTEM_EXTENDER_TRANSMITTER)               
+                            KVM_CurrentMSC = KVM_CurrentHost;
+              #endif
+              
+              #if (SYSTEM_EXTENDER_RECEIVER)                
+                            KVM_CurrentMSC = REMOTE_HOST_PORT;
+              #endif            
+              
+              #if (SYSTEM_KVM)
+                            KVM_CurrentMSC = KVM_CurrentHost;;
+              #endif                
+                          }
+                          
+                          //Handle the Condition 2
+                          if (USBHC_MSC_Reset_Flag)
+                          {           
+                            KVM_CurrentMSC = USBHC_MSC_Reset_DCPort;
+                          }
+                                          
+                          USBHC_MSC_TD_Assign_Devinx(devinx);
+                          USB_PDevice[devinx].MSC = (USBHC_MSC_Device_TypeDef *) m_malloc(sizeof(USBHC_MSC_Device_TypeDef),5);
+                          USB_PDevice[devinx].MSC->BOT = (MSC_BOT_Control_TypeDefine *) m_malloc(sizeof(MSC_BOT_Control_TypeDe
+             -fine),4);
+                        }
+                        USBHC_MSC_Bulk_State_Reset(devinx);
+                        USBHC_Active_New_Device(devinx,MOUNT_PORT[KVM_CurrentMSC]);
+                        break;
+              #endif //#if (SYSTEM_MSC_DEVICE_SUPPORT)
+ 438   3              default:          
+ 439   3                break;
+ 440   3            }
+ 441   2            break;
+ 442   2          case HOST_SCM:
+ 443   2            if (USB_PDevice[devinx].Hc.ScmdState == SCMD_IDLE) //The first Start
+ 444   2            {
+ 445   3              if ((USB_PDevice[devinx].DevAttr & DEVATTR_REMOTE_DEV_MASK) == 0x00)  //if extender, then 
+ 446   3              { 
+ 447   4                TASK_Active(TASK_TYPE_EVENT,TASK_USBHC_Scm_Handle_Start_ID,0,devinx,0,0); //Generate the task, for ne
+             -xt Event check
+ 448   4              }
+ 449   3              else
+ 450   3              {
+ 451   4                USB_PDevice[devinx].Hc.gState = HOST_CLASS_REQUEST; // Class maintain..........
+ 452   4                USB_PDevice[devinx].Hc.ScmdState = SCMD_IDLE;
+ 453   4                break;
+ 454   4              }   
+ 455   3            }
+ 456   2            else
+ 457   2            {
+ 458   3              if ((USB_PDevice[devinx].Hc.ScmdState == SCMD_FAIL) || //The first Start
+ 459   3                (USB_PDevice[devinx].Hc.ScmdState == SCMD_COMPLETE))
+ 460   3              {
+ 461   4                USB_PDevice[devinx].Hc.gState = HOST_CLASS_REQUEST; // Class maintain..........
+ 462   4                USB_PDevice[devinx].Hc.ScmdState = SCMD_IDLE;
+ 463   4                goto TASK_USBHC_Process_Restart;
+ 464   4              }
+ 465   3            }
+ 466   2            break;
+ 467   2          case HOST_CLASS_REQUEST:
+ 468   2            break;
+ 469   2          default:
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 9   
+
+ 470   2            break;
+ 471   2        }
+ 472   1      }
+ 473          
+ 474          /**
+ 475          * @brief  USBHC_Control_TD_Init
+ 476          *          
+ 477          * @param  None 
+ 478          * @retval None
+ 479          */
+ 480          USBH_Status USBHC_Control_TD_Init(U8_T devinx,U8_T *rtn_tdid)
+ 481          {
+ 482   1        U8_T td_id;
+ 483   1        
+ 484   1        td_id = USBHC_CORE_Alloc_TD(); //Get a free ATL TD
+ 485   1        if (td_id == 0)
+ 486   1        {
+ 487   2          //printf("Devinx:%bd,No ATL Free TD can used\n\r",devinx);
+ 488   2          return USBH_FAIL;
+ 489   2        }
+ 490   1        td_id--;
+ 491   1      
+ 492   1        memset(&HCTD_Channel_Table[td_id], 0x00, sizeof(USBHC_TD_Channel_TypeDef));
+ 493   1        HCTD_Channel_Table[td_id].Used_DeviceID = USBHC_TD_USED_MASK;
+ 494   1        USBHC_Channel_Control_Attribute(devinx,td_id);
+ 495   1        USB_PDevice[devinx].Hc.Control.TdNum = td_id;
+ 496   1        *rtn_tdid = td_id;
+ 497   1        return USBH_OK;
+ 498   1      }
+ 499          
+ 500          /**
+ 501          * @brief  TASK_USBHC_Enumerate_Handle
+ 502          *         USB Host core main state machine process
+ 503          * @param  None 
+ 504          * @retval None
+ 505          */
+ 506          void TASK_USBHC_Enumerate_Handle(void)
+ 507          {
+ 508   1        U8_T  devinx,td_id;
+ 509   1        RESULT  Result=USB_ERROR;
+ 510   1        U8_T  hubdevinx;
+ 511   1        USBHC_DevDesc_TypeDef *devsc;
+ 512   1      
+ 513   1        devinx = TASK_Register0;
+ 514   1        td_id = USB_PDevice[devinx].Hc.Control.TdNum; // which host channel is used by device
+ 515   1      
+ 516   1        //Skip task if the device is gone
+ 517   1        if ((USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK) == 0x00)  // Device is gone  
+ 518   1        {
+ 519   2          return;
+ 520   2        }
+ 521   1        
+ 522   1      TASK_USBHC_Enumerate_Handle_Restart:
+ 523   1        switch (USB_PDevice[devinx].Hc.EnumState)
+ 524   1        {
+ 525   2          case ENUM_START:
+ 526   2            if (USB_PDevice[devinx].Hc.Control.State == CTRL_IDLE)
+ 527   2            {
+ 528   3              if (USBHC_Control_TD_Init(devinx,&td_id) == USBH_OK)
+ 529   3              {
+ 530   4                USB_PDevice[devinx].Hc.EnumState = ENUM_GET_DEV_DESC0;
+ 531   4                //USB_PDevice[devinx].Hc.EnumState = ENUM_SET_ADDR;
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 10  
+
+ 532   4                //USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+ 533   4                Result = USB_SUCCESS;
+ 534   4              }   
+ 535   3              else
+ 536   3              {
+ 537   4                USB_PDevice[devinx].Hc.EnumState = ENUM_FAIL;
+ 538   4              }       
+ 539   3            }   
+ 540   2            break;
+ 541   2          case ENUM_SET_ADDR: //Start to Get device description
+ 542   2            //Result = USBHC_SetAddress(devinx,td_id,ENUM_GET_CFG_DESC);
+ 543   2            Result = USBHC_SetAddress(devinx,td_id,ENUM_GET_DEV_DESC);
+ 544   2            break;
+ 545   2          case ENUM_GET_DEV_DESC0:      
+ 546   2          case ENUM_GET_DEV_DESC:
+ 547   2            Result = USBHC_GetDevDesc(devinx,td_id,0x12);
+ 548   2            break;
+ 549   2          case ENUM_GET_CFG_DESC:
+ 550   2            Result = USBHC_GetCfgDesc(devinx,td_id,0x12,ENUM_GET_FULL_CFG_DESC);
+ 551   2            break;
+ 552   2          case ENUM_GET_FULL_CFG_DESC:
+ 553   2            Result = USBHC_GetCfgDesc(devinx,td_id,USB_PDevice[devinx].CfgTotalLen,ENUM_GET_LANGID_STRING);
+ 554   2            break;
+ 555   2          case ENUM_GET_LANGID_STRING:
+ 556   2            devsc = (USBHC_DevDesc_TypeDef *)(USB_PDevice[devinx].Desc[DEVICE_DESC].Ptr);
+ 557   2            if ((devsc->iManufacturer == 0) && (devsc->iProduct == 0))
+ 558   2            {       
+ 559   3              USB_PDevice[devinx].Desc[LANG_ID].Len = 4; //no language id length
+ 560   3              USB_PDevice[devinx].Desc[LANG_ID].Ptr = m_malloc(4,6);
+ 561   3              USB_PDevice[devinx].Desc[LANG_ID].Ptr[0] = 0x04;
+ 562   3              USB_PDevice[devinx].Desc[LANG_ID].Ptr[1] = 0x03;
+ 563   3              USB_PDevice[devinx].Desc[LANG_ID].Ptr[2] = 0x09;
+ 564   3              USB_PDevice[devinx].Desc[LANG_ID].Ptr[3] = 0x04;
+ 565   3              USB_PDevice[devinx].Hc.EnumState = ENUM_GET_SERIALNUM_STRING;
+ 566   3              Result = USB_SUCCESS;
+ 567   3            }
+ 568   2            else
+ 569   2            {         
+ 570   3              Result = USBHC_GetStringDesc(devinx,td_id,0x00,0,ENUM_GET_FULL_LANGID_STRING); // langid
+ 571   3            }       
+ 572   2            break; 
+ 573   2          case ENUM_GET_FULL_LANGID_STRING:
+ 574   2            Result = USBHC_GetStringDesc(devinx,td_id,0x00,USB_PDevice[devinx].Desc[LANG_ID].Len,ENUM_GET_SERIALNUM
+             -_STRING); // langid
+ 575   2            break;
+ 576   2          case ENUM_GET_SERIALNUM_STRING:
+ 577   2            Result = USBHC_GetStringDesc(devinx,td_id,0x03,0,ENUM_GET_FULL_SERIALNUM_STRING); // Serial string
+ 578   2            break;
+ 579   2          case ENUM_GET_FULL_SERIALNUM_STRING:
+ 580   2            if (USB_PDevice[devinx].idVendor == 0x045E)  //Microsoft
+ 581   2            {
+ 582   3              USB_PDevice[devinx].Desc[VENDOR_ID].Len = 20;
+ 583   3              USB_PDevice[devinx].Desc[VENDOR_ID].Ptr = MicrosoftString;
+ 584   3              Result = USBHC_GetStringDesc(devinx,td_id,0x03,USB_PDevice[devinx].Desc[SERIAL_ID].Len,ENUM_GET_PRODUC
+             -T_STRING);//Serial string       
+ 585   3            }
+ 586   2            else
+ 587   2            {         
+ 588   3                Result = USBHC_GetStringDesc(devinx,td_id,0x03,USB_PDevice[devinx].Desc[SERIAL_ID].Len,ENUM_GET_VEN
+             -DOR_STRING);//Serial string
+ 589   3            } 
+ 590   2            break;
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 11  
+
+ 591   2          case ENUM_GET_VENDOR_STRING:
+ 592   2            Result = USBHC_GetStringDesc(devinx,td_id,0x01,0,ENUM_GET_FULL_VENDOR_STRING); // Manufacturer string
+ 593   2            break;
+ 594   2          case ENUM_GET_FULL_VENDOR_STRING:
+ 595   2            Result = USBHC_GetStringDesc(devinx,td_id,0x01,USB_PDevice[devinx].Desc[VENDOR_ID].Len,ENUM_GET_PRODUCT
+             -_STRING);//Manufacturer string
+ 596   2            break; 
+ 597   2          case ENUM_GET_PRODUCT_STRING:
+ 598   2            Result = USBHC_GetStringDesc(devinx,td_id,0x02,0,ENUM_GET_FULL_PRODUCT_STRING); // Product string
+ 599   2            break;
+ 600   2          case ENUM_GET_FULL_PRODUCT_STRING:
+ 601   2            Result = USBHC_GetStringDesc(devinx,td_id,0x02,USB_PDevice[devinx].Desc[PRODUCT_ID].Len,ENUM_SET_CONFIG
+             -URATION); // Product string
+ 602   2            break;
+ 603   2          case ENUM_GET_MSOS_STRING:
+ 604   2      //      Result = USBHC_GetStringDesc(devinx,td_id,0xee,0xff,ENUM_GET_FULL_MSOS_STRING);
+ 605   2            Result = USBHC_GetStringDesc(devinx,td_id,0xee,0,ENUM_GET_FULL_MSOS_STRING);
+ 606   2            break;
+ 607   2          case ENUM_GET_FULL_MSOS_STRING:
+ 608   2            Result = USBHC_GetStringDesc(devinx,td_id,0xee,USB_PDevice[devinx].Desc[MICROSOFT_OS].Len,ENUM_SET_CONF
+             -IGURATION); // Product string
+ 609   2            break;
+ 610   2          case ENUM_SET_CONFIGURATION:
+ 611   2      #if (ENUMERATE_VENDOR_TEST)             
+                    Result = USBHC_SetConfiguration(devinx,td_id,ENUM_VENDOR_IN_TEST);
+              #else
+ 614   2            Result = USBHC_SetConfiguration(devinx,td_id,ENUM_SET_REMOTEWAKEUP);
+ 615   2      #endif
+ 616   2            break;
+ 617   2      #if (ENUMERATE_VENDOR_TEST)
+                  case ENUM_VENDOR_IN_TEST:
+                    Result = USBHC_GetVendorTest(devinx,td_id,ENUM_SET_REMOTEWAKEUP);
+                    break;
+              #endif
+ 622   2          case ENUM_SET_REMOTEWAKEUP:
+ 623   2            if (USB_PDevice[devinx].DevClass == USB_AUDIO_CLASS || USB_PDevice[devinx].DevClass == USB_MSC_CLASS) /
+             -/ => Fixed the 256 MB USB Drive issue.
+ 624   2            {
+ 625   3              USB_PDevice[devinx].Hc.EnumState = ENUM_IDLE;
+ 626   3              Result = USB_SUCCESS;
+ 627   3            }
+ 628   2            else
+ 629   2            {
+ 630   3              if (USB_PDevice[devinx].Attribute & FEATURE_REMOTE)
+ 631   3                Result = USBHC_SetDeviceFeature(devinx,td_id,DEVICE_REMOTE_WAKEUP,ENUM_IDLE);
+ 632   3              else
+ 633   3              {
+ 634   4                USB_PDevice[devinx].Hc.EnumState = ENUM_IDLE;
+ 635   4                Result = USB_SUCCESS;
+ 636   4              }
+ 637   3            }
+ 638   2            break;
+ 639   2          default:
+ 640   2            return;
+ 641   2        }
+ 642   1      
+ 643   1        if ((USB_PDevice[devinx].Hc.Control.State == CTRL_FAIL) ||  // the control condition is error, exception 
+             -processing
+ 644   1          (USB_PDevice[devinx].Hc.EnumState == ENUM_IDLE) ||
+ 645   1          (USB_PDevice[devinx].Hc.EnumState == ENUM_FAIL))
+ 646   1        {
+ 647   2          USBHC_CORE_Free_TD(USB_PDevice[devinx].Hc.Control.TdNum);
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 12  
+
+ 648   2      
+ 649   2          if (USB_PDevice[devinx].Hc.EnumState != ENUM_IDLE)
+ 650   2          {
+ 651   3            //if (USB_PDevice[devinx].Hc.EnumState == ENUM_FAIL)
+ 652   3            //  printf("@@ Terminate=>ENUM_FAIL\n\r");
+ 653   3            //else
+ 654   3            //  printf("@@ Terminate=>CTRL_ERROR\n\r");
+ 655   3      
+ 656   3            USB_PDevice[devinx].Hc.Control.State = CTRL_FAIL;
+ 657   3            USB_PDevice[devinx].Hc.EnumState = ENUM_IDLE;
+ 658   3          }
+ 659   2          //Handle the Special device Class     
+ 660   2          switch(USB_PDevice[devinx].DevClass)
+ 661   2          {
+ 662   3            //1.HUB class move to another device table zone.            
+ 663   3            case USB_HUB_CLASS:
+ 664   3      
+ 665   3      #if (!SYSTEM_USBAUDIO_DEVICE_SUPPORT) || (!SYSTEM_MSC_DEVICE_SUPPORT) || defined(DEVICE_GPIO_DEFINE) || (S
+             -YSTEM_EXTENDER_TRANSMITTER)
+ 666   3      DEVICE_MOVE_ANOTHER_ZONE:       
+ 667   3      #endif      
+ 668   3              hubdevinx = USBHC_Clone_PDevice(devinx,0);
+ 669   3              if (hubdevinx)
+ 670   3              {
+ 671   4                devinx = hubdevinx;
+ 672   4              }
+ 673   3              else
+ 674   3              {
+ 675   4                USB_PDevice[devinx].Hc.Control.State = CTRL_FAIL;
+ 676   4                USB_PDevice[devinx].Hc.EnumState = ENUM_IDLE;
+ 677   4              }
+ 678   3              break;
+ 679   3            case USB_AUDIO_CLASS:       
+ 680   3      #if (SYSTEM_EXTENDER_SUPPORT)       
+              #if (!SYSTEM_USBAUDIO_DEVICE_SUPPORT) || (SYSTEM_EXTENDER_TRANSMITTER)
+                      goto DEVICE_MOVE_ANOTHER_ZONE;                
+              #endif  /* #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT) */      
+              #endif
+ 685   3      
+ 686   3      #ifdef KVM
+ 687   3      #if (!SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+ 688   3              goto DEVICE_MOVE_ANOTHER_ZONE;                
+ 689   3      #endif
+ 690   3      #endif
+ 691   3      
+ 692   3      #if (!SYSTEM_EXTENDER_TRANSMITTER)      
+ 693   3      #ifdef DEVICE_GPIO_DEFINE     
+                      if (Audio_Device_Support_Gpio == DEVCIE_NO_AUDIO_SUPPORT)
+                      { 
+                        goto DEVICE_MOVE_ANOTHER_ZONE;
+                      } 
+              #endif /* #ifdef DEVICE_GPIO_DEFINE */
+ 699   3      #endif  /* #if (!SYSTEM_EXTENDER_TRANSMITTER) */      
+ 700   3              break;
+ 701   3            case USB_MSC_CLASS:
+ 702   3      #if (SYSTEM_EXTENDER_SUPPORT)               
+              #if (!SYSTEM_EXTENDER_MSC_SUPPORT) || (SYSTEM_EXTENDER_TRANSMITTER)     
+                      goto DEVICE_MOVE_ANOTHER_ZONE;                
+              #endif  /* #if (SYSTEM_EXTENDER_MSC_SUPPORT) */     
+              #endif
+ 707   3      
+ 708   3      #ifdef KVM
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 13  
+
+ 709   3      #if (!SYSTEM_MSC_DEVICE_SUPPORT)
+ 710   3              goto DEVICE_MOVE_ANOTHER_ZONE;                
+ 711   3      #endif
+ 712   3      #endif
+ 713   3      
+ 714   3      #if (!SYSTEM_EXTENDER_TRANSMITTER)
+ 715   3      #ifdef DEVICE_GPIO_DEFINE
+                      if (MSC_Device_Support_Gpio == DEVCIE_NO_MSC_SUPPORT)
+                      { 
+                        goto DEVICE_MOVE_ANOTHER_ZONE;
+                      } 
+              #endif /* #ifdef DEVICE_GPIO_DEFINE */
+ 721   3      #endif  /* #if (!SYSTEM_EXTENDER_TRANSMITTER) */              
+ 722   3              break;      
+ 723   3          }   
+ 724   2      
+ 725   2          TASK_Active(TASK_TYPE_USB,TASK_USBHC_Process_ID,0x00,devinx,0,0); // Generate the task
+ 726   2          return;
+ 727   2        }
+ 728   1        
+ 729   1        if (Result == USB_SUCCESS)
+ 730   1        {
+ 731   2          goto TASK_USBHC_Enumerate_Handle_Restart;
+ 732   2        }
+ 733   1      }
+ 734          
+ 735          /**
+ 736          * @brief  USBHC_Parser_DevDesc 
+ 737          *         Displays the message on LCD for device descriptor
+ 738          * @param  DeviceDesc : device descriptor
+ 739          * @retval None
+ 740          */
+ 741          void USBHC_Parser_DevDesc(U8_T devinx,U8_T *DeviceDesc)
+ 742          {
+ 743   1        USBHC_DevDesc_TypeDef *hs;
+ 744   1        U8_T          td_id;
+ 745   1      #if (USBHC_PARSER_DEBUG_MODE)
+                U8_T index, len;
+              #endif //#if (USBHC_PARSER_DEBUG_MODE)
+ 748   1        
+ 749   1        hs = (USBHC_DevDesc_TypeDef *)DeviceDesc;
+ 750   1      #if (USBHC_PARSER_DEBUG_MODE)
+                len = hs->bLength;
+              #endif
+ 753   1        USB_PDevice[devinx].DevClass = hs->bDeviceClass;
+ 754   1        USB_PDevice[devinx].ControlEndpSize = hs->bMaxPacketSize;
+ 755   1        USB_PDevice[devinx].idVendor = Big_Endian_16_Convert(hs->idVendor);
+ 756   1        USB_PDevice[devinx].idProduct = Big_Endian_16_Convert(hs->idProduct);
+ 757   1      
+ 758   1        
+ 759   1        //printf("iVendor=%04x,iProduct=%04x\n\r",USB_PDevice[devinx].idVendor,USB_PDevice[devinx].idProduct);
+ 760   1        if (devinx < USBDC_VIRTUAL_DEVINX)
+ 761   1          return;
+ 762   1      
+ 763   1        /* Special handle for Logitech Unifying Wireless Mouse */
+ 764   1        if ((USB_PDevice[devinx].idVendor == 0x046d) && ((USB_PDevice[devinx].idProduct == 0xc52b) || ((USB_PDevi
+             -ce[devinx].idProduct == 0xc532))))
+ 765   1        {
+ 766   2          USB_PDevice[devinx].DevAttr |= DEVATTR_UNIFYING_MASK;// contain keyboard protocol.
+ 767   2        }
+ 768   1        else if ((USB_PDevice[devinx].idVendor == 0x0408) &&(USB_PDevice[devinx].idProduct == 0x3008)) /* Special
+             - handle for Viewsonic TD2220 */
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 14  
+
+ 769   1        {
+ 770   2          USB_PDevice[devinx].DevAttr |= DEVATTR_TD2220_MASK;
+ 771   2        }
+ 772   1      #if (SYSTEM_EXTENDER_TRANSMITTER)
+                if ((USB_PDevice[devinx].DevAttr & DEVATTR_REMOTE_DEV_MASK) == 0x00) //if not extender remote device
+              #endif /* #if (SYSTEM_EXTENDER_TRANSMITTER) */
+ 775   1        {
+ 776   2          td_id = USB_PDevice[devinx].Hc.Control.TdNum;
+ 777   2          HCTD_Channel_Table[td_id].Endp_Size = hs->bMaxPacketSize;
+ 778   2        }
+ 779   1      
+ 780   1        if (Big_Endian_16_Convert(hs->bcdUSB) >= 0x0200) // usb 2.0
+ 781   1        {
+ 782   2          USB_PDevice[devinx].Usb_2_0 = 1; // USB 2.0
+ 783   2        }
+ 784   1        
+ 785   1      #if (USBHC_PARSER_DEBUG_MODE)
+                if (devinx > 1)
+                {
+                  printf("Device Descriptor :[");
+                  for (index=0; index < len ; index++)
+                  {
+                    if (index < (len-1))
+                      printf("%02x ",(U16_T)DeviceDesc[index]);
+                    else
+                      printf("%02x]\n\r",(U16_T)DeviceDesc[index]);
+                  }
+                  printf(" Class : %02x\n\r" ,(U16_T)(hs->bDeviceClass));
+                  printf(" EndpSize : %d\n\r" ,(U16_T)(hs->bMaxPacketSize));
+                  printf(" VID : %04Xh\n\r" , (U16_T)(hs->idVendor));
+                  printf(" PID : %04Xh\n\r" , (U16_T)(hs->idProduct));
+                }
+              #endif //#if (USBHC_PARSER_DEBUG_MODE)
+ 802   1      }
+ 803          
+ 804          /**
+ 805          * @brief  USBHC_CfgDesc_Parser_Len 
+ 806          *         Displays the message on LCD for device descriptor
+ 807          * @param  DeviceDesc : device descriptor
+ 808          * @retval None
+ 809          */
+ 810          void USBHC_CfgDesc_Parser_Len(U8_T devinx,U8_T *CfgDesc)
+ 811          {
+ 812   1        USBHC_CfgDesc_TypeDef *hs;
+ 813   1      
+ 814   1        hs = (USBHC_CfgDesc_TypeDef *)CfgDesc;
+ 815   1        USB_PDevice[devinx].CfgTotalLen = Big_Endian_16_Convert(hs->wTotalLength);
+ 816   1      #if (USBHC_PARSER_DEBUG_MODE)
+                printf("Configuration Descriptor Total Length=[%d]\n\r",USB_PDevice[devinx].CfgTotalLen);
+              #endif //#if (USBHC_PARSER_DEBUG_MODE)
+ 819   1      }
+ 820          
+ 821          /**
+ 822          * @brief  Big_Endian_16_Convert 
+ 823          *         Displays the message on LCD for device descriptor
+ 824          * @param  DeviceDesc : device descriptor
+ 825          * @retval None
+ 826          */
+ 827          U16_T Big_Endian_16_Convert(U16_T big_edin)
+ 828          {
+ 829   1        return (((big_edin & 0xff00) >> 8) + ((big_edin & 0x00ff) << 8));
+ 830   1      }
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 15  
+
+ 831          
+ 832          #if ((SYSTEM_USB_PEN_DRIVE_SUPPORT) || (SYSTEM_MSC_DEVICE_SUPPORT) || (SYSTEM_EXTENDER_MSC_SUPPORT))
+              /**
+              * @brief  Big_Endian_32_Convert 
+              *         Convert the samll_endian U32_T to big endian U32_T
+              * @param  DeviceDesc : device descriptor
+              * @retval None
+              */
+              U32_T Endian_32_Convert(U32_T endian)
+              {
+                U32_T convert;
+                
+                convert = ((endian & 0xff000000) >> 24);
+                convert += ((endian & 0x00ff0000) >>  8);
+                convert += ((endian & 0x0000ff00) <<  8);
+                convert += ((endian & 0x000000ff) << 24);
+                
+                return convert;
+              }
+              #endif /* (SYSTEM_USB_PEN_DRIVE_SUPPORT) || (SYSTEM_MSC_DEVICE_SUPPORT) */
+ 851          
+ 852          /**
+ 853          * @brief  USBHC_Parser_ConfigDesc 
+ 854          *         Displays the message on LCD for device descriptor
+ 855          * @param  DeviceDesc : device descriptor
+ 856          * @retval None
+ 857          */
+ 858          U8_T USBHC_Parser_ConfigDesc(U8_T devinx,U16_T total_len,U8_T *buf) 
+ 859          {
+ 860   1        bit   alternate_endp_flag;    
+ 861   1        U8_T  endpcnt=0, inf_class;
+ 862   1        U8_T  curinf=0xFF, endpinx; 
+ 863   1        U16_T pos = 0, endpsize;
+ 864   1        USBHC_CfgDesc_TypeDef   *pcfg;
+ 865   1        USBHC_InterfaceDesc_TypeDef *pif;
+ 866   1        USBHC_EpDesc_TypeDef    *pep;
+ 867   1        USBHC_DescHeader_t      *pdesc;
+ 868   1        USBHC_HIDDesc_TypeDef   *phid;
+ 869   1        
+ 870   1      #if (USBHC_PARSER_DEBUG_MODE)
+                U16_T len, index, curlen;
+                U16_T packagecnt;
+              
+                if (devinx > 1)
+                {
+                  len = USB_PDevice[devinx].CfgTotalLen;
+                  printf("Configuration Descriptor(%d):\n\r",(U16_T)len);
+                  printf("{\n\r");
+                  endpsize = USB_PDevice[devinx].ControlEndpSize; 
+                  curlen = 0;
+                  while (1)
+                  {
+                    if (len > endpsize)
+                      packagecnt = endpsize;
+                    else
+                      packagecnt = len;
+                    printf("    ");
+                    for (index=0; index < packagecnt ; index++)
+                    {
+                      printf("%02bx ", buf[curlen]);
+                      curlen++;
+                    }
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 16  
+
+                    printf("\n\r");
+                    len -= packagecnt;
+                    if (len==0)
+                      break;
+                  }
+                  printf("}\n\r");
+                }
+              #endif //#if (USBHC_PARSER_DEBUG_MODE)
+ 901   1        while ( 1 )
+ 902   1        {
+ 903   2          pdesc = (USBHC_DescHeader_t *)(buf+pos);        
+ 904   2          switch ( pdesc->bDescriptorType )
+ 905   2          {
+ 906   3            case USB_DESC_TYPE_CONFIGURATION : // 0x02
+ 907   3              pcfg = (USBHC_CfgDesc_TypeDef *)(buf+pos);  
+ 908   3              if (pcfg->bNumInterfaces >= USBHC_MAX_NUM_INTERFACES)
+ 909   3              {
+ 910   4                //printf("Too many interfaces (%bd)\n\r", pcfg->bNumInterfaces);
+ 911   4                pcfg->bNumInterfaces = USBHC_MAX_NUM_INTERFACES;
+ 912   4                return 0;
+ 913   4              }
+ 914   3              USB_PDevice[devinx].InterfaceNum |= pcfg->bNumInterfaces;
+ 915   3              //Assing current active configuration
+ 916   3              if (USB_PDevice[devinx].ConfigurationValue == 0) // if current configuration is not assign, default to
+             - 1
+ 917   3              {
+ 918   4                USB_PDevice[devinx].ConfigurationValue = pcfg->bConfigurationValue;
+ 919   4              }
+ 920   3              //Check the total configuration value
+ 921   3              if (pcfg->bConfigurationValue > USB_PDevice[devinx].TotalConfiguration)
+ 922   3                USB_PDevice[devinx].TotalConfiguration = pcfg->bConfigurationValue;
+ 923   3              if (pcfg->bMaxPower > 0x32) //modify the power
+ 924   3              {
+ 925   4                pcfg->bMaxPower = 0x32;
+ 926   4              }
+ 927   3              memset(USBDC_Device[devinx].Feature,(pcfg->bmAttributes | 0x80),sizeof(USBDC_Device[devinx].Feature));
+ 928   3              USB_PDevice[devinx].Attribute = pcfg->bmAttributes;
+ 929   3              break;
+ 930   3      
+ 931   3            case USB_DESC_TYPE_INTERFACE: // 0x04
+ 932   3              pif = (USBHC_InterfaceDesc_TypeDef *)(buf+pos);
+ 933   3              if ( pif->bInterfaceNumber >= USBHC_MAX_NUM_INTERFACES )
+ 934   3                return 0;
+ 935   3      
+ 936   3              if (pif->bAlternateSetting == 0)
+ 937   3              {
+ 938   4                endpcnt = 0;
+ 939   4                curinf++;
+ 940   4              }
+ 941   3              else if (curinf == 0xFF)
+ 942   3              {
+ 943   4                curinf = 0;
+ 944   4              }
+ 945   3              inf_class = pif->bInterfaceClass;
+ 946   3              if (inf_class == 0) // if local class is zero
+ 947   3              {
+ 948   4                USB_PDevice[devinx].InfClass[curinf] = USB_PDevice[devinx].DevClass;
+ 949   4              }
+ 950   3              else
+ 951   3              {
+ 952   4                USB_PDevice[devinx].InfClass[curinf] = inf_class;
+ 953   4                if (USB_PDevice[devinx].DevClass == 0x00)
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 17  
+
+ 954   4                {
+ 955   5                  USB_PDevice[devinx].DevClass = inf_class;
+ 956   5                }
+ 957   4              }
+ 958   3              
+ 959   3              //need to keep the bigst alternate setting.
+ 960   3              if (pif->bAlternateSetting > USB_PDevice[devinx].InfAltValue[curinf])
+ 961   3              {
+ 962   4                USB_PDevice[devinx].InfAltValue[curinf] = pif->bAlternateSetting;
+ 963   4              }
+ 964   3              
+ 965   3              USB_PDevice[devinx].InfSubClass[curinf] = pif->bInterfaceSubClass;
+ 966   3              USB_PDevice[devinx].InfProtocol[curinf] = pif->bInterfaceProtocol;
+ 967   3              if ( pif->bNumEndpoints > USB_PDevice[devinx].EndpNum[curinf])
+ 968   3              {
+ 969   4                USB_PDevice[devinx].EndpNum[curinf] = pif->bNumEndpoints;
+ 970   4              }
+ 971   3      
+ 972   3              /*Check if weither contain keyboard protcol*/
+ 973   3              if (pif->bInterfaceProtocol == INF_KEYBOARD)
+ 974   3              {
+ 975   4                USB_PDevice[devinx].DevAttr |= DEVATTR_KB_CLASS_MASK; 
+ 976   4      #ifdef SYNC
+ 977   4                if (KVM_Flash.cSystemFlag2 & (SYSTEM_ALL_SYNC_MASK | SYSTEM_KB_SYNC_MASK))
+ 978   4                { 
+ 979   5                  USB_PDevice[devinx].HID_Kb_LED_Value[1] = KM_SYNC_KbLed;
+ 980   5                }
+ 981   4                else
+ 982   4      #endif          
+ 983   4                {
+ 984   5                  USB_PDevice[devinx].HID_Kb_LED_Value[1] = KVM_HostLed[KVM_CurrentHost];
+ 985   5                } 
+ 986   4              }
+ 987   3              break;
+ 988   3            case USB_DESC_TYPE_HID_DESCRIPTOR: // 0x21
+ 989   3              phid = (USBHC_HIDDesc_TypeDef *)(buf+pos);
+ 990   3              USB_PDevice[devinx].HID_Rpt_Len[curinf] = Big_Endian_16_Convert(phid->wItemLength);
+ 991   3              break;
+ 992   3            case USB_DESC_TYPE_ENDPOINT: // 0x05
+ 993   3              if ( endpcnt <= USBHC_MAX_NUM_ENDP )
+ 994   3              {
+ 995   4                pep = (USBHC_EpDesc_TypeDef *)(buf+pos);
+ 996   4                //Search the Endpoint Address that has been in table
+ 997   4                alternate_endp_flag = 0;        
+ 998   4                for (endpinx=0; endpinx < endpcnt; endpinx++)
+ 999   4                {       
+1000   5                  if ((USB_PDevice[devinx].EndpAddr[curinf][endpinx]&0x7F) == (pep->bEndpointAddress&0x7F))
+1001   5                  {
+1002   6                    /* 2015-12-14 Modify add by jack*/
+1003   6                    if (USB_PDevice[devinx].InfAltValue[curinf])
+1004   6                    { 
+1005   7                      alternate_endp_flag = 1;
+1006   7                    } 
+1007   6                    break;
+1008   6                  }
+1009   5                }
+1010   4                endpsize =  Big_Endian_16_Convert(pep->wMaxPacketSize);
+1011   4                //Check the Isochronous max package size, the bigest is 192 bytes.
+1012   4                if (USB_PDevice[devinx].InfClass[curinf] == USB_AUDIO_CLASS)
+1013   4                {
+1014   5                  if (USB_PDevice[devinx].DevClass != USB_AUDIO_CLASS)
+1015   5                  {
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 18  
+
+1016   6                    USB_PDevice[devinx].DevClass = USB_AUDIO_CLASS;
+1017   6                  }
+1018   5                  
+1019   5                  if (endpsize > (USB_HC_ISTL_BUF_SIZE-2))
+1020   5                  {
+1021   6                    endpsize = (USB_HC_ISTL_BUF_SIZE-2);
+1022   6                    //chnage the interface setting.
+1023   6                    pep->wMaxPacketSize = Big_Endian_16_Convert(endpsize);
+1024   6                  }
+1025   5                }         
+1026   4      
+1027   4                if (alternate_endp_flag)
+1028   4                {
+1029   5                  if (pep->bEndpointAddress != USB_PDevice[devinx].EndpAddr[curinf][endpinx])
+1030   5                  {
+1031   6                    //printf("Warring,Alternating Interface:%bx,Endp:%bx Address_old(%bx),New(%bx) conflict\n\r",
+1032   6                    //  pif->bInterfaceNumber, endpinx, USB_PDevice[devinx].EndpAddr[curinf][endpinx],
+1033   6                    //  pep->bEndpointAddress);
+1034   6                      
+1035   6                    if (USB_PDevice[devinx].DevClass != USB_HID_CLASS) 
+1036   6                    { 
+1037   7                      USB_PDevice[devinx].EndpAddr[curinf][endpinx] = pep->bEndpointAddress;
+1038   7                      USB_PDevice[devinx].EndpSize[curinf][endpinx] = endpsize;
+1039   7                      if (USB_PDevice[devinx].DevClass == USB_HUB_CLASS) 
+1040   7                        USB_PDevice[devinx].EndpInterval[curinf][endpinx] = 0xf0;
+1041   7                      else
+1042   7                        USB_PDevice[devinx].EndpInterval[curinf][endpinx] = pep->bInterval;
+1043   7                      USB_PDevice[devinx].EndpType[curinf][endpinx] = (pep->bmAttributes & 0x03) << 5;
+1044   7                    } 
+1045   6                  }
+1046   5                  else
+1047   5                  {
+1048   6                    if (endpsize > USB_PDevice[devinx].EndpSize[curinf][endpinx])
+1049   6                      USB_PDevice[devinx].EndpSize[curinf][endpinx] = endpsize;
+1050   6                  }
+1051   5                }
+1052   4                else
+1053   4                {           
+1054   5                  USB_PDevice[devinx].EndpAddr[curinf][endpcnt] = pep->bEndpointAddress;
+1055   5                  USB_PDevice[devinx].EndpSize[curinf][endpcnt] = endpsize;
+1056   5                  if (USB_PDevice[devinx].DevClass == USB_HUB_CLASS) 
+1057   5                    USB_PDevice[devinx].EndpInterval[curinf][endpcnt] = 0xff;
+1058   5                  else
+1059   5                  { 
+1060   6                    USB_PDevice[devinx].EndpInterval[curinf][endpcnt] = pep->bInterval;
+1061   6      #if (SYSTEM_EXTENDER_TRANSMITTER)
+              #ifdef USB_2            
+                            if (USB_PDevice[devinx].DevClass == USB_HID_CLASS) 
+                            {                   
+                              pep->bInterval = 10; //10ms
+                            } 
+              #endif /* #ifdef (USB_2) */
+              #endif /* #if (SYSTEM_EXTENDER_TRANSMITTER) */
+1069   6                  } 
+1070   5                  USB_PDevice[devinx].EndpType[curinf][endpcnt] = (pep->bmAttributes & 0x03) << 5;
+1071   5                }
+1072   4                if (pif->bInterfaceClass == USB_HUB_CLASS)
+1073   4                {
+1074   5                  pep->bInterval = 250;
+1075   5                  USB_PDevice[devinx].HUB.ReportEndpInx = pep->bEndpointAddress & ~0x80; //for IN only
+1076   5                }
+1077   4              }
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 19  
+
+1078   3              if (alternate_endp_flag == 0)
+1079   3                endpcnt++;
+1080   3              break;
+1081   3          }
+1082   2          pos += pdesc->bLength;    
+1083   2          if ( pos >= total_len )
+1084   2            break;
+1085   2        }
+1086   1      #if (USBHC_PARSER_DEBUG_MODE)
+                if ((devinx >= 1) && (total_len != 0x12))
+                {   
+                  printf("Device Table[%bu] interfaces %bx\n\r",devinx, curinf);
+                  printf("{\n\r");
+                  printf("  Addr=0x%bx\n\r",(USB_PDevice[devinx].Addr & USBHC_DEVICE_ADDR_MASK));
+                  printf("  DevClass=0x%bx\n\r",USB_PDevice[devinx].DevClass);
+                  printf("  ControlEndpSize=%bu\n\r",USB_PDevice[devinx].ControlEndpSize);
+                  printf("  CfgTotalLen=%bu\n\r",USB_PDevice[devinx].CfgTotalLen);
+                  printf("  InterfaceNum=%bu\n\r",(USB_PDevice[devinx].InterfaceNum & USBHC_DEVICE_INTERFACENUM_MASK));
+                  printf("  ConfigurationValue=%bu\n\r",USB_PDevice[devinx].ConfigurationValue);
+                  printf("  TotalConfiguration=%bu\n\r",USB_PDevice[devinx].TotalConfiguration);
+                  for (curinf=0; curinf < (USB_PDevice[devinx].InterfaceNum & USBHC_DEVICE_INTERFACENUM_MASK) ; curinf++)
+                  {
+                    printf("    Inf:%bu -------------------------\n\r",curinf);
+                    printf("    {\n\r");
+                    printf("      InfClass=0x%02bx\n\r",USB_PDevice[devinx].InfClass[curinf]);
+                    printf("      InfSubClass=0x%02bx\n\r",USB_PDevice[devinx].InfSubClass[curinf]);
+                    printf("      Protocol=0x%bx\n\r",USB_PDevice[devinx].InfProtocol[curinf]);
+                    printf("      Alternate=%bx\n\r",USB_PDevice[devinx].InfAltValue[curinf]);
+                    printf("      EndpNum=0x%02bx\n\r",USB_PDevice[devinx].EndpNum[curinf]);
+                    printf("      HID_Rpt_Len=%u\n\r",USB_PDevice[devinx].HID_Rpt_Len[curinf]);
+                    for (endpcnt=0; endpcnt < USB_PDevice[devinx].EndpNum[curinf] ; endpcnt++)
+                    {
+                      printf("      EndPoint:%bu -------------------------\n\r",endpcnt);
+                      printf("      {\n\r");
+                      printf("        EndpAddr[%bu]=0x%02bx\n\r",endpcnt,USB_PDevice[devinx].EndpAddr[curinf][endpcnt]);
+                      printf("        EndpSize[%bu]=0x%02bx\n\r",endpcnt,USB_PDevice[devinx].EndpSize[curinf][endpcnt]);
+                      printf("        EndpInterval[%bu]=%02bx\n\r",endpcnt,USB_PDevice[devinx].EndpInterval[curinf][endpcnt]
+             -);
+                      printf("        EndpType[%bu]=0x%02bx\n\r",endpcnt,USB_PDevice[devinx].EndpType[curinf][endpcnt]);
+                      printf("      }\n\r");
+                    }
+                    printf("    }\n\r");
+                  }
+                printf("}\n\r");
+                }
+              #endif //#if (USBHC_PARSER_DEBUG_MODE)
+1123   1        return 1;
+1124   1      }
+1125          
+1126          /** ----------------------------------------------------------------------------
+1127           * void USBHC_Channel_Control_Attribute(void)
+1128           * Purpose : 1.Init Channel by device attribute
+1129           * Params  : none
+1130           * Returns : none
+1131           * Note    : none
+1132           * ----------------------------------------------------------------------------
+1133           **/
+1134          static void USBHC_Channel_Control_Attribute(U8_T devinx,U8_T td_id)
+1135          {
+1136   1        //1.Update devinx
+1137   1        HCTD_Channel_Table[td_id].Used_DeviceID |= devinx; // assign this td to this channel
+1138   1        //2.Update device speed
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 20  
+
+1139   1        HCTD_Channel_Table[td_id].Attri = CHANNEL_ATRI_TYPE_CONTROL | USBHC_EP0_EP_NUM;
+1140   1        if (USB_PDevice[devinx].InterfaceNum & USBHC_DEVICE_SPEED_MASK) // Low Speed Device
+1141   1        {
+1142   2          HCTD_Channel_Table[td_id].Attri |= CHANNEL_ATRI_SPEED_LOW;
+1143   2        }
+1144   1        //3.Update devinx
+1145   1        //4.Update Endpoint Address
+1146   1        //5.Update Endpoint Size
+1147   1        HCTD_Channel_Table[td_id].Endp_Size = USB_PDevice[devinx].ControlEndpSize;
+1148   1      }
+1149          
+1150          /*----------------------------------------------------------------------------
+1151           * CTRL_State USBHC_SetAddress(U8_T devinx,U8_T td_id,U8_T emu_process_id))
+1152           * Purpose : Perform the set address operation of enumearation
+1153           * Params  : none
+1154           * Returns : none
+1155           * Note    : none
+1156           * ----------------------------------------------------------------------------
+1157           */
+1158          RESULT USBHC_SetAddress(U8_T devinx,U8_T td_id,U8_T emu_process_id)
+1159          {
+1160   1        if (USB_PDevice[devinx].Hc.Control.State == CTRL_IDLE)
+1161   1        {
+1162   2          //if (USBHC_Control_TD_Init(devinx,&td_id) == USBH_OK)
+1163   2          {
+1164   3            USBHC_Stdreq_SetAddress(devinx,td_id,USBHC_Enumerate_New_Addr);
+1165   3            return USB_BUSY;
+1166   3          }
+1167   2          //else
+1168   2          //{
+1169   2          //  USB_PDevice[devinx].Hc.EnumState = ENUM_FAIL;
+1170   2          //}
+1171   2        }
+1172   1        else
+1173   1        {
+1174   2          if (USB_PDevice[devinx].Hc.Control.State == CTRL_COMPLETE)
+1175   2          {
+1176   3            USB_PDevice[devinx].Addr = USBHC_Enumerate_New_Addr | USBHC_DEVICE_USED_MASK;
+1177   3            USB_PDevice[devinx].Hc.EnumState = emu_process_id;
+1178   3            USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+1179   3            return USB_SUCCESS;
+1180   3          }
+1181   2          else
+1182   2          {
+1183   3            USB_PDevice[devinx].Hc.EnumState = ENUM_FAIL;
+1184   3          }
+1185   2        }
+1186   1        return USB_ERROR;
+1187   1      }
+1188          
+1189          /*----------------------------------------------------------------------------
+1190           * CTRL_State USBHC_PassThrough_Send_Setup_Token(U8_T devinx,U8_T td_id)
+1191           * Purpose : Perform the set address operation of enumearation
+1192           * Params  : none
+1193           * Returns : none
+1194           * Note    : none
+1195           * ----------------------------------------------------------------------------
+1196           */
+1197          RESULT USBHC_PassThrough_Send_Setup_Token(U8_T devinx,U8_T td_id)
+1198          {
+1199   1        RESULT  Result;
+1200   1        U16_T data_len;
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 21  
+
+1201   1        
+1202   1        if (USB_PDevice[devinx].Hc.Control.State == CTRL_IDLE)
+1203   1        {
+1204   2          data_len = USB_PDevice[devinx].Hc.PControl.Setup.b.wLength.w;
+1205   2          /* convert back to normal USB order */
+1206   2          USBDC_HAL_Convert_Setup_Value((U8_T *)&USB_PDevice[devinx].Hc.PControl.Setup);
+1207   2          USBHC_Stdreq_PatternCommand(devinx,td_id,(U8_T *)&USB_PDevice[devinx].Hc.PControl.Setup,data_len);
+1208   2          Result=USB_BUSY;
+1209   2        }
+1210   1        else
+1211   1        {
+1212   2          if (USB_PDevice[devinx].Hc.Control.State == CTRL_COMPLETE || (USB_PDevice[devinx].Hc.Control.State == CT
+             -RL_STALLED))
+1213   2          {
+1214   3            USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+1215   3            Result=USB_SUCCESS;
+1216   3          }
+1217   2          else
+1218   2          {
+1219   3            USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+1220   3            Result=USB_UNSUPPORT;
+1221   3          }
+1222   2        }
+1223   1        return Result;
+1224   1      }
+1225          
+1226          /*----------------------------------------------------------------------------
+1227           * CTRL_State USBHC_GetDevDesc(U8_T devinx,U8_T td_id,U8_T desc_len)
+1228           * Purpose : Perform the set address operation of enumearation
+1229           * Params  : $devinx: USBPD device id
+1230           *           $td_id: The HC ATL TD number should be used
+1231           *           $desc_len : the length for device descriptor
+1232           * Returns : none
+1233           * Note    : none
+1234           *----------------------------------------------------------------------------
+1235           */
+1236          RESULT USBHC_GetDevDesc(U8_T devinx,U8_T td_id,U8_T desc_len)
+1237          {
+1238   1        RESULT  Result=USB_ERROR;
+1239   1        
+1240   1        if (USB_PDevice[devinx].Hc.Control.State == CTRL_IDLE)
+1241   1        {   
+1242   2          //0.Check the buffer pointer
+1243   2          if (USB_PDevice[devinx].Hc.EnumState == ENUM_GET_DEV_DESC) //the second time polling
+1244   2          { //since this is the second time polling so need to release the first time buffer          
+1245   3            malloc_free(USB_PDevice[devinx].Desc[DEVICE_DESC].Ptr);
+1246   3          }     
+1247   2          //1.Get dynamic buffer memory       
+1248   2          USB_PDevice[devinx].Hc.Control.Buf = m_malloc(desc_len,7); /* allocate 18 bytes */
+1249   2          //USB_PDevice[devinx].Hc.Control.Buf = m_malloc(USBHC_MAX_PACKET_SIZE,7);
+1250   2          HCTD_Channel_Table[td_id].Buf = USB_PDevice[devinx].Hc.Control.Buf; // also assign to host channel buffe
+             -r
+1251   2          if (USB_PDevice[devinx].Hc.Control.Buf != NULL)
+1252   2          {
+1253   3            //2.Set maximum package size
+1254   3            USB_PDevice[devinx].Hc.Control.EpN_MaxSize = USBHC_MAX_PACKET_SIZE;
+1255   3            USBHC_Stdreq_GetDevDesc(devinx,td_id,desc_len);
+1256   3            Result=USB_BUSY;
+1257   3          }
+1258   2          else
+1259   2          {
+1260   3            USBHC_Memory_Fail_Msg(0x00);      
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 22  
+
+1261   3            // Terminate the Task .........
+1262   3            USB_PDevice[devinx].Hc.EnumState = ENUM_FAIL;
+1263   3          }
+1264   2        }
+1265   1        else
+1266   1        {
+1267   2          if (USB_PDevice[devinx].Hc.Control.State == CTRL_COMPLETE || (USB_PDevice[devinx].Hc.Control.State == CT
+             -RL_STALLED))
+1268   2          {
+1269   3            USBHC_Parser_DevDesc(devinx,USB_PDevice[devinx].Hc.Control.Buf);
+1270   3            //2018-11-16 jack
+1271   3            //USB_PDevice[devinx].Hc.EnumState = ENUM_GET_CFG_DESC;
+1272   3            if (USB_PDevice[devinx].Hc.EnumState == ENUM_GET_DEV_DESC)
+1273   3              USB_PDevice[devinx].Hc.EnumState = ENUM_GET_CFG_DESC;
+1274   3            else
+1275   3              USB_PDevice[devinx].Hc.EnumState = ENUM_SET_ADDR;
+1276   3            USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;     
+1277   3            USB_PDevice[devinx].Desc[DEVICE_DESC].Len = desc_len;     
+1278   3            USB_PDevice[devinx].Desc[DEVICE_DESC].Ptr = USB_PDevice[devinx].Hc.Control.Buf;
+1279   3            USB_PDevice[devinx].Hc.Control.Buf = 0; //clear the buffer pointer
+1280   3            // Update Channel information.....
+1281   3            HCTD_Channel_Table[USB_PDevice[devinx].Hc.Control.TdNum].Endp_Size = USB_PDevice[devinx].ControlEndpSiz
+             -e;
+1282   3            USB_PDevice[devinx].Hc.Control.EpN_MaxSize = USB_PDevice[devinx].ControlEndpSize;
+1283   3            Result=USB_SUCCESS;     
+1284   3          }
+1285   2          else
+1286   2          {
+1287   3            //Due to have to release the buffer, so need put the satement here
+1288   3            //proces alos if the State is not COMPLETE
+1289   3            malloc_free(USB_PDevice[devinx].Hc.Control.Buf);
+1290   3            USB_PDevice[devinx].Hc.Control.Buf = 0;     
+1291   3            USB_PDevice[devinx].Hc.EnumState = ENUM_FAIL;     
+1292   3          }
+1293   2        }
+1294   1        return Result;
+1295   1      }
+1296           
+1297          /*----------------------------------------------------------------------------
+1298           * CTRL_State USBHC_GetCfgDesc(U8_T devinx,U8_T td_id,U8_T desc_len)
+1299           * Purpose : Perform the set address operation of enumearation
+1300           * Params  : $devinx: USBPD device id
+1301           *           $td_id: The HC ATL TD number should be used
+1302           *           $desc_len : the length for device descriptor
+1303           * Returns : none
+1304           * Note    : none
+1305           *----------------------------------------------------------------------------
+1306           */
+1307          RESULT USBHC_GetCfgDesc(U8_T devinx,U8_T td_id,U16_T desc_len,U8_T emustate)
+1308          {
+1309   1        RESULT Result=USB_ERROR;
+1310   1        
+1311   1        if (USB_PDevice[devinx].Hc.Control.State == CTRL_IDLE)
+1312   1        {
+1313   2          // get standard configuration descriptor
+1314   2          USB_PDevice[devinx].Hc.Control.Buf = m_malloc(desc_len,8); //* allocate 9 bytes 
+1315   2          HCTD_Channel_Table[td_id].Buf = USB_PDevice[devinx].Hc.Control.Buf; // also assign to host channel buffe
+             -r
+1316   2          if (USB_PDevice[devinx].Hc.Control.Buf != NULL)
+1317   2          {
+1318   3            //2.Set maximum package size
+1319   3            USBHC_Stdreq_GetCfgDesc(devinx,td_id,desc_len);
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 23  
+
+1320   3            Result=USB_BUSY;
+1321   3          }
+1322   2          else
+1323   2          {
+1324   3            // Terminate the Task .........
+1325   3            // should do something
+1326   3            USBHC_Memory_Fail_Msg(0x01);
+1327   3            USB_PDevice[devinx].Hc.EnumState = ENUM_FAIL;
+1328   3          }
+1329   2        }
+1330   1        else
+1331   1        {
+1332   2          if (USB_PDevice[devinx].Hc.Control.State == CTRL_COMPLETE || (USB_PDevice[devinx].Hc.Control.State == CT
+             -RL_STALLED))
+1333   2          {
+1334   3            USBHC_CfgDesc_Parser_Len(devinx,USB_PDevice[devinx].Hc.Control.Buf);
+1335   3            if ((desc_len == 0x12) && (USB_PDevice[devinx].CfgTotalLen != 0x12))
+1336   3            {
+1337   4              USBHC_Parser_ConfigDesc(devinx,0x12,USB_PDevice[devinx].Hc.Control.Buf);
+1338   4              malloc_free(USB_PDevice[devinx].Hc.Control.Buf);
+1339   4              USB_PDevice[devinx].Hc.Control.Buf = 0;
+1340   4            }
+1341   3            else // it is full
+1342   3            {     
+1343   4              if (USBHC_Parser_ConfigDesc(devinx,USB_PDevice[devinx].CfgTotalLen,USB_PDevice[devinx].Hc.Control.Buf)
+             - == 0) //parser error
+1344   4              {
+1345   5                Result = USB_ERROR;
+1346   5                goto USBHC_GetCfgDesc_Free;
+1347   5              }   
+1348   4              USB_PDevice[devinx].Desc[CONFIG_DESC].Len = desc_len;
+1349   4              USB_PDevice[devinx].Desc[CONFIG_DESC].Ptr = USB_PDevice[devinx].Hc.Control.Buf;
+1350   4              USB_PDevice[devinx].Hc.Control.Buf = 0;
+1351   4            }
+1352   3            USB_PDevice[devinx].Hc.EnumState = emustate;
+1353   3            USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+1354   3            Result=USB_SUCCESS;
+1355   3          }
+1356   2          else
+1357   2          {
+1358   3      USBHC_GetCfgDesc_Free:
+1359   3            malloc_free(USB_PDevice[devinx].Hc.Control.Buf);
+1360   3            USB_PDevice[devinx].Hc.Control.Buf = 0;
+1361   3            USB_PDevice[devinx].Hc.EnumState = ENUM_FAIL;
+1362   3          }
+1363   2        }
+1364   1        return Result;
+1365   1      }
+1366          
+1367          /*----------------------------------------------------------------------------
+1368           * CTRL_State USBHC_SetConfiguration(U8_T devinx,U8_T td_id,U8_T emustate)
+1369           * Purpose : Perform the set configuration operation of enumearation
+1370           * Params  : $devinx: USBPD device id
+1371           *           $td_id: The HC ATL TD number should be used 
+1372           * Returns : none
+1373           * Note    : none
+1374           *----------------------------------------------------------------------------
+1375           */
+1376          RESULT USBHC_SetConfiguration(U8_T devinx,U8_T td_id,U8_T emustate)
+1377          {
+1378   1        RESULT  Result;
+1379   1        
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 24  
+
+1380   1        if (USB_PDevice[devinx].Hc.Control.State == CTRL_IDLE)
+1381   1        {
+1382   2          USBHC_Stdreq_SetCfg(devinx,td_id,USB_PDevice[devinx].ConfigurationValue);
+1383   2          Result = USB_BUSY;
+1384   2        }
+1385   1        else
+1386   1        {
+1387   2          if (USB_PDevice[devinx].Hc.Control.State == CTRL_COMPLETE || (USB_PDevice[devinx].Hc.Control.State == CT
+             -RL_STALLED))
+1388   2          {
+1389   3            USB_PDevice[devinx].Hc.EnumState = emustate;
+1390   3            USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+1391   3            Result = USB_SUCCESS;
+1392   3          }
+1393   2          else
+1394   2          {
+1395   3            USB_PDevice[devinx].Hc.EnumState = ENUM_FAIL;
+1396   3            Result = USB_ERROR;
+1397   3          }
+1398   2        } 
+1399   1        
+1400   1        return Result;
+1401   1      }
+1402          
+1403          #if (ENUMERATE_VENDOR_TEST)
+              /*----------------------------------------------------------------------------
+               * CTRL_State USBHC_GetVendorTest(U8_T devinx,U8_T td_id,U8_T emustate)
+               * Purpose : Perform the set configuration operation of enumearation
+               * Params  : $devinx: USBPD device id
+               *           $td_id: The HC ATL TD number should be used 
+               * Returns : none
+               * Note    : none
+               *----------------------------------------------------------------------------*/
+              RESULT USBHC_GetVendorTest(U8_T devinx,U8_T td_id,U8_T emustate)
+              {
+                RESULT  Result=USB_ERROR;
+                
+                if (USB_PDevice[devinx].Hc.Control.State == CTRL_IDLE)
+                {
+                  //USBHC_Stdreq_SetCfg(devinx,td_id,USB_PDevice[devinx].ConfigurationValue);
+                  //1.Fill up Host Channel Table
+                  USB_PDevice[devinx].Hc.Control.Buf  = m_malloc(16,9); /* allocate 16 bytes */
+                  HCTD_Channel_Table[td_id].TD_Length = USBHC_SETUP_PKT_SIZE;
+                  HCTD_Channel_Table[td_id].Total_Length = 16; // no data stage
+                  HCTD_Channel_Table[td_id].Current_Length = 0;
+                  HCTD_Channel_Table[td_id].Endp_Size = USBHC_MAX_PACKET_SIZE;
+                  USB_PDevice[devinx].Hc.Control.Setup.b.bmRequestType = USB_D2H | USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE
+             -_VENDOR;
+                  USB_PDevice[devinx].Hc.Control.Setup.b.bRequest = 0x00;
+                  USB_PDevice[devinx].Hc.Control.Setup.b.wValue.w = 0x00;
+                  USB_PDevice[devinx].Hc.Control.Setup.b.wIndex.w = 0x04;
+                  USB_PDevice[devinx].Hc.Control.Setup.b.wLength.w = 16;
+                  
+                  USBHC_CtlReq(devinx,td_id);
+                  Result=USB_BUSY;
+                }
+                else
+                {
+                  if (USB_PDevice[devinx].Hc.Control.State == CTRL_COMPLETE || (USB_PDevice[devinx].Hc.Control.State == CT
+             -RL_STALLED))
+                  {
+                    USB_PDevice[devinx].Hc.EnumState = emustate;
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 25  
+
+                    USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+                    Result=USB_SUCCESS;
+                  }
+                  else
+                  {
+                    USB_PDevice[devinx].Hc.EnumState = ENUM_FAIL;
+                  }
+                  malloc_free(USB_PDevice[devinx].Hc.Control.Buf);
+                  USB_PDevice[devinx].Hc.Control.Buf = NULL;
+                }
+                return Result;
+              }
+              #endif
+1452          
+1453          /*----------------------------------------------------------------------------
+1454           * CTRL_State USBHC_SetDeviceFeature(U8_T devinx,U8_T td_id,U8_T feature,U8_T emustate)
+1455           * Purpose : Perform the remote wakeup enable command in enumearation stage
+1456           * Params  : $devinx: USBPD device id
+1457           *           $td_id: The HC ATL TD number should be used 
+1458           * Returns : none
+1459           * Note    : none
+1460           *----------------------------------------------------------------------------
+1461           */
+1462          RESULT USBHC_SetDeviceFeature(U8_T devinx,U8_T td_id,U8_T feature,U8_T emustate)
+1463          {
+1464   1        RESULT  Result;
+1465   1        
+1466   1        if (USB_PDevice[devinx].Hc.Control.State == CTRL_IDLE)
+1467   1        {
+1468   2          USBHC_Stdreq_SetFeature(devinx,td_id,
+1469   2                      USB_REQ_RECIPIENT_DEVICE,//Device
+1470   2                      (U16_T)feature, //DEVICE_REMOTE_WAKEUP(Feature Selector)
+1471   2                      0); //0 for Device
+1472   2          Result = USB_BUSY;
+1473   2        }
+1474   1        else
+1475   1        {
+1476   2          if ((USB_PDevice[devinx].Hc.Control.State == CTRL_COMPLETE) || (USB_PDevice[devinx].Hc.Control.State == 
+             -CTRL_STALLED))
+1477   2          {
+1478   3            USB_PDevice[devinx].Hc.EnumState = emustate;
+1479   3            USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+1480   3            Result = USB_SUCCESS;
+1481   3          }
+1482   2          else
+1483   2          {
+1484   3            USB_PDevice[devinx].Hc.EnumState = ENUM_FAIL;
+1485   3            Result = USB_ERROR;
+1486   3          }
+1487   2        }
+1488   1        return Result;
+1489   1      }
+1490          
+1491          /*----------------------------------------------------------------------------
+1492           * CTRL_State USBHC_GetStringDesc(U8_T devinx,U8_T td_id,U8_T stringidx,U8_T desc_len,U8_T emu_process_id)
+1493           * Purpose : Perform the set configuration operation of enumearation
+1494           * Params  : $devinx: USBPD device id
+1495           *           $td_id: The HC ATL TD number should be used 
+1496           * Returns : none
+1497           * Note    : none
+1498           *----------------------------------------------------------------------------
+1499           */
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 26  
+
+1500          RESULT USBHC_GetStringDesc(U8_T devinx,U8_T td_id,U8_T stringidx,U8_T desc_len,U8_T emu_process_id)
+1501          {
+1502   1        RESULT          Result=USB_ERROR;
+1503   1        USBHC_DevDesc_TypeDef *devsc;
+1504   1        U8_T          valid=1,*pr;
+1505   1      
+1506   1        if (USB_PDevice[devinx].Hc.Control.State == CTRL_IDLE)
+1507   1        {
+1508   2          //2016-12-27 fxied, stringidx should between from 1 to 3
+1509   2          if ((stringidx >= 1) && (stringidx <= 3))
+1510   2          {     
+1511   3            devsc = (USBHC_DevDesc_TypeDef *)(USB_PDevice[devinx].Desc[DEVICE_DESC].Ptr);
+1512   3            pr = &(devsc->iManufacturer);
+1513   3            valid = pr[stringidx-1]; // start from iManufacturer  
+1514   3            if (valid)
+1515   3            {
+1516   4              if (valid != stringidx) // if the stringidx is different from index, change to stringidx
+1517   4              {
+1518   5                stringidx = valid;
+1519   5              }
+1520   4            }
+1521   3          }
+1522   2          USBHC_String_Idx_Fix = stringidx; // now keep the last idx
+1523   2          // get standard configuration descriptor
+1524   2          if (valid)
+1525   2          {
+1526   3            if (desc_len == 0)
+1527   3            {
+1528   4              desc_len = 8;
+1529   4            }
+1530   3      
+1531   3            malloc_free(USB_PDevice[devinx].Hc.Control.Buf);
+1532   3            USB_PDevice[devinx].Hc.Control.Buf = m_malloc(desc_len,10); //* allocate 9 bytes
+1533   3            HCTD_Channel_Table[td_id].Buf = USB_PDevice[devinx].Hc.Control.Buf; // also assign to host channel buff
+             -er
+1534   3            if (USB_PDevice[devinx].Hc.Control.Buf != NULL)
+1535   3            {
+1536   4              //2.Set maximum package size
+1537   4              USBHC_Stdreq_GetStringDesc(devinx,td_id,stringidx,desc_len);
+1538   4              Result=USB_BUSY;
+1539   4            }
+1540   3            else
+1541   3            {
+1542   4              // Terminate the Task .........
+1543   4              USBHC_Memory_Fail_Msg(0x02);
+1544   4              USB_PDevice[devinx].Hc.EnumState = ENUM_FAIL;
+1545   4            }
+1546   3          }
+1547   2          else
+1548   2          {
+1549   3            // Not Support this string descriptor
+1550   3            if (stringidx != 0xee)
+1551   3            {
+1552   4              stringidx += LANG_ID;
+1553   4            }
+1554   3            else
+1555   3            {
+1556   4              stringidx = MICROSOFT_OS;
+1557   4            }
+1558   3            USB_PDevice[devinx].Hc.EnumState = emu_process_id; // perfoom next
+1559   3            USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+1560   3            USB_PDevice[devinx].Desc[stringidx].Len = 0; // not leng
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 27  
+
+1561   3            Result=USB_SUCCESS;
+1562   3          }
+1563   2        }
+1564   1        else
+1565   1        {
+1566   2          if (stringidx != 0xee)
+1567   2          {
+1568   3            USBHC_String_Idx_Fix = stringidx + LANG_ID;
+1569   3          }
+1570   2          else
+1571   2          {
+1572   3            USBHC_String_Idx_Fix = MICROSOFT_OS;
+1573   3          }
+1574   2          if (USB_PDevice[devinx].Hc.Control.State == CTRL_COMPLETE)
+1575   2          {
+1576   3            //Get string index
+1577   3            USB_PDevice[devinx].Desc[USBHC_String_Idx_Fix].Len = USB_PDevice[devinx].Hc.Control.Buf[0];
+1578   3            if (desc_len == 0)
+1579   3            {
+1580   4              malloc_free(USB_PDevice[devinx].Hc.Control.Buf);
+1581   4            }
+1582   3            else // it is full
+1583   3            {
+1584   4              USB_PDevice[devinx].Desc[USBHC_String_Idx_Fix].Ptr = USB_PDevice[devinx].Hc.Control.Buf;
+1585   4            }
+1586   3            USB_PDevice[devinx].Hc.Control.Buf = 0;
+1587   3            USB_PDevice[devinx].Hc.EnumState = emu_process_id;
+1588   3            USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+1589   3            Result=USB_SUCCESS;
+1590   3          }
+1591   2          else
+1592   2          {
+1593   3            if (USB_PDevice[devinx].Hc.Control.State == CTRL_STALLED)
+1594   3            {
+1595   4              USB_PDevice[devinx].Hc.EnumState = emu_process_id; // perfoom next
+1596   4              USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+1597   4              Result=USB_SUCCESS;
+1598   4            }
+1599   3            USB_PDevice[devinx].Desc[USBHC_String_Idx_Fix].Len = 0;
+1600   3            malloc_free(USB_PDevice[devinx].Hc.Control.Buf);
+1601   3            USB_PDevice[devinx].Hc.Control.Buf = 0;
+1602   3          }
+1603   2        }
+1604   1        return Result;
+1605   1      }
+1606          
+1607          /*----------------------------------------------------------------------------
+1608           * void USBHC_Memory_Fail_Msg(U8_T msgindex)
+1609           * Purpose : Print out the UART message when memory alloc fault
+1610           * Params  : $msgindex: the process id 
+1611           * Returns : none
+1612           * Note    : none
+1613           *----------------------------------------------------------------------------
+1614           */
+1615          void USBHC_Memory_Fail_Msg(U8_T msgindex)
+1616          {
+1617   1        printf("USBHC Error(%d):Memory Alloc Failure\n\r",(U16_T)msgindex);
+1618   1      }
+1619          
+1620          /*----------------------------------------------------------------------------
+1621           * void USBHC_InterruptTransfer_Mouse_Out(U8_T devinx,U8_T *buf,U8_T len,U8_T endpidx,U8_T kvm_host)
+1622           * Purpose :  
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 28  
+
+1623           * Params  :  
+1624           * Returns : none
+1625           * Note    : none
+1626           *----------------------------------------------------------------------------*/
+1627          void USBHC_InterruptTransfer_Mouse_Out(U8_T devinx,U8_T *buf,U8_T len,U8_T endpidx,U8_T kvm_host)
+1628          {
+1629   1        if (USBDC_Check_Endp_Buffer_Valid(kvm_host,devinx,endpidx))
+1630   1        {
+1631   2          USBDC_EndpBufPtr[kvm_host][devinx][endpidx][0] = len;
+1632   2          memcpy((USBDC_EndpBufPtr[kvm_host][devinx][endpidx]+2),buf,len);
+1633   2          USBDC_REGS_Endp_ControlSet(kvm_host,devinx,endpidx,DA_CR_BVLD_SET); // inform data move
+1634   2        }
+1635   1      }
+1636          
+1637          /*----------------------------------------------------------------------------
+1638           * void USBHC_InterruptTransfer_HID_Mouse(U8_T *buf,U8_T buf_type,U8_T len)
+1639           * Purpose : 
+1640           * Params  : 
+1641           * Returns : none
+1642           * Note    : none
+1643           *----------------------------------------------------------------------------*/
+1644          void USBHC_InterruptTransfer_HID_Mouse(U8_T *buf,U8_T buf_type)
+1645          {     
+1646   1        DATAST_Append_Generic_MS_IN_Q(buf_type,buf); // normal mouse package  
+1647   1      #if (SYSTEM_EXTENDER_RECEIVER)
+              #else   
+1649   1        DATAST_PS2_MS_Handle(1);
+1650   1      #endif  /* #if  (SYSTEM_EXTENDER_RECEIVER) */ 
+1651   1      }
+1652          
+1653          /*----------------------------------------------------------------------------
+1654           * void USBHC_InterruptTransfer_Mouse(U8_T devinx,U8_T inttid,U8_T *buf,U8_T len)
+1655           * Purpose : Print out the UART message when memory alloc fault
+1656           * Params  : $msgindex: the process id 
+1657           * Returns : none
+1658           * Note    : none
+1659           *----------------------------------------------------------------------------
+1660           */
+1661          /*
+1662          void USBHC_InterruptTransfer_Mouse(U8_T devinx,U8_T intt_id,U8_T *buf,U8_T len)
+1663          { 
+1664            U8_T    kvm_host;   
+1665            U8_T    skip_flag;  
+1666            U8_T    buf_type=0;
+1667            U8_T    check_devinx=USBDC_VHID_DEVINX;
+1668            //U8_T    mouse_mode;
+1669            
+1670            kvm_host = KVM_CurrentHost;     
+1671          #ifdef HID_PARSER_CORE_MS 
+1672            //if (((KVM_Flash.cSystemFlag3 & SYSTEM_MPASS_MASK) == MPASS_ACROSS_MODE) && (KVM_Flash.cSystemFlag3 & SY
+             -STEM_MOUSE_SW_MASK))
+1673            if ((KVM_Flash.cSystemFlag3 & SYSTEM_MPASS_MASK) == MPASS_ACROSS_MODE) //Mouse Passthrough accross mode
+1674            {
+1675              USBHC_HidParser_Package_Handle(devinx,HC_IntTransfer_Table[intt_id].InterfaceIdx,buf,len,0);      
+1676            }
+1677            else
+1678            { 
+1679              memcpy(Hid_Data,buf,len); 
+1680              USBHC_HidParser_Package_Handle(devinx,HC_IntTransfer_Table[intt_id].InterfaceIdx,Hid_Data,len,0);
+1681            } 
+1682            
+1683            if (hid_data_valid_flag==0)
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 29  
+
+1684            {   
+1685              return;
+1686            } 
+1687              
+1688            //if ((KVM_Flash.cSystemFlag3 & SYSTEM_MPASS_MASK) == MPASS_ACROSS_MODE) //Mouse Passthrough accross mode
+1689            //if ((KVM_Flash.cSystemFlag2 & SYSTEM_MPASS_MASK) == MPASS_ACROSS_MODE) //Mouse Passthrough accross mode
+1690            //{     
+1691            DATAST_Generic_Mouse_Data(&Mouse_Data,&buf_type,1);   
+1692            //} 
+1693            //else
+1694            //{   
+1695            //  DATAST_Generic_Mouse_Data(&Mouse_Data,&buf_type,0); 
+1696            //}   
+1697          #endif // #ifdef HID_PARSER_CORE_MS
+1698          
+1699            //@@Check Port Suspend & Wakeup condition 
+1700          #ifndef ONE_HID   
+1701              if (buf_type != GENERIC_USAGE_ABS_MAKE) 
+1702              check_devinx = devinx;  
+1703          #endif
+1704            
+1705            skip_flag = USBDC_Check_Upstream_Suspend_State(kvm_host,check_devinx);  
+1706            
+1707            // 2.Process HID output 
+1708            if (skip_flag == 0)
+1709            {         
+1710              if (KVM_Check_MS_Skip_Condition() == 0)
+1711              {
+1712          #ifdef ONEHID     
+1713                USBHC_InterruptTransfer_HID_Mouse(DATAST_Generic_USB_MS_Report,buf_type);
+1714          #else     
+1715                if (buf_type == GENERIC_USAGE_ABS_MAKE) 
+1716                {
+1717                  USBHC_InterruptTransfer_HID_Mouse(DATAST_Generic_USB_MS_Report,buf_type);   
+1718                  return;
+1719                }           
+1720          #endif  // #ifdef ONEHID 
+1721              }
+1722            }  
+1723          }
+1724          */
+1725          #ifdef SYNC
+1726          /*----------------------------------------------------------------------------
+1727           * void USBHC_VirtualHID_MouseSync_XY0(void)
+1728           * Purpose : Set Mouse position in x=0,y=0
+1729           * Params  : $msgindex: the process id 
+1730           * Returns : none
+1731           * Note    : none
+1732           *----------------------------------------------------------------------------
+1733           */
+1734          void USBHC_VirtualHID_MouseSync_XY0(void)
+1735          { 
+1736   1        U8_T    kvm_host; 
+1737   1        //U8_T    skip_flag;
+1738   1        U8_T    mbuf[4]={0x00,1,1,0};
+1739   1        
+1740   1        kvm_host = KVM_CurrentHost;   
+1741   1        
+1742   1        /*@@Check Port Suspend & Wakeup condition */
+1743   1        //skip_flag = USBDC_Check_Upstream_Suspend_State(kvm_host,USBDC_VHID_DEVINX); 
+1744   1        
+1745   1        /* 2.Process HID output */
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 30  
+
+1746   1        //if (skip_flag == 0)
+1747   1        { 
+1748   2          //if (KVM_Check_MS_Skip_Condition() == 0)
+1749   2          {     
+1750   3            DATAST_Append_Generic_MS_IN_Q(GENERIC_USAGE_07_MAKE,mbuf); // normal mouse package
+1751   3            DATAST_PS2_MS_Handle(1);
+1752   3          }
+1753   2        }  
+1754   1      }
+1755          #endif
+1756          
+1757          #ifdef SYNC 
+1758          void USBHC_InterruptTrnasferIN_Sync(U8_T sync_device_mask,U8_T port,U8_T intt_id,U8_T vhid_inf)
+1759          {
+1760   1        U8_T para;
+1761   1        
+1762   1        if (KVM_Flash.cSystemFlag2 & sync_device_mask)
+1763   1        {
+1764   2          if (KM_SYNC_Port_Setting(port) == 0)
+1765   2          { 
+1766   3      USBHC_InterruptTrnasferIN_Sync_Out:     
+1767   3            if ((HC_IntTransfer_Table[intt_id].PassControl.SyncState & BIT_MASK[port]) == 0)
+1768   3            {                                     
+1769   4              HC_IntTransfer_Table[intt_id].PassControl.SyncState |= BIT_MASK[port];
+1770   4              para = intt_id | (port << 6); 
+1771   4              //printf("[p:%bu]",port);
+1772   4              TASK_Active(TASK_TYPE_EVENT,TASK_DATAST_USB_Virtual_HID_ID,vhid_inf,para,0,0); // now active the Virtu
+             -al HID Output Handle                                
+1773   4              return;
+1774   4            } 
+1775   3          }   
+1776   2        } 
+1777   1        else
+1778   1        {
+1779   2          if (port == KVM_CurrentHost)
+1780   2          {
+1781   3            goto USBHC_InterruptTrnasferIN_Sync_Out;
+1782   3          }     
+1783   2        }   
+1784   1        HC_IntTransfer_Table[intt_id].PassControl.SyncRp[port] = HC_IntTransfer_Table[intt_id].PassControl.SyncWp
+             -[port];  
+1785   1      } 
+1786          #endif
+1787          /*----------------------------------------------------------------------------
+1788           * voi USBHC_InterruptTransferIN_Buf(U8_T intt_id,U8_T devinx,U8_T len)
+1789           * Purpose : Process HC interrupt tranfer IN buffer
+1790           * Params  : none
+1791           * Returns : none
+1792           * Note    : none
+1793           *----------------------------------------------------------------------------
+1794           */
+1795          U8_T USBHC_InterruptTransferIN_Buf(U8_T intt_id,U8_T devinx,U8_T len)
+1796          {
+1797   1        U8_T  infid,remain_siz;
+1798   1        bit   bufskip_flag=0;
+1799   1        U8_T  wp,databyte,rp;
+1800   1        U8_T  DJ_Buf[8];  
+1801   1        U8_T    endp_id;
+1802   1        U8_T    vhid_inf = USBDC_VHID_MS_ENDP_NUM;  
+1803   1        U8_T  buf_type=0;
+1804   1        U8_T    sync_device_mask;
+1805   1        //U8_T  vhid_data_len=4;
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 31  
+
+1806   1       
+1807   1      
+1808   1      #if (SYSTEM_EXTENDER_RECEIVER) && !defined(ONEHID)  
+                if ((KVM_CurrentHost == REMOTE_HOST_PORT) && USB_PDevice[devinx].Hc.Etdr_RejectMountFlag)
+                {   
+                  HC_IntTransfer_Table[intt_id].PassControl.Wp = 0;
+                    HC_IntTransfer_Table[intt_id].PassControl.Rp = 0;
+                  return 0; 
+                }   
+              #endif
+1816   1      
+1817   1        /* Check interrupt class type, HID or HUB or other...... */
+1818   1        infid = HC_IntTransfer_Table[intt_id].InterfaceIdx;
+1819   1        endp_id = HC_IntTransfer_Table[intt_id].EndpIdx & USBHC_PDEV_ENDPIDX_MASK;
+1820   1        
+1821   1      #ifdef SYNC
+1822   1        if (USBHC_PDevice_SyncInit[devinx] & BIT_MASK[infid])
+1823   1        {
+1824   2          USBHC_PDevice_SyncInit[devinx] &= ~BIT_MASK[infid];
+1825   2          HC_IntTransfer_Table[intt_id].PassControl.SyncState = 0;    
+1826   2          memset(HC_IntTransfer_Table[intt_id].PassControl.SyncRp,HC_IntTransfer_Table[intt_id].PassControl.Rp,KVM
+             -_MAX_PORT);    
+1827   2        }   
+1828   1      #endif /* #ifdef SYNC */  
+1829   1        
+1830   1        
+1831   1      #if (SYSTEM_EXTENDER_RECEIVER)
+              //#if (SYSTEM_EXTENDER_RS232_MODE)
+              #if (HUART_BAUD == HUART_115K)
+                if (KVM_CurrentHost == REMOTE_HOST_PORT) 
+                {     
+                  if ((USB_PDevice[devinx].Interval_Adjust & BIT_MASK[infid]) == 0)
+                  {
+                    if (USB_PDevice[devinx].EndpInterval[infid][endp_id] < 8)  
+                    {                 
+                      HCTD_Table.INTL[intt_id].TD.Byte7 = 8;
+                      USB_PDevice[devinx].Interval_Adjust |= BIT_MASK[infid];       
+                    }   
+                  }
+                }     
+              #endif /* #if (HUART_BAUD == HUART_115K) */ 
+              
+              #if (HUART_BAUD == HUART_19200)  
+                if (KVM_CurrentHost == REMOTE_HOST_PORT) 
+                {     
+                  if ((USB_PDevice[devinx].Interval_Adjust & BIT_MASK[infid]) == 0)
+                  {
+                    if (USB_PDevice[devinx].EndpInterval[infid][endp_id] < 15)   
+                    {         
+                      HCTD_Table.INTL[intt_id].TD.Byte7 = 15;
+                      USB_PDevice[devinx].Interval_Adjust |= BIT_MASK[infid];       
+                    }   
+                  }
+                }     
+              #endif /* #if (HUART_BAUD == HUART_115K) */ 
+              //#endif /* if (SYSTEM_EXTENDER_RS232_MODE) */  
+              #endif  
+1862   1      
+1863   1        if (USB_PDevice[devinx].DevClass == USB_HUB_CLASS)
+1864   1        {
+1865   2          USBHC_HUB_StatusChangeHandle(devinx,intt_id);
+1866   2        }
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 32  
+
+1867   1        else
+1868   1        {
+1869   2          //1_1.Check HID keyboard interface
+1870   2          //printf("D:%bu,infid:%bu,len=%bu,",devinx,infid,len);
+1871   2          //Disp_Str(HCTD_Table.INTL[intt_id].Buf,len);
+1872   2          if (USB_PDevice[devinx].InfProtocol[infid] == INF_KEYBOARD)
+1873   2          {
+1874   3            sync_device_mask = SYSTEM_KB_SYNC_MASK;
+1875   3      #if (SYSTEM_EXTENDER_RECEIVER) && defined(ONEHID)     
+                    vhid_inf = USBDC_VHID_KB_ENDP_NUM;
+              #endif      
+1878   3            //1_1.Keyboard Report Data Parser
+1879   3            if (USB_PDevice[devinx].HID_Kb_Buf != NULL)
+1880   3            {
+1881   4              if (KVM_Flash.cSystemFlag3 & SYSTEM_VHID_KB_MASK) 
+1882   4              {     
+1883   5                printf("USB KB rpt parsed\n\r");  
+1884   5                USBHC_HidParser_Package_Handle(devinx,infid,HCTD_Table.INTL[intt_id].Buf,len,0);          
+1885   5                return 0;
+1886   5              }
+1887   4              else
+1888   4              {         
+1889   5                memcpy(Hid_Data,HCTD_Table.INTL[intt_id].Buf,len);  
+1890   5                USBHC_HidParser_Package_Handle(devinx,infid,Hid_Data,len,0);
+1891   5                #ifdef SYNC
+1892   5                if (KM_SYNC_HOTKEY_Skip_Flag)
+1893   5                { 
+1894   6                  if (KM_SYNC_HOTKEY_Clear_Flag)
+1895   6                  {
+1896   7                    KM_SYNC_HOTKEY_Clear_Flag = 0;
+1897   7                    memset(HCTD_Table.INTL[intt_id].Buf,0x00,len);
+1898   7                  }             
+1899   6                  else
+1900   6                  {               
+1901   7                    bufskip_flag=1;
+1902   7                  } 
+1903   6                } 
+1904   5                #endif
+1905   5              }         
+1906   4            }
+1907   3            //1_2.Hotkey bufer skip condition
+1908   3            if (KVM_Check_KB_Skip_Condition())
+1909   3            {       
+1910   4              bufskip_flag=1;       
+1911   4            }
+1912   3            
+1913   3            #ifdef KMLOG
+                    if (KM_Check_Skip_Condition())
+                    { 
+                      return 1;
+                    } 
+                    #endif
+1919   3      //#ifdef ONE_HID
+1920   3            //if ((KVM_Flash.cSystemFlag3 & SYSTEM_MPASS_MASK) == MPASS_ACROSS_MODE)
+1921   3            if (KVM_Flash.cSystemFlag3 & SYSTEM_VHID_KB_MASK)
+1922   3            { 
+1923   4              //if ( (bufskip_flag == 1) || (bufskip_flag == 0))
+1924   4              //{       
+1925   4              HC_IntTransfer_Table[intt_id].PassControl.Wp = 0;
+1926   4              HC_IntTransfer_Table[intt_id].PassControl.Rp = 0;       
+1927   4              return 0;
+1928   4              //} 
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 33  
+
+1929   4            } 
+1930   3      //#endif  
+1931   3          }
+1932   2          else
+1933   2          { 
+1934   3            sync_device_mask = SYSTEM_MS_SYNC_MASK;
+1935   3            //1_2.Mouse Report Data Parser  
+1936   3      #ifdef HID_PARSER_CORE_MS 
+1937   3            //if (((KVM_Flash.cSystemFlag3 & SYSTEM_MPASS_MASK) == MPASS_ACROSS_MODE) && (KVM_Flash.cSystemFlag3 & 
+             -SYSTEM_MOUSE_SW_MASK))
+1938   3            if ((KVM_Flash.cSystemFlag2 & SYSTEM_MS_DN_MASK) == 0) //Absolute coordination
+1939   3            {       
+1940   4              USBHC_HidParser_Package_Handle(devinx,HC_IntTransfer_Table[intt_id].InterfaceIdx,HCTD_Table.INTL[intt_
+             -id].Buf,len,0);
+1941   4              if (hid_data_valid_flag==0)
+1942   4              {     
+1943   5                return 0;
+1944   5              }       
+1945   4              
+1946   4              //to hide the mouse cursor
+1947   4              #ifdef SYNC
+1948   4              if (Coordinate_State & MOUSE_JUMP_MASK)
+1949   4              { 
+1950   5                return 0;
+1951   5              }
+1952   4              #endif        
+1953   4              DATAST_Generic_Mouse_Data(&Mouse_Data,&buf_type,1);   
+1954   4            }   
+1955   3            else      
+1956   3            {         
+1957   4              memcpy(Hid_Data,HCTD_Table.INTL[intt_id].Buf,len);      
+1958   4              USBHC_HidParser_Package_Handle(devinx,HC_IntTransfer_Table[intt_id].InterfaceIdx,Hid_Data,len,0);       
+1959   4              DATAST_Generic_Mouse_Data(&Mouse_Data,&buf_type,0); 
+1960   4            }     
+1961   3            #ifdef KMLOG
+                    if (KM_Check_Skip_Condition())
+                    { 
+                      return 1;
+                    } 
+                    #endif
+1967   3            /*
+1968   3            if (buf_type == GENERIC_USAGE_ABS_MAKE)
+1969   3            {
+1970   3              if ((KVM_Flash.cSystemFlag2 & SYSTEM_MS_DN_MASK) == 0) //Absolute coordination
+1971   3              {
+1972   3                vhid_data_len = 6;
+1973   3              }     
+1974   3            }
+1975   3      */      
+1976   3      #endif /* #ifdef HID_PARSER_CORE_MS */          
+1977   3            
+1978   3      #ifdef ONEHID     
+                    USBHC_InterruptTransfer_HID_Mouse(DATAST_Generic_USB_MS_Report,buf_type);
+                    return;
+              #else     
+1982   3            if ((KVM_Flash.cSystemFlag2 & SYSTEM_MS_DN_MASK) == 0) //Absolute coordination
+1983   3            {       
+1984   4              //printf("M");
+1985   4              //Disp_Str(DATAST_Generic_USB_MS_Report,6);
+1986   4              USBHC_InterruptTransfer_HID_Mouse(DATAST_Generic_USB_MS_Report,buf_type);   
+1987   4              return 0;
+1988   4            }           
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 34  
+
+1989   3      #endif  /* #ifdef ONEHID */                   
+1990   3            if (USB_PDevice[devinx].DevAttr & DEVATTR_UNIFYING_MASK) //Logitech Unifying wirelesee hid device
+1991   3            {
+1992   4              if (USBHC_Unifying_Interrupt_In_Check(KVM_CurrentHost,devinx,intt_id,DJ_Buf,len,INF_KEYBOARD))
+1993   4              {
+1994   5                if (KVM_Check_KB_Skip_Condition())
+1995   5                {
+1996   6                  bufskip_flag=1;
+1997   6                }
+1998   5                goto USBHC_InterruptTransferIN_Buf_Restart;
+1999   5              }
+2000   4              if (USBHC_Unifying_Interrupt_In_Check(KVM_CurrentHost,devinx,intt_id,DJ_Buf,len,INF_MOUSE))
+2001   4              {
+2002   5      #if (SYSTEM_EXTENDER_RECEIVER)
+                        if (KVM_CurrentHost == REMOTE_HOST_PORT)
+                        {
+                          memcpy(HCTD_Table.INTL[intt_id].Buf,DJ_Buf,8);
+                          len = 8;
+                          goto USBHC_InterruptTransferIN_Buf_Restart;
+                        }
+              #endif /* #if (SYSTEM_EXTENDER_RECEIVER) */
+2010   5                //USBHC_InterruptTransfer_Mouse(devinx,1,DJ_Buf,8);
+2011   5                //return 1;
+2012   5              }
+2013   4            }
+2014   3      #if (SYSTEM_EXTENDER_RECEIVER)
+                    if (KVM_CurrentHost == REMOTE_HOST_PORT)
+                    {
+                      goto USBHC_InterruptTransferIN_Buf_Restart;
+                    }
+              #endif /* #if (SYSTEM_EXTENDER_RECEIVER) */           
+2020   3            //USBHC_InterruptTransfer_Mouse(devinx,intt_id,HCTD_Table.INTL[intt_id].Buf,len);
+2021   3            //return 1; // return OK
+2022   3            
+2023   3          }
+2024   2      
+2025   2      USBHC_InterruptTransferIN_Buf_Restart:
+2026   2      #if (SYSTEM_EXTENDER_RECEIVER)
+                  if (KVM_CurrentHost == REMOTE_HOST_PORT)
+                  {
+              #ifdef ONEHID     
+                    if (ExtenderR_Check_Transmitter_Plug_State()==0)
+              #else     
+                    if ((ExtenderR_Check_Transmitter_Plug_State()==0) ||
+                       ((USBDC_Device[devinx].DevIdx & USBDC_DEVIDX_INTR_SEND_OK_MASK)==0x00)) //check the transmitter conn
+             -ect condition.
+              #endif      
+                    {             
+                      HC_IntTransfer_Table[intt_id].PassControl.Wp = 0;
+                        HC_IntTransfer_Table[intt_id].PassControl.Rp = 0;
+                      return 0;
+                    }
+                  }
+              #endif /* #if (SYSTEM_EXTENDER_RECEIVER) */
+2042   2      
+2043   2          //2.Move buffer out
+2044   2          if (bufskip_flag ==0)
+2045   2          {                 
+2046   3            wp = HC_IntTransfer_Table[intt_id].PassControl.Wp;
+2047   3            rp = HC_IntTransfer_Table[intt_id].PassControl.Rp;
+2048   3            //2_1.Check the buffer remain size(contain len bytes at least)
+2049   3            if (wp == rp)
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 35  
+
+2050   3            {
+2051   4              remain_siz = HC_IntTransfer_Table[intt_id].PassControl.BufSize;
+2052   4            }
+2053   3            else if (wp > rp)
+2054   3            {
+2055   4              remain_siz = (HC_IntTransfer_Table[intt_id].PassControl.BufSize-wp)+rp;
+2056   4            }
+2057   3            else
+2058   3            {
+2059   4              remain_siz = rp - wp;
+2060   4            }
+2061   3            //2_2.move out the data if the remain size is small than len
+2062   3            if (remain_siz < (len+1))
+2063   3            {
+2064   4              //remove the data byte
+2065   4              //What is needed to be done? remove the first old one or skip the current?
+2066   4              USBHC_Remove_HID_Buffer(intt_id);
+2067   4              goto USBHC_InterruptTransferIN_Buf_Restart;
+2068   4            }
+2069   3            
+2070   3            //2_3.move interrupt in buffer data into out queue buffer
+2071   3            HC_IntTransfer_Table[intt_id].PassControl.Buf[wp] = len;
+2072   3            wp++;
+2073   3            if (wp >= HC_IntTransfer_Table[intt_id].PassControl.BufSize)
+2074   3              wp = 0;
+2075   3            for (databyte =0; databyte < len ; databyte++)
+2076   3            {
+2077   4              HC_IntTransfer_Table[intt_id].PassControl.Buf[wp] = HCTD_Table.INTL[intt_id].Buf[databyte];
+2078   4              wp++;
+2079   4              if (wp >= HC_IntTransfer_Table[intt_id].PassControl.BufSize)
+2080   4                wp = 0;
+2081   4            }
+2082   3            HC_IntTransfer_Table[intt_id].PassControl.Wp = wp;
+2083   3      #ifdef SYNC
+2084   3            memset(HC_IntTransfer_Table[intt_id].PassControl.SyncWp,wp,USBDC_PORT_MAX);     
+2085   3      #endif  /* #ifdef SYNC */   
+2086   3            //***************************************************
+2087   3            // Check The HID buffer Task State
+2088   3            // Data Stream Control
+2089   3            //***************************************************
+2090   3            
+2091   3      #if (SYSTEM_EXTENDER_RECEIVER)        
+              USBHC_INTERRUPT_DATA_OUTPUT:
+              #endif      
+2094   3              
+2095   3      #if defined(ONEHID)       
+                #if (SYSTEM_EXTENDER_RECEIVER)        
+                    if (KVM_CurrentHost != REMOTE_HOST_PORT)
+                    { 
+                      if (USBDC_HID_ENPx_Data_Wait_Flag[USBDC_VHID_KB_ENDP_NUM] & USBDC_UPORT[KVM_CurrentHost])
+                      {   
+                        TASK_Active(TASK_TYPE_EVENT,TASK_DATAST_USB_Virtual_HID_ID,0,intt_id,0,0); // now active the Virtual 
+             -HID Output Handle
+                      }
+                    }
+                    else
+                    { 
+                      if ((HC_IntTransfer_Table[intt_id].PassControl.State & PASSTHROUGH_SET) == 0)
+                      {
+                        HC_IntTransfer_Table[intt_id].PassControl.State |= PASSTHROUGH_SET;
+                        intt_id |= (KVM_CurrentHost << 6);
+                        TASK_Active(TASK_TYPE_EVENT,TASK_DATAST_USB_Virtual_HID_ID,vhid_inf,intt_id,0,0); // now active the V
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 36  
+
+             -irtual HID Output Handle
+                      } 
+                    } 
+                #else
+                    if (USBDC_HID_ENPx_Data_Wait_Flag[USBDC_VHID_KB_ENDP_NUM] & USBDC_UPORT[KVM_CurrentHost])
+                    { 
+                      intt_id |= (KVM_CurrentHost << 6);  
+                      TASK_Active(TASK_TYPE_EVENT,TASK_DATAST_USB_Virtual_HID_ID,vhid_inf,intt_id,0,0); // now active the Vi
+             -rtual HID Output Handle
+                    }
+                #endif /* #if (SYSTEM_EXTENDER_RECEIVER) */           
+              #endif  /* #if defined(ONEHID) */     
+2121   3            
+2122   3      #ifdef SYNC     
+2123   3            endp_id = 0;
+2124   3            infid = KVM_MAX_PORT;
+2125   3      #else
+                    endp_id = KVM_CurrentHost;
+                    infid = KVM_CurrentHost+1;
+              #endif      
+2129   3            for (;endp_id < infid; endp_id++)
+2130   3            {
+2131   4              //if (endp_id != KVM_CurrentHost)
+2132   4              {//mouse or keyboard      
+2133   5                USBHC_InterruptTrnasferIN_Sync(sync_device_mask,endp_id,intt_id,vhid_inf);
+2134   5              } 
+2135   4            }     
+2136   3          }
+2137   2        }
+2138   1        return 1;
+2139   1      }
+2140          
+2141          /**
+2142          * @brief  USBHC_State_Machine_Busy_Check
+2143          *         USB Host core singole command state machine process
+2144          * @param  None 
+2145          * @retval None
+2146          */
+2147          U8_T USBHC_State_Machine_Busy_Check(U8_T devinx)
+2148          {
+2149   1        if ((USB_PDevice[devinx].Hc.Control.State != CTRL_IDLE) && (USB_PDevice[devinx].Hc.Control.State != CTRL_
+             -COMPLETE))
+2150   1        {
+2151   2          return 1;
+2152   2        }
+2153   1        
+2154   1        if (USB_PDevice[devinx].Hc.EnumState)
+2155   1        {
+2156   2          return 2;
+2157   2        }
+2158   1        
+2159   1        if (USB_PDevice[devinx].Hc.HID_EnumState)
+2160   1        {
+2161   2          return 3;
+2162   2        }
+2163   1        
+2164   1        if (USB_PDevice[devinx].Hc.HUB_EnumState)
+2165   1        {
+2166   2          return 4;
+2167   2        }
+2168   1        
+2169   1        if (USB_PDevice[devinx].Hc.ScmdState)
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 37  
+
+2170   1        {
+2171   2          return 5;
+2172   2        }
+2173   1        
+2174   1        if (USB_PDevice[devinx].Hc.PassThrough_State)
+2175   1        {
+2176   2          return 6;
+2177   2        }
+2178   1        
+2179   1        //2017-05-22 Add by Jack, for if the PC enumlate the keyboard very fast and send the led command 
+2180   1        if (USB_PDevice[devinx].Hc.gState == HOST_CLASS_ENUMERATION) // next go other Class Maintain. 
+2181   1        {
+2182   2          return 7;
+2183   2        }
+2184   1          
+2185   1        return 0;
+2186   1      }
+2187          
+2188          /**
+2189          * @brief  TASK_USBHC_Scm_Handle
+2190          *         USB Host core singole command state machine process
+2191          * @param  None 
+2192          * @retval None
+2193          */
+2194          void TASK_USBHC_Scm_Handle_Start(void)
+2195          {
+2196   1        U8_T  devinx, td_id, para2;
+2197   1      
+2198   1        devinx = TASK_Register0;
+2199   1        para2 = TASK_Register1;
+2200   1        
+2201   1        /* Skip task if the device is gone */
+2202   1        if ((USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK) == 0x00)  // Device is gone  
+2203   1        { 
+2204   2          return;
+2205   2        }
+2206   1        
+2207   1        /* Check if HC state machine not idle now */  
+2208   1        if (USBHC_State_Machine_Busy_Check(devinx))
+2209   1        {
+2210   2          TASK_Wait_Current();
+2211   2          return;
+2212   2        }
+2213   1        
+2214   1        /* Get Free TD of ATL */
+2215   1        if (USBHC_Control_TD_Init(devinx,&td_id) != USBH_OK)
+2216   1        {
+2217   2          TASK_Wait_Current();
+2218   2          return;
+2219   2        }
+2220   1      
+2221   1        /* Now Occupy the SCM State Machine */
+2222   1        USB_PDevice[devinx].Hc.ScmdState = USB_PDevice[devinx].Hc.ScmdStep;
+2223   1        USB_PDevice[devinx].Hc.gState = HOST_SCM;
+2224   1        TASK_Active(TASK_TYPE_USB, TASK_USBHC_Scm_Handle_ID, 0, devinx, para2, 0); //Generate the task, for next 
+             -Event check
+2225   1      }
+2226          
+2227          /**
+2228          * @brief  TASK_USBHC_Scm_Handle
+2229          *         USB Host core singole command state machine process
+2230          * @param  None 
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 38  
+
+2231          * @retval None
+2232          */
+2233          void TASK_USBHC_Scm_Handle(void)
+2234          {
+2235   1        U8_T  devinx,td_id,intf_id,mode,para2;
+2236   1        RESULT  Result;
+2237   1      
+2238   1        devinx = TASK_Register0;
+2239   1        para2 = TASK_Register1;
+2240   1        td_id = USB_PDevice[devinx].Hc.Control.TdNum; // which host channel is used by device
+2241   1      
+2242   1        //Skip task if the device is gone
+2243   1        if ((USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK) == 0x00)  // Device is gone  
+2244   1        { 
+2245   2          return; 
+2246   2        }
+2247   1        
+2248   1        switch (USB_PDevice[devinx].Hc.ScmdStep)
+2249   1        {
+2250   2          case SCMD_SET_LED_REPORT:
+2251   2            Result = USBHC_SCM_SetLedReport(devinx,td_id);
+2252   2            break;
+2253   2          case SCMD_SET_UNIFYING_REPORT:
+2254   2            Result = USBHC_SCM_SetUnifyingReport(devinx,td_id,para2);
+2255   2            break;
+2256   2          case SCMD_SET_UNIFYING_HID: //HID++ mode or HID mode
+2257   2            Result = USBHC_SCM_SetUnifyingHID(devinx,td_id,para2);
+2258   2            break;
+2259   2          case SCMD_SET_PROTOCOL:
+2260   2            mode = para2 & 0x0f;
+2261   2            intf_id = (para2 & 0xf0) >> 4;
+2262   2            Result = USBHC_SCM_SetProtocol(devinx,td_id,intf_id,mode);
+2263   2            break;
+2264   2          case SCMD_SET_CONFIGURATION:
+2265   2            Result = USBHC_SCM_SetConfiguration(devinx,td_id,para2);
+2266   2            break;
+2267   2          case SCMD_SET_INTERFACE:
+2268   2            Result = USBHC_SCM_SetInterface(devinx,td_id,para2);
+2269   2            break;
+2270   2          case SCMD_SET_HUB_FEATURE:      
+2271   2            Result = USBHC_SCM_SetHubFeature(devinx,td_id,para2);
+2272   2            break;
+2273   2          case SCMD_CLEAR_HUB_FEATURE:      
+2274   2            Result = USBHC_SCM_ClearHubFeature(devinx,td_id,para2);
+2275   2            break;
+2276   2          case SCMD_CLEAR_FEATURE:
+2277   2            break;
+2278   2          case SCMD_SET_IDLE:
+2279   2            Result = USBHC_SCM_SetIdle(devinx,td_id,para2);
+2280   2            break;
+2281   2        }
+2282   1      
+2283   1        if (Result == USB_SUCCESS)
+2284   1        {
+2285   2          USB_PDevice[devinx].Hc.ScmdState = SCMD_COMPLETE;
+2286   2        }
+2287   1        else if (Result == USB_ERROR)
+2288   1        {
+2289   2          USB_PDevice[devinx].Hc.ScmdState = SCMD_FAIL;
+2290   2          
+2291   2          /* The Kworld TouchPad has a bug, it doese support suspend request */
+2292   2          if (USB_PDevice[devinx].Hc.ScmdStep == SCMD_SET_IDLE)
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 39  
+
+2293   2          {
+2294   3            /*Need to reset device */
+2295   3            //1.unplug device first.
+2296   3            //2.remove device
+2297   3            USB_PDevice[devinx].Hc.EnumState = HID_ENUM_IDLE;
+2298   3            USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+2299   3            USBHC_Remove_Device(devinx, 0);
+2300   3            //printf("Cmd Error, Remove devinx:%bd\n\r", devinx);
+2301   3            //3.do the reset(for root hub or other hub)
+2302   3          }
+2303   2        }
+2304   1        else
+2305   1        {
+2306   2          return;
+2307   2        }
+2308   1      
+2309   1        USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+2310   1        USBHC_CORE_Free_TD(USB_PDevice[devinx].Hc.Control.TdNum);
+2311   1        TASK_Active(TASK_TYPE_USB,TASK_USBHC_Process_ID,0x00,devinx,0,0);  // Generate the task to go into HC mai
+             -n control
+2312   1      }
+2313          
+2314          /*------------------------------------------------------------------------------
+2315           U8_T USBHC_KB_Led_Brocast(U8_T led)
+2316           @brief  brocast the led value to all USB keyboard device
+2317           @param  $devinx:
+2318                    $total_len:receive description table length
+2319                    $buf:the buffer which can received
+2320           @retval None
+2321          --------------------------------------------------------------------------------*/
+2322          void USBHC_KB_Led_Brocast(U8_T led)
+2323          {
+2324   1        U8_T  devinx;
+2325   1        
+2326   1        for (devinx=USBDC_VIRTUAL_DEVINX; devinx < USB_HC_MAX_DEVICE ; devinx++) // start from first devinx
+2327   1        {
+2328   2          if (USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK)
+2329   2          {     
+2330   3            if (USB_PDevice[devinx].DevAttr & DEVATTR_KB_CLASS_MASK)        
+2331   3            {
+2332   4              if (USBHC_KB_Led_Check(devinx))
+2333   4              {
+2334   5                if ((USB_PDevice[devinx].DevAttr & DEVATTR_REMOTE_DEV_MASK) == 0x00)
+2335   5                { 
+2336   6                  if (USB_PDevice[devinx].HID_Kb_LED_Value[1] != led)
+2337   6                  {
+2338   7                    USB_PDevice[devinx].HID_Kb_LED_Value[1] = led;
+2339   7                    USB_PDevice[devinx].Hc.ScmdStep = SCMD_SET_LED_REPORT;
+2340   7                    TASK_Active(TASK_TYPE_EVENT,TASK_USBHC_Scm_Handle_Start_ID,0,devinx,SCMD_SET_LED_REPORT,0);
+2341   7                  }
+2342   6                }
+2343   5              } 
+2344   4            }         
+2345   3          }
+2346   2        }
+2347   1      }
+2348          
+2349          /*------------------------------------------------------------------------------
+2350           U8_T TASK_USBHC_KVM_Switch_Check(U8_T port)
+2351           @brief  After KVM switching complete,check the value with curretn port setting
+2352                   [1].Protocol
+2353                   [2].COnfiguration 
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 40  
+
+2354           @param  $port:current active kvm port number
+2355           @retval None
+2356          --------------------------------------------------------------------------------*/
+2357          void TASK_USBHC_KVM_Switch_Check(void)
+2358          {
+2359   1        U8_T  port, index;
+2360   1        U8_T  devinx, curinf, intf_bit, protocol_value, max_device;
+2361   1      
+2362   1        max_device = (TASK_Register0 & 0xf0) >> 4;
+2363   1        devinx = (TASK_Register0 & 0x0f);
+2364   1        port = TASK_Register1;
+2365   1        TASK_USBHC_KVM_Switch_Check_Start_Flag = 1;
+2366   1        
+2367   1        if (USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK) // if the device is in used
+2368   1        {
+2369   2          //2.Special Handle for some devices compatible issue
+2370   2          if (USB_PDevice[devinx].DevAttr & DEVATTR_UNIFYING_MASK) //Logitech Unifying wirelesee hid device
+2371   2          {
+2372   3            USBHC_Unifying_KVM_Switch_Check(port,devinx);
+2373   3          }
+2374   2          else if (USB_PDevice[devinx].DevAttr & DEVATTR_TD2220_MASK) //Viewsonic TD2220
+2375   2          {
+2376   3            if ((USB_PDevice[devinx].DevAttr & TD2220_FORMAT_MASK) != (USBDC_Device[devinx].DevAttr[port] & TD2220_
+             -FORMAT_MASK))
+2377   3            {
+2378   4              USBHC_Remove_Device(devinx, 1);
+2379   4            }
+2380   3          }
+2381   2          
+2382   2          //3.Handle Protocol, Alternate Setting
+2383   2      #ifndef ONEHID      
+2384   2          for (curinf=0; curinf < (USB_PDevice[devinx].InterfaceNum & USBHC_DEVICE_INTERFACENUM_MASK) ; curinf++)
+2385   2          {
+2386   3            //3.1 Check Protocol for HID Class
+2387   3            if (USB_PDevice[devinx].InfClass[curinf] == USB_HID_CLASS) // if it is hid class
+2388   3            {
+2389   4              intf_bit = 0x01 << curinf;
+2390   4              protocol_value = USBDC_Device[devinx].Current_Protocol[port] & intf_bit;
+2391   4              if (protocol_value != (USB_PDevice[devinx].Current_Protocol & intf_bit))
+2392   4              {
+2393   5                USBHC_Set_Dev_Inf_Protocol(devinx,curinf,protocol_value,1);
+2394   5              }
+2395   4            }
+2396   3            //3.2 Check Alternating Setting for Audio Class
+2397   3            if (USB_PDevice[devinx].DevClass != USB_AUDIO_CLASS)
+2398   3            {
+2399   4              if (USBDC_Device[devinx].Current_AlternateSetting[port][curinf] != USB_PDevice[devinx].Current_Alterna
+             -teSetting[curinf])
+2400   4              {
+2401   5                USB_PDevice[devinx].Current_AlternateSetting[curinf] = USBDC_Device[devinx].Current_AlternateSetting[
+             -port][curinf];
+2402   5                USBHC_Set_Dev_Interface(devinx,curinf,USB_PDevice[devinx].Current_AlternateSetting[curinf]); // inter
+             -face,alternate setting
+2403   5              }
+2404   4            }
+2405   3          }
+2406   2      #endif    
+2407   2          //4. Check Configuration Setting
+2408   2          if (USB_PDevice[devinx].ConfigurationValue != USBDC_Device[devinx].Current_Configuration[port])
+2409   2          {
+2410   3            if (USBDC_Device[devinx].Current_Configuration[port])
+2411   3            {
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 41  
+
+2412   4              USB_PDevice[devinx].ConfigurationValue = USBDC_Device[devinx].Current_Configuration[port];
+2413   4              USBHC_Set_Dev_Configuration(devinx,USBDC_Device[devinx].Current_Configuration[port]);
+2414   4            }
+2415   3          }
+2416   2          //5. Handle the intval setting
+2417   2          if ((devinx >= USBDC_VHID_DEVINX) && (USB_PDevice[devinx].DevClass == USB_HID_CLASS))
+2418   2          {
+2419   3            USBDC_Device[devinx].Interval_Detect[port] = 0; //need to start check endpoint
+2420   3            for (index=1;index < USBDC_Device[devinx].EndpNum ;index++)
+2421   3            {
+2422   4              if ((USBDC_Device[devinx].EndpType[index] & USB_EP_TYPE_MASK) == USB_EP_TYPE_INTR) //Interrupt transfe
+             -r type
+2423   4              {
+2424   5                intf_bit = USBDC_Get_Endp_Interval(port,devinx,index);
+2425   5                if (intf_bit)
+2426   5                {
+2427   6                  USBHC_CORE_Change_IntTransfer_Interval(devinx,index,intf_bit);
+2428   6                }
+2429   5                curinf = USBDC_Device[devinx].EndpType[index] & 0x0f;
+2430   5      #ifdef SYNC
+2431   5                HC_IntTransfer_Table[curinf].PassControl.SyncState &= ~BIT_MASK[port+4];
+2432   5      #else         
+                        HC_IntTransfer_Table[curinf].PassControl.State &= ~(PASSTHROUGH_WAIT);
+              #endif          
+2435   5              }
+2436   4            }
+2437   3          }
+2438   2          //6. Handle the transmitter issue
+2439   2      #if (SYSTEM_EXTENDER_TRANSMITTER)
+                  USBDC_Device[devinx].EndpIntrAttr = 0; //reset the mouse
+              #endif    
+2442   2        }
+2443   1      
+2444   1      TASK_USBHC_KVM_Switch_Check_Next:
+2445   1        if (++devinx < max_device)
+2446   1        {
+2447   2          if (USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK) // if the device is in used
+2448   2          {
+2449   3            protocol_value = (max_device << 4) + devinx;
+2450   3            TASK_Active(TASK_TYPE_EVENT,TASK_USBHC_KVM_Switch_Check_ID,0x00,protocol_value,port,0); //Generate the 
+             -task, for next Event check
+2451   3          }
+2452   2          else
+2453   2          {
+2454   3            goto TASK_USBHC_KVM_Switch_Check_Next;
+2455   3          }
+2456   2        }
+2457   1        else
+2458   1        {
+2459   2          TASK_USBHC_KVM_Switch_Check_Start_Flag = 0;
+2460   2        }
+2461   1      }
+2462          
+2463          /*------------------------------------------------------------------------------
+2464           U8_T TASK_USBHC_Resume_Command(U8_T port)
+2465           @brief  After USB HC resume, this program will perform command broadcast
+2466           @param  
+2467           @retval None
+2468          --------------------------------------------------------------------------------*/
+2469          void TASK_USBHC_Resume_Command(void)
+2470          {
+2471   1        U8_T  devinx, curinf, intf_bit;
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 42  
+
+2472   1        
+2473   1        devinx = TASK_Register0;
+2474   1        if (USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK) // if the device is in used
+2475   1        {
+2476   2          //Check HID Class device
+2477   2          intf_bit = 0x01;
+2478   2          for (curinf = 0; curinf < (USB_PDevice[devinx].InterfaceNum & USBHC_DEVICE_INTERFACENUM_MASK); curinf++)
+2479   2          {
+2480   3            if (USB_PDevice[devinx].InfClass[curinf] == USB_HID_CLASS) // if it is hid class
+2481   3            {
+2482   4              //check the protocol setting.
+2483   4              if (USB_PDevice[devinx].Hid_SetIdle_Allow & intf_bit)
+2484   4              {
+2485   5                USBHC_Set_Dev_Idle(devinx,curinf);
+2486   5              }
+2487   4            }
+2488   3            intf_bit <<= 1;
+2489   3          }
+2490   2        }
+2491   1      
+2492   1      ResumeNextDevice:
+2493   1        if (++devinx < (USB_HC_MAX_DEVICE+USB_HC_MAX_HUB))
+2494   1        {
+2495   2          if (!(USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK))
+2496   2            goto ResumeNextDevice;
+2497   2      
+2498   2          TASK_Active(TASK_TYPE_EVENT,TASK_USBHC_Resume_Command_ID,0x00,devinx,0,0); //Generate the task, for next
+             - Event check
+2499   2        }
+2500   1      }
+2501          
+2502          /*------------------------------------------------------------------------------
+2503           void USBHC_Set_Dev_Inf_Protocol(U8_T devinx,U8_T curinf,U8_T protocol_value,U8_T cmd_type)
+2504           @brief  Subroutine for setting HC devcie interface protocol setting
+2505           @param  $devinx:device index
+2506                   $curinf:interface number
+2507                   $protocol_value
+2508           @retval None
+2509          --------------------------------------------------------------------------------*/
+2510          void USBHC_Set_Dev_Inf_Protocol(U8_T devinx,U8_T curinf,U8_T protocol_value,U8_T cmd_type)
+2511          {
+2512   1        U8_T intf_bit;
+2513   1      #if (SYSTEM_EXTENDER_TRANSMITTER) 
+                U8_T protocol_hold;
+              #endif  
+2516   1        
+2517   1      #ifdef ONEHID
+                if (devinx > USBDC_VHID_DEVINX)
+                {
+                  return;
+                }   
+              #endif  
+2523   1        
+2524   1        intf_bit = 0x01 << curinf;
+2525   1        if (protocol_value)
+2526   1        {
+2527   2          USB_PDevice[devinx].Current_Protocol |= intf_bit;
+2528   2          protocol_value = curinf << 4; // if boot protocol then the wvalue is 0  
+2529   2        }
+2530   1        else
+2531   1        {
+2532   2          USB_PDevice[devinx].Current_Protocol &= ~intf_bit;
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 43  
+
+2533   2          protocol_value = 0x01 | (curinf << 4); // if report protocol then the wvalue is 1   
+2534   2        }
+2535   1        
+2536   1        if (devinx >= USBDC_VIRTUAL_DEVINX)
+2537   1        { 
+2538   2          if (cmd_type == 1)
+2539   2          {
+2540   3            //Special Handle for A4 Teck keyboard G800V
+2541   3      #if (SYSTEM_EXTENDER_TRANSMITTER)
+                    if (USB_PDevice[devinx].DevAttr & DEVATTR_REMOTE_DEV_MASK)//if remote device
+                    {     
+                      protocol_value = (curinf << 4) | (protocol_hold & 0x0f);
+                      ExtenderT_USB_Set_Protocol(devinx,curinf,protocol_value);
+                    }
+                    else
+              #endif /* #if (SYSTEM_EXTENDER_TRANSMITTER) */
+2549   3            {
+2550   4              USB_PDevice[devinx].Hc.ScmdStep = SCMD_SET_PROTOCOL;
+2551   4              TASK_Active(TASK_TYPE_EVENT,TASK_USBHC_Scm_Handle_Start_ID,0,devinx,protocol_value,0);
+2552   4            }
+2553   3          }
+2554   2        }
+2555   1      }
+2556          
+2557          /*------------------------------------------------------------------------------
+2558           void USBHC_Set_Dev_Logitech_Unifying_Mode(U8_T devinx,U8_T report_value)
+2559           @brief  Subroutine for setting HC devcie interface protocol setting 
+2560           @param  $devinx:device index
+2561                   $curinf:interface number
+2562                   $protocol_value
+2563           @retval None
+2564          --------------------------------------------------------------------------------*/
+2565          void USBHC_Set_Dev_Logitech_Unifying_Mode(U8_T devinx,U8_T report_value)
+2566          {
+2567   1        if (devinx >= USBDC_VIRTUAL_DEVINX)
+2568   1        {
+2569   2      #if (SYSTEM_EXTENDER_TRANSMITTER)
+                  if (USB_PDevice[devinx].DevAttr & DEVATTR_REMOTE_DEV_MASK)//if remote device
+                  {
+                    ExtenderT_USB_Send_Command(devinx,SCMD_SET_UNIFYING_REPORT,report_value);
+                  }
+                  else
+              #endif /* #if (SYSTEM_EXTENDER_TRANSMITTER) */
+2576   2          {
+2577   3            USB_PDevice[devinx].Hc.ScmdStep = SCMD_SET_UNIFYING_REPORT;
+2578   3            TASK_Active(TASK_TYPE_EVENT,TASK_USBHC_Scm_Handle_Start_ID,0,devinx,report_value,0);
+2579   3          } 
+2580   2        }
+2581   1      }
+2582          
+2583          /*------------------------------------------------------------------------------
+2584           void USBHC_Set_Dev_Logitech_Unifying_HID(U8_T devinx,U8_T report_value)
+2585           @brief  Subroutine for setting HC devcie interface protocol setting 
+2586           @param  $devinx:device index
+2587                   $curinf:interface number
+2588                   $protocol_value
+2589           @retval None
+2590          --------------------------------------------------------------------------------*/
+2591          void USBHC_Set_Dev_Logitech_Unifying_HID(U8_T devinx,U8_T hid_value)
+2592          {
+2593   1        if (devinx >= USBDC_VIRTUAL_DEVINX)
+2594   1        {
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 44  
+
+2595   2      #if (SYSTEM_EXTENDER_TRANSMITTER)
+                  if (USB_PDevice[devinx].DevAttr & DEVATTR_REMOTE_DEV_MASK)//if remote device
+                  {
+                    ExtenderT_USB_Send_Command(devinx,SCMD_SET_UNIFYING_HID,hid_value);
+                  }
+                  else
+              #endif /* #if (SYSTEM_EXTENDER_TRANSMITTER) */    
+2602   2          {
+2603   3            USB_PDevice[devinx].Hc.ScmdStep = SCMD_SET_UNIFYING_HID;
+2604   3            TASK_Active(TASK_TYPE_EVENT,TASK_USBHC_Scm_Handle_Start_ID,0,devinx,hid_value,0);
+2605   3          } 
+2606   2        }
+2607   1      }
+2608          
+2609          /*------------------------------------------------------------------------------
+2610           void USBHC_Set_Dev_Configuration(U8_T devinx,U8_T configuration_value)
+2611           @brief  Subroutine for setting HC devcie configuration value
+2612           @param  $devinx:device index
+2613                   $configuration_value
+2614           @retval None
+2615          --------------------------------------------------------------------------------*/
+2616          void USBHC_Set_Dev_Configuration(U8_T devinx,U8_T configuration_value)
+2617          {
+2618   1        if (devinx >= USBDC_VIRTUAL_DEVINX)
+2619   1        {   
+2620   2      #if (SYSTEM_EXTENDER_TRANSMITTER)
+                  if (USB_PDevice[devinx].DevAttr & DEVATTR_REMOTE_DEV_MASK)//if remote device
+                  { 
+                    ExtenderT_USB_Send_Command(devinx,SCMD_SET_CONFIGURATION,configuration_value);
+                  }
+                  else
+              #endif /* #if (SYSTEM_EXTENDER_TRANSMITTER) */  
+2627   2          {   
+2628   3            USB_PDevice[devinx].Hc.ScmdStep = SCMD_SET_CONFIGURATION;
+2629   3            TASK_Active(TASK_TYPE_EVENT,TASK_USBHC_Scm_Handle_Start_ID,0,devinx,configuration_value,0);
+2630   3          } 
+2631   2        }
+2632   1      }
+2633          
+2634          /*------------------------------------------------------------------------------
+2635           void USBHC_Set_Dev_Idle(U8_T devinx,U8_T configuration_value)
+2636           @brief  Subroutine for setting HC devcie configuration value
+2637           @param  $devinx:device index
+2638                   $configuration_value
+2639           @retval None
+2640          --------------------------------------------------------------------------------*/
+2641          void USBHC_Set_Dev_Idle(U8_T devinx,U8_T intf)
+2642          {
+2643   1        if (devinx >= USBDC_VIRTUAL_DEVINX)
+2644   1        {
+2645   2      #if (SYSTEM_EXTENDER_TRANSMITTER)
+                  if (USB_PDevice[devinx].DevAttr & DEVATTR_REMOTE_DEV_MASK)//if remote device
+                  {
+                    ExtenderT_USB_Send_Command(devinx,SCMD_SET_IDLE,intf);
+                  }
+                  else
+              #endif /* #if (SYSTEM_EXTENDER_TRANSMITTER) */  
+2652   2          {   
+2653   3            USB_PDevice[devinx].Hc.ScmdStep = SCMD_SET_IDLE;
+2654   3            TASK_Active(TASK_TYPE_EVENT,TASK_USBHC_Scm_Handle_Start_ID,0,devinx,intf,0);
+2655   3          } 
+2656   2        }
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 45  
+
+2657   1      }
+2658          
+2659          /*------------------------------------------------------------------------------
+2660           void USBHC_Set_Dev_Interface(U8_T devinx,U8_T configuration_value)
+2661           @brief  Subroutine for setting HC devcie configuration value
+2662           @param  $devinx:device index
+2663                   $configuration_value
+2664           @retval None
+2665          --------------------------------------------------------------------------------*/
+2666          void USBHC_Set_Dev_Interface(U8_T devinx,U8_T interface,U8_T alternate)
+2667          {
+2668   1        U8_T  intf;
+2669   1      
+2670   1        if (devinx >= USBDC_VIRTUAL_DEVINX)
+2671   1        {
+2672   2      #if (SYSTEM_EXTENDER_TRANSMITTER)             
+              #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)    
+                  if (devinx == USBHC_Audio_Devinx)
+                  {
+                    if (interface == USBHC_Audio_In_Interface)
+                    {
+                      if (alternate) //turn ob the IN
+                      {       
+                        ETDR_AudioInHead = 0;
+                        ETDR_AudioInTail = 0;
+                        ETDR_AudioInDcDoingFlag = 0;              
+                      } 
+                    } 
+                  }
+              #endif /* if (SYSTEM_USBAUDIO_DEVICE_SUPPORT) */      
+              #endif /* #if (SYSTEM_EXTENDER_TRANSMITTER) */
+2688   2          
+2689   2          intf = interface << 4 | alternate;
+2690   2      #if (SYSTEM_EXTENDER_TRANSMITTER)
+                  if (USB_PDevice[devinx].DevAttr & DEVATTR_REMOTE_DEV_MASK)//if remote device
+                  {           
+                    ExtenderT_USB_Send_Command(devinx,SCMD_SET_INTERFACE,intf);
+                  }
+                  else
+              #endif /* #if (SYSTEM_EXTENDER_TRANSMITTER) */  
+2697   2          {   
+2698   3            USB_PDevice[devinx].Hc.ScmdStep = SCMD_SET_INTERFACE;     
+2699   3            TASK_Active(TASK_TYPE_EVENT,TASK_USBHC_Scm_Handle_Start_ID,0,devinx,intf,0);
+2700   3          } 
+2701   2        }
+2702   1      }
+2703          
+2704          /*----------------------------------------------------------------------------
+2705           * RESULT USBHC_SCM_SetConfiguration(U8_T devinx,U8_T td_id,U8_T mode)
+2706           * Purpose : Perform the set address operation of enumearation
+2707           * Params  : none
+2708           * Returns : none
+2709           * Note    : none
+2710           * ----------------------------------------------------------------------------*/
+2711          RESULT USBHC_SCM_SetConfiguration(U8_T devinx,U8_T td_id,U8_T configuration)
+2712          {
+2713   1        RESULT  Result;
+2714   1      
+2715   1        if (USB_PDevice[devinx].Hc.Control.State == CTRL_IDLE)
+2716   1        {
+2717   2          USBHC_Stdreq_SetCfg(devinx,td_id,configuration);
+2718   2          Result = USB_BUSY;
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 46  
+
+2719   2        }
+2720   1        else
+2721   1        {
+2722   2          if ((USB_PDevice[devinx].Hc.Control.State == CTRL_COMPLETE) || (USB_PDevice[devinx].Hc.Control.State == 
+             -CTRL_STALLED))
+2723   2          {
+2724   3            Result = USB_SUCCESS;
+2725   3          }
+2726   2          else
+2727   2          {
+2728   3            Result = USB_ERROR;
+2729   3          }
+2730   2        }
+2731   1        return Result;
+2732   1      }
+2733          
+2734          /*----------------------------------------------------------------------------
+2735           * RESULT USBHC_SCM_SetInterface(U8_T devinx,U8_T td_id,U8_T mode)
+2736           * Purpose : Perform the set address operation of enumearation
+2737           * Params  : none
+2738           * Returns : none
+2739           * Note    : none
+2740           * ----------------------------------------------------------------------------*/
+2741          RESULT USBHC_SCM_SetInterface(U8_T devinx,U8_T td_id,U8_T configuration)
+2742          {
+2743   1        RESULT  Result;
+2744   1        U8_T  intf_id;
+2745   1        
+2746   1        if (USB_PDevice[devinx].Hc.Control.State == CTRL_IDLE)
+2747   1        {
+2748   2          intf_id = (configuration & 0xf0) >> 4;
+2749   2          configuration &= 0x0f;
+2750   2          USBHC_Stdreq_SetInterface(devinx,td_id,configuration,intf_id);
+2751   2          Result = USB_BUSY;
+2752   2      #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)    
+                  USBHC_AUDIO_In_Control_Check(devinx,intf_id,configuration);
+              #endif    
+2755   2        }
+2756   1        else
+2757   1        {
+2758   2          if ((USB_PDevice[devinx].Hc.Control.State == CTRL_COMPLETE) || (USB_PDevice[devinx].Hc.Control.State == 
+             -CTRL_STALLED))
+2759   2          {
+2760   3            Result = USB_SUCCESS;
+2761   3          }
+2762   2          else
+2763   2          {
+2764   3            Result = USB_ERROR;
+2765   3          }
+2766   2        }
+2767   1        return Result;
+2768   1      }
+2769          
+2770          #if (!SYSTEM_EXTENDER_SUPPORT)
+2771          /*******************************************************************************
+2772          * void USBHC_PassThrough_TD_Filled(U8_T devinx,U8_T port)
+2773          * Purpose : create a passthroug control
+2774          * Input   : None.
+2775          * Output  : None.
+2776          * Return  : None.
+2777          *******************************************************************************/
+2778          void USBHC_PassThrough_TD_Filled(U8_T devinx,U8_T port)
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 47  
+
+2779          {
+2780   1        USBDC_Device[devinx].PassThroughState[port] = PASSTHROUGH_SETUP_START; /* Indicate the device is in PassT
+             -hrough Mode */
+2781   1        /* Inital Total lenght & Current length */
+2782   1        USBDC_Device[devinx].Ctrl_TotalByte[port] = USBDC_Device[devinx].Setup[port].b.wLength.w;
+2783   1        USBDC_Device[devinx].Ctrl_CurrentByte[port] = 0;
+2784   1        USBDC_Device[devinx].Control_EndpBuf[port] = m_malloc(USBDC_Device[devinx].EndpMaxSize[0],11); // only al
+             -loc the control endpoint buffer
+2785   1        /* Update PassThrough Control Data Length field */
+2786   1        USB_PDevice[devinx].Hc.PControl.Total_Length = USBDC_Device[devinx].Setup[port].b.wLength.w;
+2787   1        USB_PDevice[devinx].Hc.PControl.Current_Length = 0;
+2788   1        USB_PDevice[devinx].Hc.PControl.Data_Length = 0;
+2789   1      }
+2790          #endif /* (!SYSTEM_EXTENDER_SUPPORT) */
+2791          
+2792          /*----------------------------------------------------------------------------
+2793           * RESULT USBHC_SCM_SetIdle(U8_T devinx,U8_T td_id,U8_T intf_id)
+2794           * Purpose : Perform the set idle operation of hid class device
+2795           * Params  : none
+2796           * Returns : none
+2797           * Note    : none
+2798           * ----------------------------------------------------------------------------*/
+2799          RESULT USBHC_SCM_SetIdle(U8_T devinx,U8_T td_id,U8_T intf_id)
+2800          {
+2801   1        RESULT  Result=USB_SUCCESS;
+2802   1         
+2803   1        if (USB_PDevice[devinx].Hc.Control.State == CTRL_IDLE)
+2804   1        { 
+2805   2          USBHC_Classreq_SetIdle(devinx, td_id, USB_PDevice[devinx].InfSetIdle[intf_id], 0x00, intf_id);
+2806   2          Result = USB_BUSY;
+2807   2        }
+2808   1        else
+2809   1        {
+2810   2          if ((USB_PDevice[devinx].Hc.Control.State == CTRL_COMPLETE) || (USB_PDevice[devinx].Hc.Control.State == 
+             -CTRL_STALLED))
+2811   2          {
+2812   3            Result = USB_SUCCESS;
+2813   3          }
+2814   2          else
+2815   2          {
+2816   3            Result = USB_ERROR;
+2817   3          }
+2818   2        }
+2819   1       
+2820   1        return Result;
+2821   1      } 
+2822          
+2823          /*******************************************************************************
+2824          * Function Name: TASK_USBHC_PassThrough_Handle_Start.
+2825          * Description  : Traffic control of PassThrough Command transmitt
+2826          * Input        :  
+2827          * Output       : None.
+2828          * Return       : None
+2829          *******************************************************************************/
+2830          void TASK_USBHC_PassThrough_Handle_Start(void)
+2831          {
+2832   1        U8_T  devinx, pid;
+2833   1        U8_T  td_id;
+2834   1      #if (SYSTEM_EXTENDER_SUPPORT)
+                U8_T  passthrough_task_id;
+              #endif /* (SYSTEM_EXTENDER_SUPPORT) */
+2837   1        
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 48  
+
+2838   1        devinx = TASK_Register0;
+2839   1        pid = TASK_Register1; // command from whicp upstream port
+2840   1        
+2841   1        //Skip task if the device is gone
+2842   1        if ((USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK) == 0x00)  // Device is gone  
+2843   1        {
+2844   2          return; 
+2845   2        }
+2846   1        
+2847   1        /*Check the interrupt ternimal condition */
+2848   1        if (USBDC_Device[devinx].PassThroughState[pid] == PASSTHROUGH_SETUP_START) /*The device is not in PassThr
+             -ough Mode, then skip it*/
+2849   1        {
+2850   2          /* if the control endp pipe is not ready */
+2851   2          if (USBHC_State_Machine_Busy_Check(devinx))
+2852   2          {
+2853   3      #if (SYSTEM_EXTENDER_SUPPORT)
+                    TASK_Active(TASK_TYPE_EVENT,TASK_USBHC_PassThrough_Handle_Start_ID,0x00,devinx,pid,0); // Generate the 
+             -task, for next check
+              #else
+2856   3            TASK_Wait_Current();
+2857   3      #endif
+2858   3            return;
+2859   3          }
+2860   2      
+2861   2      #if (SYSTEM_EXTENDER_TRANSMITTER)
+                  if ((USB_PDevice[devinx].DevAttr & DEVATTR_REMOTE_DEV_MASK) == 0x00)  //if not extender, then
+              #endif /* (SYSTEM_EXTENDER_TRANSMITTER) */
+2864   2          {
+2865   3            /*Get Free TD of ATL */
+2866   3            if (USBHC_Control_TD_Init(devinx,&td_id) != USBH_OK)
+2867   3            {
+2868   4              TASK_Wait_Current();
+2869   4              return;
+2870   4            }
+2871   3          }
+2872   2          USB_PDevice[devinx].Hc.PassThrough_gState_bk = USB_PDevice[devinx].Hc.gState; //backup the qState
+2873   2          
+2874   2          //Occupy the PassThrough State Machine 
+2875   2          USB_PDevice[devinx].Hc.gState = HOST_PASSTHROUGH; // goto passthrough command mode
+2876   2          USB_PDevice[devinx].Hc.PassThrough_State = PASSTHROUGH_SETUP_START; // Send Setup Token Out
+2877   2      
+2878   2          //Update Upstream port id 
+2879   2          USB_PDevice[devinx].Hc.PControl.UPID = pid;
+2880   2      #if (SYSTEM_EXTENDER_SUPPORT)
+                  // Inital Total lenght & Current length 
+                  USBDC_Device[devinx].Ctrl_TotalByte[pid] = USBDC_Device[devinx].Setup[pid].b.wLength.w;
+                  USBDC_Device[devinx].Ctrl_CurrentByte[pid] = 0;
+                  // Update PassThrough Control Data Length field 
+                  USB_PDevice[devinx].Hc.PControl.Total_Length = USBDC_Device[devinx].Setup[pid].b.wLength.w;
+                  USB_PDevice[devinx].Hc.PControl.Current_Length = 0;
+                  USB_PDevice[devinx].Hc.PControl.Data_Length = 0;
+              
+              #if (SYSTEM_EXTENDER_TRANSMITTER)
+                  if (USB_PDevice[devinx].DevAttr & DEVATTR_REMOTE_DEV_MASK)
+                  {
+                    if (ExtenderT_Setup_Buffer_Malloc(pid,devinx) == 0)
+                      return;
+                    passthrough_task_id = TASK_USBHC_ExtenderT_PassThrough_Handle_ID;
+                  }
+                  else
+              #endif // (SYSTEM_EXTENDER_TRANSMITTER) 
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 49  
+
+                  {
+              #if (SYSTEM_EXTENDER_RECEIVER)
+                    if (pid == REMOTE_HOST_PORT)
+                    {
+                      ExtenderR_Setup_Buffer_Malloc(devinx);
+                      passthrough_task_id = TASK_USBHC_ExtenderR_PassThrough_ID;
+                    }
+                    else
+              #endif // SYSTEM_EXTENDER_RECEIVER
+                    {
+                      USBDC_Device[devinx].Control_EndpBuf[pid] = m_malloc(USBDC_Device[devinx].EndpMaxSize[0],12); // only 
+             -alloc the control endpoint buffer
+                      passthrough_task_id = TASK_USBHC_PassThrough_Handle_ID;
+                    }
+              
+                    if (USBDC_Device[devinx].Control_EndpBuf[pid] == NULL)
+                    {
+                      //printf(" USBHC_PASSTHROUGH Setup Malloc Fail !!\n\r");
+                      return;
+                    } 
+                      
+                    USB_PDevice[devinx].Hc.Control.Buf = USBDC_Device[devinx].Control_EndpBuf[pid];
+                    HCTD_Channel_Table[td_id].Buf = USBDC_Device[devinx].Control_EndpBuf[pid]; // Assing Buffer
+                  }
+                  
+                  TASK_Active(TASK_TYPE_EVENT,passthrough_task_id,0x00,devinx,0,0); //Generate the task, for next Event ch
+             -eck
+              #else // For Non- SYSTEM_EXTENDER_SUPPORT
+2924   2          USBHC_PassThrough_TD_Filled(devinx,pid);
+2925   2          USB_PDevice[devinx].Hc.Control.Buf = USBDC_Device[devinx].Control_EndpBuf[pid];
+2926   2          HCTD_Channel_Table[td_id].Buf = USBDC_Device[devinx].Control_EndpBuf[pid]; // Assing Buffer
+2927   2          TASK_Active(TASK_TYPE_USB,TASK_USBHC_PassThrough_Handle_ID,0x00,devinx,0,0); //Generate the task, for ne
+             -xt Event check
+2928   2      #endif // (SYSTEM_EXTENDER_SUPPORT) 
+2929   2        }
+2930   1      }
+2931          
+2932          /**
+2933          * void TASK_USBHC_PassThrough_Handle(U8_T devinx,U8_T pid)
+2934          * @brief  USB Host core passthroug control main state machine process
+2935          * @param  None 
+2936          * @retval None
+2937          */
+2938          void TASK_USBHC_PassThrough_Handle(void)
+2939          {
+2940   1        U8_T  devinx, td_id, pid;
+2941   1        RESULT  Result = USB_BUSY;
+2942   1        bit   terminate = 1;
+2943   1      
+2944   1        if (TASK_Type == TASK_TYPE_INTERVAL_MS)
+2945   1        {
+2946   2           TASK_Destory_Current();
+2947   2        } 
+2948   1      
+2949   1        devinx = TASK_Register0;
+2950   1        td_id = USB_PDevice[devinx].Hc.Control.TdNum; // which host channel is used by device
+2951   1        pid = USB_PDevice[devinx].Hc.PControl.UPID; // which host channel is used by device
+2952   1        //Skip task if the device is gone
+2953   1        if ((USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK) == 0x00 ||
+2954   1          USB_PDevice[devinx].Hc.PassThrough_State == PASSTHROUGH_IDLE)  // Device is gone  
+2955   1        { 
+2956   2          if (USB_PDevice[devinx].Hc.Control.TdNum)
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 50  
+
+2957   2          {
+2958   3            //printf("Free TD:%bu\n\r",USB_PDevice[devinx].Hc.Control.TdNum);
+2959   3            USBHC_CORE_Free_TD(USB_PDevice[devinx].Hc.Control.TdNum);     
+2960   3          }           
+2961   2          return;
+2962   2        }
+2963   1        
+2964   1      #if (USB_PASSTHROUGH_DEBUG_MODE)
+                printf(">> TASK_USBHC_PassThrough_Handle(%d)-(%d):\n\r",(U16_T)devinx,(U16_T)USB_PDevice[devinx].Hc.PassT
+             -hrough_State);
+              #endif //#if (USB_PASSTHROUGH_DEBUG_MODE)
+2967   1      TASK_USBHC_PassThrough_Handle_Restart:
+2968   1        switch (USB_PDevice[devinx].Hc.PassThrough_State)
+2969   1        {
+2970   2          case PASSTHROUGH_SETUP_START: //Send A control setup to HC      
+2971   2      #if (USB_PASSTHROUGH_DEBUG_MODE)
+                    printf("   (1).SETUP_TOKEN Stage\n\r");
+              #endif //#if (USB_PASSTHROUGH_DEBUG_MODE)
+2974   2            /* convert back to normal USB order */
+2975   2            /* Task Fork => Send out Setup Token */
+2976   2            Result = USBHC_PassThrough_Send_Setup_Token(devinx,td_id);
+2977   2            /* For No Data Stage */
+2978   2            if (Result == USB_SUCCESS) // need to ACK DC
+2979   2            {
+2980   3              /* Check the data length */
+2981   3              USB_PDevice[devinx].Hc.PassThrough_State = PASSTHROUGH_DC_SETUP_STATUS_IN;
+2982   3              goto TASK_USBHC_PassThrough_Handle_Restart;
+2983   3            }
+2984   2            else if (Result == USB_UNSUPPORT) 
+2985   2            {
+2986   3              USB_PDevice[devinx].Hc.PassThrough_State = PASSTHROUGH_DC_SETUP_STALL;
+2987   3              goto TASK_USBHC_PassThrough_Handle_Restart;
+2988   3            }
+2989   2            break;
+2990   2          case PASSTHROUGH_SETUP_START_DONE: //After passthrough Setup token send complete
+2991   2      #if (USB_PASSTHROUGH_DEBUG_MODE)
+                    printf("SETUP Token Done\n\r");
+              #endif //#if (USB_PASSTHROUGH_DEBUG_MODE)
+2994   2            USBDC_REGS_Endp_ControlClear(pid,devinx,0,(DA_CR_SCLR_SET|DA_CR_BCLR_SET)); // now can receive data
+2995   2            break;
+2996   2          case PASSTHROUGH_DC_SETUP_DATA_IN: //Setup Data Stage
+2997   2            /*update length first */
+2998   2      #if (USB_PASSTHROUGH_DEBUG_MODE)
+                    USB_PDevice[devinx].Hc.PControl.Current_Length += USB_PDevice[devinx].Hc.PControl.Data_Length;
+              #endif //#if (USB_PASSTHROUGH_DEBUG_MODE)
+3001   2            USBDC_VIRTUAL_Setup_DataStageIn(devinx,pid,1);  /*Set DC Buffre ready register*/
+3002   2            if (USB_PDevice[devinx].Hc.Control.State == CTRL_STATUS_OUT)
+3003   2            {
+3004   3              TASK_Active(TASK_TYPE_USB,TASK_USBHC_Handle_Control_ID,td_id,devinx,0,0);
+3005   3            }
+3006   2      #if (USB_PASSTHROUGH_DEBUG_MODE)
+                    printf("SETUP_DATA_IN Stage(%d/%d)\n\r",(U16_T)USB_PDevice[devinx].Hc.PControl.Current_Length,
+                    (U16_T)(U16_T)USB_PDevice[devinx].Hc.PControl.Total_Length);
+              #endif //#if (USB_PASSTHROUGH_DEBUG_MODE)
+3010   2            break;
+3011   2          case PASSTHROUGH_HC_SETUP_DATA_OUT_DONE: //Setup Data Stage
+3012   2            USBDC_REGS_Endp_ControlClear(pid,devinx,0,DA_CR_BCLR_SET); // Clear the OUT buffre flag
+3013   2      #if (USB_PASSTHROUGH_DEBUG_MODE)
+                    printf("SETUP_DATA_OUT_DONE Stage(%d/%d)\n\r",(U16_T)USB_PDevice[devinx].Hc.PControl.Current_Length,
+                    (U16_T)(U16_T)USB_PDevice[devinx].Hc.PControl.Total_Length);
+              #endif //#if (USB_PASSTHROUGH_DEBUG_MODE)
+3017   2            break;
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 51  
+
+3018   2          case PASSTHROUGH_DC_SETUP_STATUS_IN: //DC side Setup Status Stage
+3019   2      #if (USB_PASSTHROUGH_DEBUG_MODE)
+                    printf(" @P@ DC Status IN\n\r");
+              #endif //#if (USB_PASSTHROUGH_DEBUG_MODE)
+3022   2            USBDC_VIRTUAL_Control_Statue_In(devinx,pid);
+3023   2            Result = USB_SUCCESS;
+3024   2      #if (USB_PASSTHROUGH_DEBUG_MODE)
+                    printf("@P_IN@ PassThrough Complete \n\r");
+              #endif //#if (USB_PASSTHROUGH_DEBUG_MODE)
+3027   2            break;
+3028   2          case PASSTHROUGH_DC_SETUP_STALL: //DC side Setup Status Stage
+3029   2            USBDC_HAL_Endp_Stalled(pid,devinx,0);
+3030   2            Result = USB_SUCCESS;
+3031   2            break;
+3032   2          case PASSTHROUGH_COMPLETE: //PassThroug Complete
+3033   2      #if (USB_PASSTHROUGH_DEBUG_MODE)
+                    printf("@P@ PassThrough Complete \n\r");
+              #endif //#if (USB_PASSTHROUGH_DEBUG_MODE)
+3036   2            Result = USB_SUCCESS; // ternimate
+3037   2            break;
+3038   2        }
+3039   1        
+3040   1        if (Result == USB_SUCCESS)
+3041   1        {
+3042   2      #if (USB_PASSTHROUGH_DEBUG_MODE)
+                  printf("@@ Done=>TASK_USBHC_PassThrough Complete\n\r");
+              #endif //#if (USB_PASSTHROUGH_DEBUG_MODE)
+3045   2      
+3046   2      #if (SYSTEM_MSC_DEVICE_SUPPORT)
+                  if (devinx == USBHC_MSC_Devinx)
+                  {
+                    if (USBHC_MSC_State & MSC_STATE_CHECK_BULK_IN)
+                    {
+                      if ((USB_PDevice[devinx].Hc.PControl.Setup.b.bmRequestType == ENDPOINT_RECIPIENT) &&
+                        (USB_PDevice[devinx].Hc.PControl.Setup.b.bRequest == CLEAR_FEATURE) &&
+                        (USB_PDevice[devinx].Hc.PControl.Setup.b.wValue.w == 0x0000))
+                      {
+                        //should create a IN after passthrough complete
+                        USBHC_MSC_State &= ~MSC_STATE_CHECK_BULK_IN;
+                        if (USBHC_MSC_State & MSC_STATE_BULK_IN)
+                        {
+                          USBHC_MSC_State &= ~MSC_STATE_BULK_IN;
+              #if (SYSTEM_USB_HC_BURST)
+                          USBHC_MSC_CSW_After_Control(devinx);
+              #endif /* (SYSTEM_USB_HC_BURST) */
+                        }
+                      }
+                    }
+                  }
+              #endif //#if (SYSTEM_MSC_DEVICE_SUPPORT)
+3068   2        }
+3069   1        else if (Result == USB_ERROR)
+3070   1        {
+3071   2          USB_PDevice[devinx].Hc.PassThrough_State = PASSTHROUGH_FAIL;
+3072   2      #if (USB_PASSTHROUGH_DEBUG_MODE)
+                  printf("@@ Ternimate=>PASSTHROUGH_FAIL\n\r");
+              #endif
+3075   2        }
+3076   1        else
+3077   1        {
+3078   2          terminate = 0;
+3079   2        }
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 52  
+
+3080   1      
+3081   1        if (terminate)
+3082   1        {
+3083   2          USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+3084   2      #if (USB_PASSTHROUGH_DEBUG_MODE)
+                  printf("@P@ TD_Free:%d\n\r",(U16_T)USB_PDevice[devinx].Hc.Control.TdNum);
+              #endif    
+3087   2          USBHC_CORE_Free_TD(USB_PDevice[devinx].Hc.Control.TdNum);
+3088   2          USBDC_Device[devinx].PassThroughState[pid] = PASSTHROUGH_IDLE;
+3089   2          USB_PDevice[devinx].Hc.PassThrough_State = PASSTHROUGH_IDLE;
+3090   2          malloc_free(USB_PDevice[devinx].Hc.Control.Buf);
+3091   2          USB_PDevice[devinx].Hc.Control.Buf = 0;
+3092   2          USB_PDevice[devinx].Hc.gState = USB_PDevice[devinx].Hc.PassThrough_gState_bk;
+3093   2        }
+3094   1      }
+3095          
+3096          /*******************************************************************************
+3097          * void USBHC_Remove_Device(U8_T devinx,  U8_T portReset)
+3098          * Description: Remove the virtual device in HC & DC
+3099          * Input      :  
+3100          * Output     : None.
+3101          * Return     : None
+3102          *******************************************************************************/
+3103          void USBHC_Remove_Device(U8_T devinx, U8_T portReset)
+3104          {
+3105   1        U8_T  upperlayer, port, para;
+3106   1        
+3107   1        /*Check the upper layer */
+3108   1        upperlayer = USB_PDevice[devinx].UpperHubDevinx;
+3109   1        port = USB_PDevice[devinx].Hub_NbrPorts USBHC_ROOTHUBPORT_PORT_NUM_READ;
+3110   1        (USB_PDevice[upperlayer].HUB.ReportState+port)->Devinx = 0; // clear
+3111   1        USBHC_HUB_ReleaseAddress(USB_PDevice[devinx].Addr & USBHC_DEVICE_ADDR_MASK);  
+3112   1        TASK_USBHC_HUB_RemoveDevinx_Fork(devinx);
+3113   1        if (portReset)
+3114   1        {
+3115   2          if (upperlayer == USBDC_VHUB_DEVINX) //it is root hub
+3116   2          {   
+3117   3            USBHC_RootHub_Reset_Port(port,150);
+3118   3          }
+3119   2          else
+3120   2          {   
+3121   3            para = (port << 4) | PORT_RESET;
+3122   3            USB_PDevice[upperlayer].Hc.ScmdStep = SCMD_SET_HUB_FEATURE;
+3123   3            //printf("HubFeature:Reset,devinx=%bd,port=%bd\n\r", devinx, port);
+3124   3            TASK_Active(TASK_TYPE_EVENT,TASK_USBHC_Scm_Handle_Start_ID,0,upperlayer,para,0);    
+3125   3          }
+3126   2        }
+3127   1      }
+3128          
+3129          /*----------------------------------------------------------------------------
+3130           * RESULT USBHC_SCM_SetHubFeature(U8_T devinx,U8_T td_id,U8_T mode)
+3131           * Purpose : Perform the set address operation of enumearation
+3132           * Params  : none
+3133           * Returns : none
+3134           * Note    : none
+3135           * ----------------------------------------------------------------------------*/
+3136          RESULT USBHC_SCM_SetHubFeature(U8_T devinx,U8_T td_id,U8_T para2)
+3137          {
+3138   1        RESULT  Result=USB_ERROR;
+3139   1        U8_T  portid,feature;
+3140   1        
+3141   1        if (USB_PDevice[devinx].Hc.Control.State == CTRL_IDLE)
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 53  
+
+3142   1        {
+3143   2          portid  = (para2 & 0xf0) >> 4;
+3144   2          feature = para2 & 0x0f;
+3145   2          USBHC_Class_HubFeature(devinx,td_id,portid,SET_FEATURE,feature);
+3146   2          Result=USB_BUSY;
+3147   2        }
+3148   1        else
+3149   1        {
+3150   2          if ((USB_PDevice[devinx].Hc.Control.State == CTRL_COMPLETE) || (USB_PDevice[devinx].Hc.Control.State == 
+             -CTRL_STALLED))
+3151   2          {
+3152   3            Result=USB_SUCCESS;
+3153   3          }
+3154   2        }
+3155   1        return Result;
+3156   1      }
+3157          /*----------------------------------------------------------------------------
+3158           * RESULT USBHC_SCM_ClearHubFeature(U8_T devinx,U8_T td_id,U8_T mode)
+3159           * Purpose : Perform the set address operation of enumearation
+3160           * Params  : none
+3161           * Returns : none
+3162           * Note    : none
+3163           * ----------------------------------------------------------------------------*/
+3164          RESULT USBHC_SCM_ClearHubFeature(U8_T devinx,U8_T td_id,U8_T para2)
+3165          {
+3166   1        RESULT  Result=USB_ERROR;
+3167   1        U8_T  portid,feature;
+3168   1        
+3169   1        if (USB_PDevice[devinx].Hc.Control.State == CTRL_IDLE)
+3170   1        {
+3171   2          portid  = (para2 & 0xf0) >> 4;
+3172   2          feature = para2 & 0x0f;
+3173   2          USBHC_Class_HubFeature(devinx,td_id,portid,CLEAR_FEATURE,feature);
+3174   2          Result=USB_BUSY;
+3175   2        }
+3176   1        else
+3177   1        {
+3178   2          if ((USB_PDevice[devinx].Hc.Control.State == CTRL_COMPLETE) || (USB_PDevice[devinx].Hc.Control.State == 
+             -CTRL_STALLED))
+3179   2          {
+3180   3            Result=USB_SUCCESS;
+3181   3          }
+3182   2        }
+3183   1        return Result;
+3184   1      }
+3185          /*----------------------------------------------------------------------------
+3186           * RESULT USBHC_Enumerate_Condition_Release(U8_T devinx)
+3187           * Purpose : Release the consition when in hc emulation stage.
+3188           * Params  : none
+3189           * Returns : none
+3190           * Note    : none
+3191           * ----------------------------------------------------------------------------*/
+3192          void USBHC_Enumerate_Condition_Release(U8_T devinx)
+3193          {
+3194   1        U8_T  upper_devinx;
+3195   1        
+3196   1        //Release Root Hub Enumeration.
+3197   1        if ((USB_PDevice[devinx].Addr & 0x7f) <= 4) 
+3198   1        {    
+3199   2           USBHC_RootHub_Bus_Occupy_Flag = 0;
+3200   2        } 
+3201   1        else
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 54  
+
+3202   1        {
+3203   2          //Check the upper class whether is HUB
+3204   2          upper_devinx = USB_PDevice[devinx].UpperHubDevinx;
+3205   2          if (USB_PDevice[upper_devinx].DevClass == USB_HUB_CLASS)
+3206   2          {
+3207   3            if (upper_devinx >= USBDC_VIRTUAL_DEVINX)
+3208   3            {
+3209   4              USB_PDevice[upper_devinx].Hub_Enu_Port_Id = 0;
+3210   4            }
+3211   3          }
+3212   2        }
+3213   1        USBHC_HUB_LogNewAddress();
+3214   1        USBHC_HUB_ReleaseEnumerateOperation();
+3215   1      }
+3216          
+3217          /*----------------------------------------------------------------------------
+3218           * void USBHC_Active_New_Device(U8_T devinx,U8_T mount_port)
+3219           * Purpose : After enumerate in Host port, then do the report new device
+3220           *           plug in operation.
+3221           * Params  : none
+3222           * Returns : none
+3223           * Note    : none
+3224           * ----------------------------------------------------------------------------*/
+3225          void USBHC_Active_New_Device(U8_T devinx,U8_T mount_port)
+3226          {
+3227   1        U8_T  roothubport;
+3228   1        U8_T    upperdevice;
+3229   1        U8_T    hcportid;
+3230   1      #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+                U8_T    port_active;
+              #endif
+3233   1        
+3234   1        /* Skip task if the device is gone */
+3235   1        if ((USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK) == 0x00)  // Device is gone  
+3236   1        {     
+3237   2          //printf("Mount:Devinx=0,Skip\n\r");
+3238   2          return; 
+3239   2        }
+3240   1          
+3241   1        /* Create the vritual devcie */
+3242   1        if (USBDC_VirtualDevice_Create(devinx) == 0)
+3243   1        {
+3244   2          return;
+3245   2        }
+3246   1        
+3247   1        /* Build up the HID Polling Table & Interrupt TD Table */
+3248   1      #if (SYSTEM_MSC_DEVICE_SUPPORT || SYSTEM_EXTENDER_MSC_SUPPORT)
+                if (USB_PDevice[devinx].DevClass != USB_MSC_CLASS)
+                {
+                  USBHC_CORE_Build_INTL_Polling(devinx);
+                }
+              #else
+3254   1        USBHC_CORE_Build_INTL_Polling(devinx);
+3255   1      #endif //#if (SYSTEM_MSC_DEVICE_SUPPORT)
+3256   1      
+3257   1        /* Build up the Isochronous Table & ISTL TD Table */
+3258   1        USBHC_CORE_Build_ISTL_Polling(devinx);
+3259   1      
+3260   1        /* Release Root Hub Enumeration */
+3261   1      #if (SYSTEM_EXTENDER_TRANSMITTER)
+                if ((USB_PDevice[devinx].DevAttr & DEVATTR_REMOTE_DEV_MASK) == 0x00)
+              #endif /* (SYSTEM_EXTENDER_TRANSMITTER) */
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 55  
+
+3264   1        {
+3265   2          USBHC_Enumerate_Condition_Release(devinx);
+3266   2        }
+3267   1      
+3268   1        /* Get upper device info */
+3269   1        if (USB_PDevice[devinx].DevClass == USB_HUB_CLASS)
+3270   1        {
+3271   2          return;
+3272   2        }
+3273   1      
+3274   1        /* Check DVR Setting */
+3275   1      #ifdef ONEHID
+                if (devinx > USBDC_VHID_DEVINX)
+                {               
+                  printf("> SKIP: (DC:HubP_Id=%bu,HubDevinx=%bu)(Devinx=%bx,HubPortId=%bu,Class=0x%02bx)(DC_Mask=0x%02bx)\
+             -n\r", roothubport, upperdevice, devinx,hcportid,USB_PDevice[devinx].DevClass,mount_port);
+                  return;
+                }   
+              #endif
+3282   1        hcportid = (USB_PDevice[devinx].Hub_NbrPorts & USBHC_ROOTHUBPORT_PORT_NUM_MASK) USBHC_ROOTHUBPORT_PORT_NU
+             -M_READ;
+3283   1        USBHC_Get_Upper_Device_Info(devinx, &upperdevice, &roothubport);
+3284   1        printf("> MOUNT: (DC:HubP_Id=%bu,HubDevinx=%bu)(Devinx=%bx,HubPortId=%bu,Class=0x%02bx)(DC_Mask=0x%02bx)\
+             -n\r", roothubport, upperdevice, devinx,hcportid,USB_PDevice[devinx].DevClass,mount_port);
+3285   1      
+3286   1        /* Mount the device */
+3287   1      #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+                if (devinx == USBHC_Audio_Devinx)
+                {
+              #if (SYSTEM_EXTENDER_RECEIVER)
+                  if (mount_port & (~MOUNT_PORT[REMOTE_HOST_PORT]))
+              #endif /* #if (SYSTEM_EXTENDER_RECEIVER) */
+                  {
+                    port_active = (roothubport << 4 ) | upperdevice;
+                    USBHC_Audio_Enumerate_Processing_Flag = 1;
+                    USBHC_Audio_Enumerate_Task_Id = TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_USBHC_Audio_DC_Mount_Handle_ID,m
+             -ount_port,port_active,0,2000);  //every 2 seconds check the idle state
+                  }
+                }
+                else
+              #endif //#if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)   
+3301   1        {
+3302   2      #if (SYSTEM_MSC_DEVICE_SUPPORT)
+                  if ((devinx == USBHC_MSC_Devinx) && (USBHC_MSC_Reset_Flag) && (VHUB_MSC_Reset_Flag))
+                  {
+                    USB_PDevice[devinx].MountPort |= mount_port;          
+                    USB_PDevice[devinx].Mounted    = VDEV_MOUNT;
+                    USBHC_MSC_VHUB_ResetUpdate();
+                    USBHC_MSC_Reset_Flag = 0;
+                  }
+                  else
+              #endif    
+3312   2          {
+3313   3            USBDC_Virtual_Hub_DeviceMount_Control(upperdevice,roothubport,VDEV_MOUNT,mount_port,devinx);
+3314   3          } 
+3315   2        }
+3316   1      
+3317   1      #if (SYSTEM_EXTENDER_RECEIVER)
+                if (USBHC_MSC_DismountFlag ==0)
+                { 
+                  if (mount_port & MOUNT_PORT[REMOTE_HOST_PORT])
+                  {
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 56  
+
+                    Externder_Receiver_DeviceMount_Control(devinx,VDEV_MOUNT,EXTENDER_USB_MOUNT);     
+                  }
+                } 
+                //else
+                //{
+                //  printf("MSC DismountFlagOn, Skip mount\n\r");
+                //} 
+              #endif /* #if (SYSTEM_EXTENDER_RECEIVER) */
+3330   1      }
+3331          
+3332          /*----------------------------------------------------------------------------
+3333           * void USBHC_Remove_HID_Buffer(U8_T intt_id)
+3334           * Purpose : After enumerate in Host port, then do the report new device9
+3335           *           plug in operation.
+3336           * Params  : none
+3337           * Returns : none
+3338           * Note    : none
+3339           * ----------------------------------------------------------------------------*/
+3340          void USBHC_Remove_HID_Buffer(U8_T intt_id)
+3341          {
+3342   1        U8_T  length,rp,newrp;
+3343   1        
+3344   1        rp = HC_IntTransfer_Table[intt_id].PassControl.Rp;  
+3345   1        length = HC_IntTransfer_Table[intt_id].PassControl.Buf[rp]+1;
+3346   1        if (HC_IntTransfer_Table[intt_id].PassControl.Wp > HC_IntTransfer_Table[intt_id].PassControl.Rp)
+3347   1        {
+3348   2          HC_IntTransfer_Table[intt_id].PassControl.Rp += (length);
+3349   2      #ifdef SYNC
+3350   2          memset(HC_IntTransfer_Table[intt_id].PassControl.SyncRp,HC_IntTransfer_Table[intt_id].PassControl.Rp,KVM
+             -_MAX_PORT);
+3351   2      #endif    
+3352   2        }
+3353   1        else
+3354   1        {
+3355   2          //Get the end of this buffer
+3356   2          newrp = HC_IntTransfer_Table[intt_id].PassControl.BufSize-HC_IntTransfer_Table[intt_id].PassControl.Rp;
+3357   2          //Get hte data package end position from the index 0
+3358   2          if ((length) > newrp) //if length is large than end postion
+3359   2          {
+3360   3            HC_IntTransfer_Table[intt_id].PassControl.Rp = (length) - newrp;
+3361   3          }
+3362   2          else
+3363   2          {
+3364   3            HC_IntTransfer_Table[intt_id].PassControl.Rp += (length);
+3365   3            if (HC_IntTransfer_Table[intt_id].PassControl.Rp >= HC_IntTransfer_Table[intt_id].PassControl.BufSize)
+3366   3              HC_IntTransfer_Table[intt_id].PassControl.Rp -= HC_IntTransfer_Table[intt_id].PassControl.BufSize;
+3367   3          }
+3368   2        }
+3369   1      }
+3370          
+3371          /*-------------------------------------------------------------------------------
+3372           * void TASK_USBHC_HUB_RemoveDevinx_Fork(U8_T devinx)
+3373           * Purpose : The short verson of TASK_Active of TASK_USBHC_HUB_RemoveDevinx
+3374           * Params  : none
+3375           * Returns : none
+3376           * Note    : none
+3377           * ----------------------------------------------------------------------------*/
+3378          void TASK_USBHC_HUB_RemoveDevinx_Fork(U8_T devinx)
+3379          {
+3380   1        TASK_USBHC_HUB_RemoveDevinx_Task.Task_Para = devinx;
+3381   1        TASK_Run(&TASK_USBHC_HUB_RemoveDevinx_Task);
+3382   1      }
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 57  
+
+3383          
+3384          
+3385          /*-------------------------------------------------------------------------------
+3386           * void TASK_USBHC_Device_Reset(U8_T port,U8_T devinx)
+3387           * Purpose : The task which handle the device reset
+3388           * Params  : none
+3389           * Returns : none
+3390           * Note    : none
+3391           * ----------------------------------------------------------------------------*/
+3392          void TASK_USBHC_Device_Reset(U8_T port,U8_T devinx)
+3393          {
+3394   1        if (USB_PDevice[devinx].UpperHubDevinx == USBDC_VHUB_DEVINX) //this is the root hub
+3395   1        {
+3396   2          TASK_USBHC_HUB_RemoveDevinx_Fork(devinx); //clear the msc device information in DC & HC       
+3397   2          if ((USBDC_Device[devinx].VirHubNum[port]) >= USBDC_VHUB_PORT_NUM) // this should not happened
+3398   2          {
+3399   3            //printf("VHub portNo is invalid.\n\r");
+3400   3            return;
+3401   3          }
+3402   2          USBHC_RootHub_Bus_Occupy_ID = USBDC_Device[devinx].VirHubNum[port]-1;
+3403   2          USBHC_RootHub_Reset_Port(USBHC_RootHub_Bus_Occupy_ID,10);
+3404   2          USBHC_RootHub_ResetCnt = 1;
+3405   2          //1.Fill Up root hub port reset register
+3406   2          USBHC_RootHub_Bus_Occupy_Flag = 1;
+3407   2          //USBHC_RootHub_Bus_Occupy_ID = USBDC_Device[devinx].VirHubNum[port]-1;
+3408   2          USB_PDevice[devinx].Addr = USBHC_DEVICE_USED_MASK; // reset the device
+3409   2          USBHC_INTL_SkipMap_Control(devinx,1);
+3410   2        }
+3411   1        else
+3412   1        {
+3413   2      #if 0
+                  // the downstream hub port
+                  USB_PDevice[devinx].Hub_Enu_Port_Id = USB_PDevice[devinx].Hub_NbrPorts USBHC_ROOTHUBPORT_PORT_NUM_READ;
+                  port = USB_PDevice[devinx].Hub_Enu_Port_Id;
+                  //printf("HubPort:%bx,reset perform\n\r",USB_PDevice[devinx].Hub_Enu_Port_Id);
+                  USB_PDevice[devinx].Hc.HUB_EnumState = HUB_ENUM_IDLE;
+                  TASK_Active(TASK_TYPE_INTERVAL_MS, TASK_USBHC_HUB_Port_Reset_ID, devinx, port, 10, 10);
+              #else      
+3421   2          USBHC_Remove_Device(devinx, 1);
+3422   2      #endif
+3423   2        }
+3424   1      }
+3425          
+3426          /*-------------------------------------------------------------------------------
+3427           * void USBHC_INTL_SkipMap_Control(U8_T devinx,U8_T value)
+3428           * Purpose : The task which handle the device reset
+3429           * Params  : none
+3430           * Returns : none
+3431           * Note    : none
+3432           * ----------------------------------------------------------------------------*/
+3433          void USBHC_INTL_SkipMap_Control(U8_T devinx,U8_T value)
+3434          {
+3435   1        U8_T  index;
+3436   1        
+3437   1        for (index=0; index < USB_HC_INTL_MAX ; index++)
+3438   1        {
+3439   2          if (HC_IntTransfer_Table[index].Used_DeviceID & USBHC_TD_USED_MASK)
+3440   2          {
+3441   3            if ((HC_IntTransfer_Table[index].Used_DeviceID & USBHC_TD_DEVICE_ADDR_MASK) == devinx)
+3442   3            {
+3443   4              USBHC_CORE_SetBit(TD_INTL_Skip_Map,index,value);
+3444   4            }
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 58  
+
+3445   3          }
+3446   2        }
+3447   1        USBHC_Write_Regs(HC_INTL_TDSKIP_MAP_REG,TD_INTL_Skip_Map,4);
+3448   1      }
+3449          
+3450          #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+              /**
+              * @brief  TASK_USBHC_Audio_DC_Mount_Handle
+              *         Mount the upstream port
+              * @param  None 
+              * @retval None
+              */
+              void TASK_USBHC_Audio_DC_Mount_Handle(void)
+              {
+                U8_T mount_port;
+                U8_T roothubport;
+                U8_T port_active;
+                U8_T devinx;
+                U8_T uport;
+                U8_T upperdevice;
+                
+                TASK_Destory_Current();
+                
+                mount_port  = TASK_Event & 0x0f;
+                devinx    = (TASK_Register0 & 0x0f);
+                roothubport = (TASK_Register0 & 0xf0) >> 4;
+                  
+                //Skip task if the device is gone
+                if ((USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK) == 0x00)  // Device is gone  
+                {
+                  USBHC_Audio_Enumerate_Processing_Flag = 0; // no more enumeration.
+                  return; 
+                }    
+              
+                for (uport = 0; uport < KVM_MAX_PORT ; uport++)
+                {
+                  port_active = (0x01 << uport);
+                    if (mount_port & port_active) 
+                    {
+                    USBHC_Get_Upper_Device_Info(USBHC_Audio_Devinx,&upperdevice,&roothubport);
+                    USBDC_Virtual_Hub_DeviceMount_Control(upperdevice,roothubport,VDEV_MOUNT,port_active,USBHC_Audio_Devinx
+             -);
+                    mount_port &= ~port_active;
+                    
+              UpstreamMount_Handle_Start:
+                    if (mount_port)
+                    {   
+                      uport++;            
+                      if (uport < KVM_MAX_PORT)
+                      { 
+                        port_active = (0x01 << uport);
+                        if (mount_port & port_active) 
+                        { 
+                          port_active = (roothubport << 4 ) | devinx;
+                          USBHC_Audio_Enumerate_Task_Id = TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_USBHC_Audio_DC_Mount_Handle_I
+             -D,mount_port,port_active,2000,2000);  //every 3 seconds check the idle state
+                          return;
+                        }
+                        else
+                        {
+                          goto UpstreamMount_Handle_Start;        
+                        }
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 59  
+
+                      } 
+                    }
+                  }   
+                } 
+                USBHC_Audio_Enumerate_Processing_Flag = 0; // no more enumeration.
+              }
+              #endif //#if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
+3512          
+3513          /**
+3514          * @brief  USBHC_Clone_PDevice
+3515          *         move the hub device to a new location
+3516          * @param  None 
+3517          * @retval None
+3518          */
+3519          U8_T USBHC_Clone_PDevice(U8_T old_devinx,U8_T endp2direction)
+3520          {
+3521   1        U8_T upperdevinx,upperhubport;
+3522   1        U8_T index;
+3523   1        U8_T start=USB_HC_MAX_DEVICE,end=USB_HC_MAX_DEVICE + USB_HC_MAX_HUB;
+3524   1        
+3525   1        if (endp2direction)
+3526   1        {
+3527   2          //check weather it is device 6 or 7 already
+3528   2          if (old_devinx >= 6)
+3529   2            return 1;
+3530   2          start = 6;
+3531   2          end = USB_HC_MAX_DEVICE;      
+3532   2        }   
+3533   1        
+3534   1        for (index=start; index < end; index++)
+3535   1        {
+3536   2          if (USB_PDevice[index].Addr & USBHC_DEVICE_USED_MASK)
+3537   2          {
+3538   3            continue;
+3539   3          }
+3540   2      
+3541   2          memcpy(&USB_PDevice[index],&USB_PDevice[old_devinx],sizeof(USB_PDevice_TypeDef));
+3542   2          memset(&USB_PDevice[old_devinx],0x00,sizeof(USB_PDevice_TypeDef));
+3543   2          
+3544   2          if (endp2direction==0)
+3545   2          { 
+3546   3            USBHC_Current_Total_Device_Count--;
+3547   3            USBHC_Current_Total_Hub_Count++;
+3548   3          } 
+3549   2      #if (SYSTEM_EXTENDER_RECEIVER)      
+              #ifdef PWAYTEK_01   
+                  ExtenderR_Maintain_DeviceState_Led();
+              #endif    
+              #endif
+3554   2          //Adjust the root hub devinx handle table
+3555   2          upperdevinx = USB_PDevice[index].UpperHubDevinx; //get upperhub devinx
+3556   2          upperhubport = (USB_PDevice[index].Hub_NbrPorts & USBHC_ROOTHUBPORT_PORT_NUM_MASK) USBHC_ROOTHUBPORT_POR
+             -T_NUM_READ; //get port
+3557   2          if (upperdevinx == 0)
+3558   2          {
+3559   3            USBHC_RootHub_Devinx[upperhubport] = index;
+3560   3          }
+3561   2          (USB_PDevice[upperdevinx].HUB.ReportState+upperhubport)->Devinx = index;
+3562   2      
+3563   2          return index;
+3564   2        }
+3565   1      #if (KVM_BUZZER_SUPPORT)
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 60  
+
+3566   1        BUZZER_Script_Active(DeviceErrorSound);
+3567   1      #endif //#if (KVM_BUZZER_SUPPORT)
+3568   1        //printf("> KVM ERROR:No Free PDevice, Skip operation\n\r");
+3569   1        
+3570   1        return 0;
+3571   1      }
+3572          
+3573          /**
+3574          * @brief  USBHC_Get_Upper_Device_Info
+3575          *
+3576          * @param  None 
+3577          * @retval None
+3578          */
+3579          void USBHC_Get_Upper_Device_Info(U8_T devinx,U8_T *upper_dev,U8_T *upper_port)
+3580          {
+3581   1        *upper_dev = 0;
+3582   1        *upper_port = USBDC_Virtual_Hub_Map[devinx].Devinx_HubPort; 
+3583   1      }
+3584          
+3585          /*----------------------------------------------------------------------------
+3586           * void USBHC_PassThrough_Setup_Condition_Reset(U8_T devinx,U8_T pid)
+3587           * Purpose: Reset all the passthrough coditioin
+3588           * Params :
+3589           * Returns: NONE
+3590           * Note:
+3591           *----------------------------------------------------------------------------
+3592           */
+3593          void USBHC_PassThrough_Setup_Condition_Reset(U8_T devinx,U8_T pid)
+3594          {
+3595   1        /* Free all buffer & flag */
+3596   1        USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
+3597   1        USB_PDevice[devinx].Hc.gState = USB_PDevice[devinx].Hc.PassThrough_gState_bk;
+3598   1        USBDC_Device[devinx].PassThroughState[pid] = PASSTHROUGH_IDLE;
+3599   1        malloc_free(USB_PDevice[devinx].Hc.Control.Buf);
+3600   1        USB_PDevice[devinx].Hc.Control.Buf = 0;
+3601   1        USB_PDevice[devinx].Hc.PassThrough_State = PASSTHROUGH_IDLE;
+3602   1      }
+3603          
+3604          /*----------------------------------------------------------------------------
+3605           * void USBHC_InterruptTD_Transfer_Index_Init(U8_T intt_id)
+3606           * Purpose: Init the interrupt TD transver index
+3607           * Params :
+3608           * Returns: NONE
+3609           * Note:
+3610           *----------------------------------------------------------------------------
+3611           */
+3612          void USBHC_InterruptTD_Transfer_Index_Init(U8_T intt_id)
+3613          {
+3614   1        HC_IntTransfer_Table[intt_id].PassControl.Rp = 0; 
+3615   1        HC_IntTransfer_Table[intt_id].PassControl.Wp = 0; 
+3616   1      #ifdef SYNC
+3617   1        memset(HC_IntTransfer_Table[intt_id].PassControl.SyncRp,0x00,USBDC_PORT_MAX);
+3618   1        memset(HC_IntTransfer_Table[intt_id].PassControl.SyncWp,0x00,USBDC_PORT_MAX);           
+3619   1      #endif          
+3620   1      } 
+3621          /*----------------------------------------------------------------------------
+3622           * U8_T USBHC_KB_Led_Check(U8_T devinx)
+3623           * Purpose: Check weither contain the LED output 
+3624           * Params :
+3625           * Returns: NONE
+3626           * Note:
+3627           *----------------------------------------------------------------------------
+C51 COMPILER V9.60.7.0   USBHC                                                             06/18/2026 10:50:18 PAGE 61  
+
+3628           */
+3629          U8_T USBHC_KB_Led_Check(U8_T devinx)
+3630          {
+3631   1      #if defined(HID_PARSER_CORE_KB)   
+3632   1        if (USB_PDevice[devinx].HID_LED_Item != NULL) 
+3633   1        {     
+3634   2          return 1;
+3635   2        }   
+3636   1        return 0;
+3637   1      #else
+                HID_Rpt_Element *item;
+              
+                item = &USB_PDevice[devinx].HID_Kb_ParserTable->Item[HID_RPT_LED];
+                if (item->Rpt_Size)
+                {
+                  return 1;
+                }   
+                return 0;
+              #endif
+3647   1      }
+3648          /* End of usbhc.c */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =  14704    ----
+   CONSTANT SIZE    =    211    ----
+   XDATA SIZE       =   5435     176
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =      2    ----
+   BIT SIZE         =      1       3
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =    211    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

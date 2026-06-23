@@ -1,0 +1,987 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\main.obj
+COMPILER INVOKED BY: C:\Users\Administrator\AppData\Local\Keil_v5\C51\BIN\C51.EXE ..\Src\main\main.c LARGE OMF2 ROM(D16M
+                    -) OPTIMIZE(9,SIZE) BROWSE NOAREGS INCDIR(..\src\main\;..\src\cpu\;..\src\flash\;..\src\uart\;..\src\swdma\;..\src\mstime
+                    -r\;..\src\i2c\;..\src\spi\;..\src\task_man\;..\src\project\;..\Src\ps2_host;..\Src\console_edid;..\Src\storage;..\Src\da
+                    -ta_stream;..\Src\kvm_control\kvm_hotkey;..\Src\kvm_control\kvm_console;..\Src\kvm_control\kvm_button;..\Src\kvm_control\
+                    -kvm_edid;..\Src\kvm_control\kvm_buzzer;..\src\gpio\;..\Src\hardware_ps2;..\Src\usbdc;..\Src\usbdc\usbdc_virtual;..\Src\u
+                    -sb_std;..\Src\usbhc;..\Src\kvm_control\power_saving;..\Src\usbhc\MSC;..\Src\usbhc\AUDIO;..\Src\usbhc\HUB;..\Src\usbhc\HI
+                    -D;..\Src\usbhc\HID_PARSER;..\Src\usbhc\ROOT_HUB;..\Src\usbdc\usbdc_hub;..\Src\usbdc\usbdc_hid;..\Src\kvm_control\kvm_sto
+                    -rage\spi_flash;..\Src\usbdc\usbdc_msc\usb_scsi;..\Src\usbdc\usbdc_msc;..\Src\handler\logitech;..\Src\handler\A4_Tech;..\
+                    -Src\usbdc\usbdc_vendor;..\Src\hsur;..\Src\extender\core;..\Src\extender\receiver;..\Src\uart_console;..\Src\kvm_control\
+                    -km_sync;..\Src\hsur;..\Src\kvm_control\km_log;..\Src\kvm_control\km_api;..\Src\kvm_control\kvm_ir;..\Src\kvm_control\kvm
+                    -_rtc;..\Src\i2c;..\Src\kvm_control\kvm_multiview) STRING(FAR) DEFINE(RuntimeCodeAt0KH,MCU_TYPE_AX68004,KVM,HC_TIMEOUT=10
+                    -000,VHID,HID_PARSER_CORE_KB,HID_PARSER_CORE_MS,API,NO_AUDIO,NO_MSC,NO_EDID,HUART_BAUD=HUART_115K,SYNC,CROSS_JUMP_MAP0,VP
+                    -ID_CHANGER,SYNC_KB_HOTKEY,SYNC_MS_HOTKEY,REPEAT_MODE=1,HSUART,MULTIVIEW) VARBANKING DEBUG PRINT(.\main.lst) TABS(2) OBJE
+                    -CT(.\main.obj)
+
+line level    source
+
+   1          /*
+   2           *********************************************************************************
+   3           *     Copyright (c) 2014 ASIX Electronic Corporation      All rights reserved.
+   4           *
+   5           *     This is unpublished proprietary source code of ASIX Electronic Corporation
+   6           *
+   7           *     The copyright notice above does not evidence any actual or intended
+   8           *     publication of such source code.
+   9           *********************************************************************************
+  10           */
+  11          /*================================================================================
+  12           * Module Name : main.c
+  13           * Purpose     :
+  14           * Author      : Jack Wang
+  15           * Date        :
+  16           * Notes       :
+  17           *================================================================================
+  18           */
+  19          /* INCLUDE FILE DECLARATIONS */
+  20          #include  <string.h>
+  21          #include  <stdio.h>
+  22          #include  <stdlib.h>
+  23          #include  "project_include.h"
+  24          
+  25          /* GLOBAL CONSTANT VARIABLES DECLARATIONS */
+  26          #define VERSION_STRING "2.1.3.4"
+  27          #define DATE_STRING    "2023-05-24"
+  28          
+  29          /* GLOBAL VARIABLES DECLARATIONS */
+  30          #ifdef DEVICE_GPIO_DEFINE
+              bit Audio_Device_Support_Gpio=0;
+              bit MSC_Device_Support_Gpio=0;
+              #endif /* #ifdef DEVICE_GPIO_DEFINE */
+  34          ISR_TypeDef   ISR_FIFO[ISR_FIFO_DEPTH];
+  35          U8_T      ISR_FIFO_Rp,ISR_FIFO_Wp;
+  36          
+  37          
+  38          /* STATIC VARIABLE DECLARATIONS  */
+  39          /* LOCAL SUBPROGRAM DECLARATIONS */
+  40          /* LOCAL SUBPROGRAM BODIES       */
+  41          #if (KVM_INFORMATION_DISPLAY)
+              void DisplayKVMInformation(void);
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 2   
+
+              #endif
+  44          void DisplayProjectVersionInformation(void);  
+  45          void Check_Devcie_Gpio_Setting(void);
+  46          /* EXTERNAL VARIABLE DECLATATIONS */
+  47          /* EXTERNAL SUBPROGRAM DECLATATIONS */
+  48          
+  49          /*
+  50           *--------------------------------------------------------------------------------
+  51           * void main(void)
+  52           * Purpose :
+  53           * Params  :
+  54           * Returns :
+  55           * Note    :
+  56           *--------------------------------------------------------------------------------
+  57           */
+  58          void main(void)
+  59          {
+  60   1      #if ((SYSTEM_EXTENDER_RECEIVER) && (SYSTEM_USBAUDIO_DEVICE_SUPPORT) && (SYSTEM_EA_CONTROL))
+                bit tmpIsr;
+              #endif
+  63   1      
+  64   1        /* MCPU core initial */
+  65   1        CPU_Init();
+  66   1        /* UART port initial */
+  67   1        UART_Init();
+  68   1      
+  69   1        /* ms timer initialize */
+  70   1        SWTIMER_Init();
+  71   1        SWTIMER_Start();
+  72   1        Check_Devcie_Gpio_Setting();
+  73   1        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  74   1        //
+  75   1        //        V I N S O N __ P R O J E C T
+  76   1        //
+  77   1        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
+  78   1        /* ISR Event FIFO Handler */
+  79   1        ISR_Init();
+  80   1      
+  81   1        /* Task Management Initial */
+  82   1        TASK_Init();
+  83   1        
+  84   1      #if defined(UART_CONSOLE) || defined(HSUART_CONSOLE) 
+                UartConsole_Init();
+              #endif
+  87   1      
+  88   1        /* PS/2 Host Interface Initial */
+  89   1      #if (SYSTEM_PS2_HOST_ENABLE)
+                PS2_Init();
+              #endif
+  92   1      
+  93   1        /* KVM Console Initial */
+  94   1      #if (PROJECT_KVM_CONSOLE_ENABLE)
+  95   1        KVM_Console_Init();
+  96   1        DATAST_Init();
+  97   1      #endif
+  98   1        
+  99   1        /* KVM Button Interface Initial */
+ 100   1      #if (KVM_BUTTON_SUPPORT)
+ 101   1        KVM_BTN_Init();
+ 102   1      #endif
+ 103   1      
+ 104   1        /* KVM Buzzer Interface Initial */
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 3   
+
+ 105   1      #if (KVM_BUZZER_SUPPORT)
+ 106   1        KVM_BUZZER_Init();
+ 107   1      #endif
+ 108   1      
+ 109   1        /* KVM Console & Host EDID Interface Initial */
+ 110   1      #if (SYSETM_CONSOLE_EDID_CONTROL_ENABLE)
+                EDID_Console_Init();
+              #endif
+ 113   1      
+ 114   1        /* USB Host Controller-Downstream ports Interface Initial */
+ 115   1      #if (SYSTEM_USB_HC_ENABLE)
+ 116   1        USBHC_Init();
+ 117   1      #endif
+ 118   1      
+ 119   1        /* USB Devcie Controller-Upstream ports Interface Initial */
+ 120   1      #if (SYSTEM_USB_DC_ENABLE)
+ 121   1        USBDC_Init();
+ 122   1      #endif
+ 123   1        
+ 124   1        /* KVM Power saving mode Initial */
+ 125   1      #if (SYSTEM_POWER_SAVING_MODE_SUPPORT)
+                KVM_PowerSaving_Init();
+              #endif
+ 128   1      
+ 129   1      #if (SYSTEM_EXTENDER_SUPPORT)
+                EXTENDER_Init();
+              #endif /* #if (SYSTEM_EXTENDER_SUPPORT) */
+ 132   1      
+ 133   1        /* KVM System Information Display */
+ 134   1      #if (KVM_INFORMATION_DISPLAY)
+                DisplayKVMInformation();
+              #endif
+ 137   1      
+ 138   1      #if (PROJECT_KVM_CONSOLE_ENABLE)
+ 139   1        KVM_CONSOLE_Vga_Control(KVM_CurrentHost,VGA_ON);
+ 140   1        USBDC_Resume_Task_ActiveID[0] = TASK_Active(TASK_TYPE_INTERVAL_MS, TASK_KVM_ACCESSORY_ID, 0, 0, 500, 500)
+             -;
+ 141   1      #endif
+ 142   1      
+ 143   1      #if (SYSETM_GPIO_EEPROM_ENABLE)
+                GPIO_EEProm_Init();
+                GPIO_ReadEEprom();
+              #endif
+ 147   1      
+ 148   1      #ifdef RTC
+                KVM_RTC_Init();
+              #endif /* #ifdef RTC */
+ 151   1      
+ 152   1      #ifdef IR
+                KVM_IR_Init();
+              #endif /* #ifdef RTC */
+ 155   1      
+ 156   1      #ifdef SYNC
+ 157   1        KM_SYNC_Init();
+ 158   1      #endif /* #ifdef SYNC */
+ 159   1      
+ 160   1      #ifdef KMLOG
+                KMLOG_Init();
+              #endif /* #ifdef KMLOG */
+ 163   1      
+ 164   1      #ifdef API
+ 165   1        API_Init();
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 4   
+
+ 166   1      #endif /* #ifdef API */
+ 167   1      
+ 168   1      #ifdef MULTIVIEW
+ 169   1         MULTIVIEW_Init();
+ 170   1      #endif   
+ 171   1      
+ 172   1      //read btn state, set modes, ///zbb
+ 173   1      {
+ 174   2          U8_T  btn_state = 0;  //zbb
+ 175   2          
+ 176   2          if (GPIO_GetPinValue(PORT0, GPIO_Pin_0))
+ 177   2          {
+ 178   3            btn_state |= 0x01;
+ 179   3          }
+ 180   2      
+ 181   2          if (GPIO_GetPinValue(PORT0, GPIO_Pin_1))
+ 182   2          {
+ 183   3            btn_state |= 0x02;
+ 184   3          }
+ 185   2      
+ 186   2          if (GPIO_GetPinValue(PORT0, GPIO_Pin_2))
+ 187   2          {
+ 188   3            btn_state |= 0x04;
+ 189   3          }
+ 190   2      
+ 191   2          if (GPIO_GetPinValue(PORT0, GPIO_Pin_3))
+ 192   2          {
+ 193   3            btn_state |= 0x08;
+ 194   3          }
+ 195   2      
+ 196   2          //check the btn_state
+ 197   2          printf("---- btn_state:%bx ----\n\r", btn_state);
+ 198   2          switch(btn_state)
+ 199   2          {
+ 200   3            case PORT0_ACTIVE:
+ 201   3              API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+ 202   3              API_Set_Sync_Mode(API_SYNC_DISABLE);
+ 203   3              KVM_Console_Port_Jump(3);
+ 204   3              break;
+ 205   3            case PORT1_ACTIVE:
+ 206   3              API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+ 207   3              API_Set_Sync_Mode(API_SYNC_DISABLE);
+ 208   3              KVM_Console_Port_Jump(2);
+ 209   3              break;
+ 210   3            case PORT2_ACTIVE:
+ 211   3              API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+ 212   3              API_Set_Sync_Mode(API_SYNC_DISABLE);
+ 213   3              KVM_Console_Port_Jump(1);
+ 214   3              break;
+ 215   3            case PORT3_ACTIVE:
+ 216   3              API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+ 217   3              API_Set_Sync_Mode(API_SYNC_DISABLE);
+ 218   3              KVM_Console_Port_Jump(0);
+ 219   3              break;
+ 220   3            case PORT12_ACTIVE:
+ 221   3              printf("PORT1_2 Screen Roaming Mode\n\r");
+ 222   3              API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
+ 223   3              API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
+ 224   3              KVM_Console_Port_Jump(3);
+ 225   3              break;
+ 226   3            case PORT34_ACTIVE:
+ 227   3              printf("PORT3_4 Screen Roaming Mode\n\r");
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 5   
+
+ 228   3              API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
+ 229   3              API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
+ 230   3              KVM_Console_Port_Jump(1);
+ 231   3              break;
+ 232   3            case PORT_ALL_ACTIVE:
+ 233   3              printf("PORT_ALL Screen Roaming Mode\n\r");
+ 234   3              API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
+ 235   3              API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
+ 236   3              KVM_Console_Port_Jump(3);
+ 237   3              break;
+ 238   3            case PORT_ALL_SYNC:
+ 239   3              printf("PORT_ALL Screen SYNC Mode\n\r");
+ 240   3              API_Set_Roaming_Mode(API_ROAMING_DISABLE);          
+ 241   3              API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
+ 242   3              API_Set_Sync_Mode(API_SYNC_ENABLE);
+ 243   3              break;
+ 244   3            default:
+ 245   3              break;
+ 246   3          }
+ 247   2      }
+ 248   1        /* KVM Project Define Display */
+ 249   1        DisplayProjectVersionInformation();
+ 250   1      /*
+ 251   1      void main_loop(void)
+ 252   1      */
+ 253   1        /* Main polling loop */
+ 254   1        while (1)
+ 255   1        {   
+ 256   2      #ifdef VPID_CHANGER
+ 257   2          VPID_Changer_Seed++;
+ 258   2      #endif    
+ 259   2          
+ 260   2          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ 261   2          // ISR Event Handle
+ 262   2          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ 263   2          {
+ 264   3            if (ISR_FIFO_Wp != ISR_FIFO_Rp)
+ 265   3            {
+ 266   4              switch (ISR_FIFO[ISR_FIFO_Rp].ISR_Type)
+ 267   4              {
+ 268   5      #if (KVM_BUTTON_SUPPORT) & (KVM_BUTTON_HARDWARE)
+ 269   5                case ISR_BTN:               
+ 270   5        #ifdef BTN_RESET            
+                          TASK_Active(TASK_TYPE_EVENT,TASK_BTN_Polling_ID,ISR_FIFO[ISR_FIFO_Rp].State & 0x0f,ISR_FIFO[ISR_FIFO
+             -_Rp].Data,0,0);  // Generate the task TASK_BTN_Polling_ID
+                #else
+ 273   5                  TASK_Active(TASK_TYPE_EVENT,TASK_BTN_Polling_ID,0x00,ISR_FIFO[ISR_FIFO_Rp].Data,0,0);  // Generate t
+             -he task TASK_BTN_Polling_ID 
+ 274   5        #endif              
+ 275   5                  //TASK_Active(TASK_TYPE_EVENT,TASK_BTN_Polling_ID,0x00,ISR_FIFO[ISR_FIFO_Rp].Data,0,0);  // Generate
+             - the task TASK_BTN_Polling_ID
+ 276   5                  break;
+ 277   5      #endif
+ 278   5                
+ 279   5      #if (SYSETM_CONSOLE_EDID_CONTROL_ENABLE) && (SYSTEM_HWEDID_CONTROL_ENABLE)
+                        case ISR_EDID:
+                          TASK_EDID_Console_ISR_Handle(&ISR_FIFO[ISR_FIFO_Rp]);
+                          break;
+              #endif
+ 284   5      
+ 285   5      #ifndef HSUART
+              #if (INTR_ISR_INCLUDE_HSUR2)
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 6   
+
+                        case ISR_HUART:
+                          /* Tx DMA complete */
+                          if (ISR_FIFO[ISR_FIFO_Rp].Data & HSDSR_TDC_CPL)
+                          {
+              #if (SYSTEM_EXTENDER_SUPPORT)
+                            Extender_Transmit_Complete_Handle();
+              #endif /* #if (SYSTEM_EXTENDER_SUPPORT) */
+                          }
+                          break;
+                          case ISR_HUART_RBDMA: //High speed uart Receiver Buffer DMA           
+              #if (SYSTEM_EXTENDER_SUPPORT)
+              #if (SYSTEM_EXTENDER_RECEIVER)      
+                          EXTENDER_Receiver_Receive_Handle();                                   
+              #else
+                          EXTENDER_Transmitter_Receive_Handle();            
+              #endif  /* #if (SYSTEM_EXTENDER_RECEIVER) */
+              #endif  /* #if (SYSTEM_EXTENDER_SUPPORT)  */
+                          break;
+              #endif /* #if (INTR_ISR_INCLUDE_HSUR2) */
+              #endif /* #ifndef HSUART */
+ 307   5                
+ 308   5      #if (SYSTEM_IR_DEVICE_SUPPORT)
+                          case ISR_IR:                                    
+                            KVM_IR_Key_Handle();
+                            break;    
+              #endif /* #if (SYSTEM_IR_DEVICE_SUPPORT) */ 
+ 313   5                
+ 314   5      #ifdef UART_CONSOLE 
+                        case ISR_UART0:     
+                          if (UartConsole_R_Queue == 0)
+                            UartConsole_Recieve_Handle();
+                            break;    
+              #endif                    
+ 320   5                  
+ 321   5      #ifdef HSUART_CONSOLE
+                        case ISR_UART1:       
+                          if (UartConsole_R_Queue == 0)
+                            UartConsole_Recieve_Handle();
+                            break;    
+              #endif            
+ 327   5      
+ 328   5      #ifdef HSUART
+ 329   5                case ISR_UART1:                   
+ 330   5                  MULTIVIEW_Receive_Handle();
+ 331   5                    break;    
+ 332   5      #endif                        
+ 333   5                  
+ 334   5      #ifdef KMLOG
+                        case ISR_UART1:       
+                          KMLog_Recieve_Handle();
+                            break;    
+              #endif          
+ 339   5      #ifdef I2C_BUS
+                        case ISR_I2C:       
+                          I2C_Core_Handle_After_Transfer_Complete(ISR_FIFO[ISR_FIFO_Rp].State); 
+                          break;
+              #endif                    
+ 344   5                  
+ 345   5                default:
+ 346   5                  break;
+ 347   5              }
+ 348   4              
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 7   
+
+ 349   4              if (++ISR_FIFO_Rp >= ISR_FIFO_DEPTH)
+ 350   4              {
+ 351   5                ISR_FIFO_Rp = 0;
+ 352   5              }
+ 353   4            }
+ 354   3          }
+ 355   2      
+ 356   2          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ 357   2          // USB DC ISR Handle
+ 358   2          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ 359   2      #if (SYSTEM_USB_DC_ENABLE)
+ 360   2          if (USBDC_ISRQ_Wp != USBDC_ISRQ_Rp) // if no ISR interrupt FIFO wait to process
+ 361   2          {
+ 362   3            USBDC_ISR_Handle();
+ 363   3          }
+ 364   2      #endif
+ 365   2      
+ 366   2          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ 367   2          // USB HC ISR Handle
+ 368   2          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ 369   2      #if (SYSTEM_USB_HC_ENABLE) 
+ 370   2          if (USBHC_ISRQ_Wp != USBHC_ISRQ_Rp) // if no ISR interrupt FIFO wait to process
+ 371   2          {
+ 372   3            USBHC_ISR_Handle();
+ 373   3          }
+ 374   2      #endif  
+ 375   2      
+ 376   2          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ 377   2          // PS/2 ISR Handle
+ 378   2          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ 379   2      #if (SYSTEM_PS2_HOST_ENABLE)
+                #if (SYSTEM_HARDWARE_PS2_ENABLE) 
+                  if (HPS2_ISR_FIFO_WP != HPS2_ISR_FIFO_RP)
+                  {
+                    HW_PS2_ISR_Handle();
+                  }
+                #endif
+              #endif
+ 387   2      
+ 388   2          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ 389   2          // USB type Task Handle
+ 390   2          // ====================
+ 391   2          // The task inside USB table will be executed 
+ 392   2          // by order, the handler will exit only when
+ 393   2          // all usb task has been fork.
+ 394   2          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ 395   2          if (Task_USB_Table_RP != Task_USB_Table_WP)
+ 396   2          {
+ 397   3            TASK_USB_Main();
+ 398   3          }
+ 399   2      
+ 400   2          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ 401   2          // Event type Task Handle
+ 402   2          // ======================
+ 403   2          // The task inside Event table will be executed 
+ 404   2          // by order, but only one task will be forked,
+ 405   2          // the handler will ternimate after forking
+ 406   2          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ 407   2          if (Task_Event_Table_RP != Task_Event_Table_WP)
+ 408   2          {
+ 409   3            TASK_Event_Main();
+ 410   3          }
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 8   
+
+ 411   2      
+ 412   2          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ 413   2          // Periold Task type Task Handle
+ 414   2          // =============================
+ 415   2          // The task inside ms period table will be executed 
+ 416   2          // only when the timer count down to 0, like event
+ 417   2          // only one task will be fork in one loop
+ 418   2          // after fork, the handler will auto reload 
+ 419   2          // interval time into counter again.
+ 420   2          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ 421   2          if (Task_MS_Period_Flag)
+ 422   2          {
+ 423   3            if (Task_MS_Period_Table_WP)
+ 424   3            {
+ 425   4              TASK_Period_MS_Maintain();
+ 426   4            }
+ 427   3            Task_MS_Period_Flag = 0;
+ 428   3          }
+ 429   2      
+ 430   2          if (Task_MS_Period_Table_RP != Task_MS_Period_Table_WP)
+ 431   2          {
+ 432   3            TASK_MS_Period_Main();
+ 433   3          }
+ 434   2          
+ 435   2      #if (SYSTEM_MSC_DEVICE_SUPPORT)
+                  if (USBHC_ATL_Done_Q_Rp != USBHC_ATL_Done_Q_Wp)
+                  {
+                    USBHC_CORE_BULK_Done_Handle();    
+                  }
+              #endif
+ 441   2      
+ 442   2      #if (SYSTEM_EXTENDER_SUPPORT)
+              #if ((SYSTEM_EXTENDER_RECEIVER) && (SYSTEM_USBAUDIO_DEVICE_SUPPORT))    
+                  if (ETDR_AudioInHead != ETDR_AudioInTail)
+                  {         
+                    ExtenderR_Audio_Data_In_Stage();      
+                  }
+                  
+              #endif
+                  if (EXTENDER_Transmit_OutP != EXTENDER_Transmit_InP)
+                  {
+                    Extender_Transmit_FIFO_Send();
+                  }
+              #endif /* if (SYSTEM_EXTENDER_SUPPORT) */
+ 455   2      
+ 456   2      #if (SYSTEM_POWER_SAVING_MODE_SUPPORT)
+                  if (PowerSavingExitFlag)
+                  {
+                    KVM_PowerSaving_Exit();
+                  }
+              #endif
+ 462   2      
+ 463   2      #ifdef I2C_BUS
+                      if (I2C_Tx_Start != I2C_Tx_End)
+                  {   
+                    if ((I2C_Control_State & (I2C_CONTROL_TRANSMIT | I2C_CONTROL_RECEIVE)) == 0x00) 
+                    {       
+                      I2C_Core_Transmit_FIFO_Send();
+                    } 
+                  }
+              #endif /* #if (SYSTEM_CASCADE_MASTER) */    
+ 472   2          
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 9   
+
+ 473   2          if (SWTIMER_ScCheckTimer256ms >= 234)
+ 474   2          {
+ 475   3            EXTINT5_DISABLE;
+ 476   3            SWTIMER_ScCheckTimer256ms = 0;
+ 477   3            EXTINT5_ENABLE;
+ 478   3      
+ 479   3            if (++SWTIMER_ScCheckTimerMinutes == 60)
+ 480   3            {
+ 481   4              SWTIMER_ScCheckTimerMinutes = 0;
+ 482   4              if (++SWTIMER_ScCheckTimerHours == 24)
+ 483   4              {
+ 484   5                SWTIMER_ScCheckTimerHours = 0;
+ 485   5      #if (SYSTEM_STORAGE_DEVICE_SUPPORT)
+ 486   5                STORAGE_SoftwareConfigurationCheck(1);
+ 487   5      #endif          
+ 488   5              }
+ 489   4            }
+ 490   3          }   
+ 491   2        }
+ 492   1      }
+ 493          
+ 494          /*--------------------------------------------------------------------------------
+ 495           * void ISR_Init(void)
+ 496           * Purpose : Initial the ISR Fifo Table
+ 497           * Params  : $ *p  => Address
+ 498           *           $ len => display length
+ 499           * Returns : None
+ 500           * Note    : The length can not large than 0xff
+ 501           *--------------------------------------------------------------------------------*/
+ 502          void ISR_Init(void)
+ 503          {
+ 504   1        memset(ISR_FIFO,0x00,sizeof(ISR_FIFO));
+ 505   1        ISR_FIFO_Rp = 0;
+ 506   1        ISR_FIFO_Wp = 0;
+ 507   1      }
+ 508          
+ 509          /*--------------------------------------------------------------------------------
+ 510           * void malloc_free(void)
+ 511           * Purpose : free the malloc memory
+ 512           * Params  : None 
+ 513           * Returns : None
+ 514           * Note    : The length can not large than 0xff
+ 515           *--------------------------------------------------------------------------------*/
+ 516          void malloc_free(void xdata *buf)
+ 517          {
+ 518   1        if (buf != 0)
+ 519   1        {
+ 520   2          if (buf >= USB_Dynamic_Memory &&
+ 521   2            buf < (USB_Dynamic_Memory + USB_DYNAMIC_MEMORY_SIZE))
+ 522   2          {
+ 523   3            free(buf);
+ 524   3            //printf("m-(%lx)\n\r",(U32_T)buf);
+ 525   3          }
+ 526   2        }
+ 527   1      }
+ 528          
+ 529          /*--------------------------------------------------------------------------------
+ 530           * void xdata *m_malloc(void)
+ 531           * Purpose : malloc function
+ 532           * Params  : None 
+ 533           * Returns : None
+ 534           * Note    : The length can not large than 0xff
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 10  
+
+ 535           *--------------------------------------------------------------------------------*/
+ 536          void xdata *m_malloc(U16_T len,U8_T id)
+ 537          {
+ 538   1        unsigned char xdata *p;
+ 539   1      
+ 540   1        p = calloc(len,1); /* allocate len bytes */
+ 541   1      
+ 542   1        if ((p == 0) || (p == XDATA_BASE_ADDR))
+ 543   1        {
+ 544   2          p = 0;
+ 545   2          printf ("!!! m_malloc(%bu)=%d:ERROR,not enough memory space !!!\n\r",id,len);
+ 546   2        }
+ 547   1        
+ 548   1        //printf("m+(%lx:%bu)\n\r",(U32_T)p,id);
+ 549   1        return p;
+ 550   1      }
+ 551          
+ 552          /*--------------------------------------------------------------------------------
+ 553           * void DisplayProjectVersionInformation(void)
+ 554           * Purpose : Display the KVM system version informaiton
+ 555           * Params  : None 
+ 556           * Returns : None
+ 557           * Note    : 
+ 558           *--------------------------------------------------------------------------------*/
+ 559          void DisplayProjectVersionInformation(void)
+ 560          {
+ 561   1        U8_T temp;
+ 562   1        
+ 563   1      #if MCU_REAL_CHIP
+ 564   1        U8_T verString[] = "IC";
+ 565   1      #else
+                U8_T verString[] = "FPGA_ECO";
+              #endif
+ 568   1      
+ 569   1      #ifdef MCU_TYPE_AX68004
+ 570   1       #if (SYSTEM_KVM)
+ 571   1          printf("\n\rASIX68004 KM(%s) - Version:%s,Date:%s\n\r", verString, VERSION_STRING,DATE_STRING);
+ 572   1       #endif
+ 573   1      
+ 574   1       #endif //#ifdef MCU_TYPE_AX68004
+ 575   1      
+ 576   1      #ifdef MCU_TYPE_AX68002
+               #if (SYSTEM_KVM)
+                  printf("\n\rASIX68002 KM (%s) - MIT Version:%s,Date:%s\n\r", verString, VERSION_STRING,DATE_STRING);
+               #endif
+              #endif //#ifdef MCU_TYPE_AX68002
+ 581   1      
+ 582   1      
+ 583   1        printf("Chip Revision: %bx\r\n", temp = CRR);
+ 584   1        //printf("Wait State: %bx\r\n", temp = WTST); 
+ 585   1      
+ 586   1      //Customer Information    
+ 587   1        printf("\n\r");
+ 588   1        printf(" System Informaiton:\n\r", VERSION_STRING); 
+ 589   1        
+ 590   1      #if defined(HID_PARSER_CORE_KB)
+ 591   1        printf("  (v) USB KB Data Parser Engine Support\n\r");
+ 592   1      #endif
+ 593   1      
+ 594   1      #if defined(HID_PARSER_CORE_MS)
+ 595   1        printf("  (v) USB MOUSE Data Parser Engine Support\n\r");
+ 596   1      #endif
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 11  
+
+ 597   1        
+ 598   1      #ifdef DEVICE_GPIO_DEFINE   
+                printf("  MSC/Audio GPIO Define Version.\n\r");
+                
+                if (Audio_Device_Support_Gpio)
+                  printf("  (v)");
+                else
+                  printf("  (x)");    
+                printf("Audio Storage Device\n\r"); 
+                
+                if (MSC_Device_Support_Gpio)
+                  printf("  (v)");
+                else
+                  printf("  (x)");    
+                printf(" Mass Storage Device,PageSize=%d\n\r",MSC_Class_Page_Size);
+                
+              #else
+ 614   1        #ifdef NO_MSC
+ 615   1        printf("  (x) USB Storage Device:NO\n\r");
+ 616   1        #else
+                printf("  (v) USB Storage Device:Yes,PageSize=%d\n\r",(U16_T)MSC_Class_Page_Size);
+                #endif
+ 619   1      
+ 620   1        #ifdef NO_AUDIO
+ 621   1          printf("  (x) USB Audio Device:NO\n\r");
+ 622   1        #else
+                  printf("  (v) USB Audio Device:Yes\n\r");
+                #endif
+ 625   1      #endif /* #ifdef DEVICE_GPIO_DEFINE */
+ 626   1      
+ 627   1      #ifdef PS2_HOST
+              printf("  (v) PS/2 Device:Yes\n\r");
+              #endif
+ 630   1      
+ 631   1      #if (PROJECT_USB_GENERIC_HID_ENABLE)
+ 632   1        printf("  (v) USB Generic HID Device:Yes\n\r");
+ 633   1       #if (SYSTEM_EXTENDER_SUPPORT)
+                USBHC_Max_Device_Support--;
+               #endif
+ 636   1      #endif
+ 637   1      
+ 638   1      #if (SYSTEM_USB_PEN_DRIVE_SUPPORT)
+                printf("  (v) USB Virutal MSC Device:Yes\n\r");
+               #if (SYSTEM_EXTENDER_SUPPORT)
+                USBHC_Max_Device_Support--;
+               #endif
+              #endif
+ 644   1      
+ 645   1      #if (SYSTEM_POWER_SAVING_MODE_SUPPORT)
+                printf("  (v) Power Saving Mode:%bu,Time=%d\n\r",SYSTEM_POWER_SAVING_TYPE,SYSTEM_POWER_SAVING_TIMER);
+              #endif
+ 648   1      
+ 649   1      #if (SYSTEM_EXTENDER_SUPPORT)
+                printf("  (*)Max Device Support:%bx\n\r",USBHC_Max_Device_Support);
+              #endif
+ 652   1      
+ 653   1      #ifdef ONE_HID
+                printf("One HID Mode\n\r"); 
+              #endif
+ 656   1        
+ 657   1        if (KVM_Flash.cSystemFlag3 & SYSTEM_MOUSE_SW_MASK)
+ 658   1        { 
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 12  
+
+ 659   2          printf("SYS:Mouse Switch Mode On\n\r");   
+ 660   2        }
+ 661   1        
+ 662   1        if (KVM_Flash.cSystemFlag2 & SYSTEM_MS_DN_MASK)
+ 663   1        {
+ 664   2          printf("SYS:Mouse Coordinateion Relative Mode\n\r");
+ 665   2        } 
+ 666   1        else
+ 667   1        {
+ 668   2          printf("SYS:Mouse Coordinateion Absolute Mode\n\r");
+ 669   2        }   
+ 670   1          
+ 671   1        if ((KVM_Flash.cSystemFlag3 & SYSTEM_MPASS_MASK) == MPASS_ACROSS_MODE)
+ 672   1        {
+ 673   2          printf("Mouse Acroess Mode\n\r");
+ 674   2        }   
+ 675   1        //else if ((KVM_Flash.cSystemFlag3 & SYSTEM_MPASS_MASK) == MPASS_BUTTON_MODE) 
+ 676   1        //{
+ 677   1        //  printf("Mouse Button Mode(Relative)\n\r");
+ 678   1        //}   
+ 679   1        
+ 680   1        if (KVM_Flash.cSystemFlag2 & SYSTEM_MS_SYNC_MASK)
+ 681   1        {
+ 682   2          printf("Mouse Sync Mode On\n\r");
+ 683   2        }   
+ 684   1        
+ 685   1        //if (KVM_Flash.cSystemFlag2 & SYSTEM_KB_SYNC_MASK)
+ 686   1        //{
+ 687   1        //  printf("Keyboard Sync Mode On\n\r");
+ 688   1        //}   
+ 689   1      }
+ 690          
+ 691          #if (KVM_INFORMATION_DISPLAY)
+              /*--------------------------------------------------------------------------------
+               * void DisplayKVMInformation(void) 
+               * Purpose : Display System infromation
+               * Params  : None 
+               * Returns : None
+               * Note    : 
+               *--------------------------------------------------------------------------------*/
+              void DisplayKVMInformation(void) 
+              {
+                printf("---------------- Project Define ----------------\n");
+                printf("Console Device Support:\n\r");
+              #if (SYSTEM_PS2_HOST_ENABLE)
+                printf("  [v]PS/2\n\r");
+                #if (SYSTEM_HARDWARE_PS2_ENABLE)
+                  printf("     Hardware PS/2:%d\n\r",(U16_T)SYSTEM_HARDWARE_PS2_PORT_MAX);
+                #endif
+              #endif
+              
+                printf("  [V]USB:\n\r");
+                printf("     DC:\n\r");
+                printf("        Max port:%d\n\r",(U16_T)KVM_MAX_PORT);
+                printf("        Virtual HUB:y\n\r");
+                printf("        Virtual Generic HID:y\n\r");
+                printf("     HC:\n\r");
+                printf("        Max Port:%d\n\r",(U16_T)USB_HC_MAX_PORT);
+                printf("        Max Device:%d\n\r",(U16_T)USB_HC_MAX_DEVICE-2);
+                printf("        PassThrough Level:Minimun\n\r");
+                printf("        Audio Class Support:y\n\r");
+                printf("        MSC Class Support:y\n\r");
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 13  
+
+              
+              #if (SYSETM_HWI2C_CONTROL_ENABLE)
+                printf("Hardware I2C EDID:y\n\r");
+              #endif
+              
+              #if (KVM_BUZZER_SUPPORT)
+                printf("Hardware Buzzer:y\n\r");
+              #endif
+              
+              #if (KVM_BUTTON_SUPPORT)
+                printf("Hardware Button Detected:y\n\r");
+              #endif
+              
+              #if (SYSTEM_POWER_SAVING_MODE_SUPPORT)
+                printf("Power Saving Mode:%d,Time=%d\n\r",(U16_T)SYSTEM_POWER_SAVING_TYPE,(U16_T)SYSTEM_POWER_SAVING_TIME
+             -R);
+                printf("  BTN Wakeup Eanble:");
+                #if (BTN_WAKEUP_SUPPORT)
+                printf("y\n\r");
+                #else
+                printf("n\n\r");
+                #endif
+              
+                printf("  Hardware PS/2 Wakeup Eanble:");
+                #if (PS2_WAKEUP_SUPPORT)
+                printf("y\n\r");
+                #else
+                printf("n\n\r");
+                #endif
+              
+                printf("  USB DC Wakeup Eanble:");
+                #if (USBDC_WAKEUP_SUPPORT)
+                printf("y\n\r");
+                #else
+                printf("n\n\r");
+                #endif
+              
+                printf("  USB HC Wakeup Eanble:");
+                #if (USBHC_WAKEUP_SUPPORT)
+                printf("y\n\r");
+                #else
+                printf("n\n\r");
+                #endif
+              
+                printf("  SPI Wakeup Eanble:");
+                #if (SPI_WAKEUP_SUPPORT)
+                printf("y\n\r");
+                #else
+                printf("n\n\r");
+                #endif
+              
+                printf("  I2C Wakeup Eanble:");
+                #if (I2C_WAKEUP_SUPPORT)
+                printf("y\n\r");
+                #else
+                printf("n\n\r");
+                #endif
+              #endif
+              
+                printf("\n\r");
+              #if (PROJECT_KVM_CONSOLE_ENABLE)
+                printf("------- KVM Informpation -------\n\r");
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 14  
+
+                printf("KVM Port:%2d\n\r",(U16_T)KVM_MAX_PORT);
+                printf("AutoScanInterval:%2d,Mode=",(U16_T)KVM_Flash.AutoScanInterval);
+              
+                switch ( (KVM_Flash.cSystemFlag0 & SYSTEM_AUTOSCAN_MODE_MASK) )
+                {
+                  case SYSTEM_AUTOSCAN_MODE_FREE :
+                    printf("Free\n\r");
+                    break;
+                  case SYSTEM_AUTOSCAN_MODE_POWER :
+                    printf("Power\n\r");
+                    break;
+                  case SYSTEM_AUTOSCAN_MODE_TAG :
+                    printf("Tag\n\r");
+                    break;
+                  default :
+                    printf("???\n\r");
+                    break; 
+                }
+              
+                printf("Buzzer Settiing: ");
+                if (KVM_Flash.cSystemFlag0 & SYSTEM_BEEPER_MASK ) 
+                  printf("On\n\r");
+                else
+                  printf("Off\n\r");
+              #endif
+                printf("--------------------------------\n\r\n\r");
+              }
+              #endif /* KVM_INFORMATION_DISPLAY */
+ 810          
+ 811          #if (SYSTEM_TASK_DUMP_SUPPORT)
+              /*--------------------------------------------------------------------------------
+               * void Main_System_Halt(void)
+               * Purpose : Halt the system
+               * Params  : None 
+               * Returns : None
+               * Note    : 
+               *--------------------------------------------------------------------------------*/
+              void Main_System_Halt(void)
+              {
+                while (1);
+              }
+              #endif
+ 824          
+ 825          /*--------------------------------------------------------------------------------
+ 826           * void Disp_Str(U8_T *p,U16_T len)
+ 827           * Purpose : Display the content into UART port, for debug purpose
+ 828           * Params  : $ *p  => Address
+ 829           *           $ len => display length
+ 830           * Returns : None
+ 831           * Note    : The length can not large than 0xff
+ 832           *--------------------------------------------------------------------------------*/
+ 833          void Disp_Str(U8_T *p,U16_T len)
+ 834          {
+ 835   1        U16_T index;
+ 836   1        
+ 837   1        printf("[");
+ 838   1        if (len)
+ 839   1        {
+ 840   2          len--;
+ 841   2          for (index=0;index < len ; index++)
+ 842   2          {
+ 843   3            printf("%02bx ",p[index]);
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 15  
+
+ 844   3          }
+ 845   2          printf("%02bx]",p[index]);
+ 846   2        } 
+ 847   1        /*
+ 848   1        printf("A(%lx)[",(U32_T)p);
+ 849   1        if (len)
+ 850   1        {
+ 851   1          len--;
+ 852   1          for (index=0;index < len ; index++)
+ 853   1          {
+ 854   1            printf("%02bx ",p[index]);
+ 855   1          }
+ 856   1          printf("%02bx]\n\r",p[index]);
+ 857   1        }
+ 858   1        else
+ 859   1          printf("]\n\r");
+ 860   1        */
+ 861   1      }
+ 862          
+ 863          /*--------------------------------------------------------------------------------
+ 864           * void Check_Devcie_Gpio_Setting(void)
+ 865           * Purpose : 
+ 866           * Params  : 
+ 867           *           
+ 868           * Returns : None
+ 869           * Note    : 
+ 870           *--------------------------------------------------------------------------------*/
+ 871          void Check_Devcie_Gpio_Setting(void)
+ 872          {
+ 873   1      #ifdef DEVICE_GPIO_DEFINE
+                #if (SYSTEM_EXTENDER_TRANSMITTER)
+                  Audio_Device_Support_Gpio = DEVCIE_AUDIO_SUPPORT; 
+                  MSC_Device_Support_Gpio = DEVCIE_MSC_SUPPORT;
+                  MSC_Class_Page_Size = USB_MSC_CLASS_PAGE_SIZ;   
+                #else
+                  if (DEVICE_AUDIO_GPIO_PIN == DEVCIE_AUDIO_SUPPORT)
+                    Audio_Device_Support_Gpio = DEVCIE_AUDIO_SUPPORT;
+                  else
+                    Audio_Device_Support_Gpio = DEVCIE_NO_AUDIO_SUPPORT;  
+                  
+                  if (DEVICE_MSC_GPIO_PIN == DEVCIE_MSC_SUPPORT)      
+                  { 
+                    MSC_Device_Support_Gpio = DEVCIE_MSC_SUPPORT;
+                    if (Audio_Device_Support_Gpio)
+                    {     
+                      MSC_Class_Page_Size = USB_MSC_SMALLEAST_SZIE;
+                    }
+                    else
+                    {
+                      MSC_Class_Page_Size = USB_MSC_LARGEAST_SZIE;
+                    }   
+                  } 
+                  else  
+                  { 
+                    MSC_Device_Support_Gpio = DEVCIE_NO_MSC_SUPPORT;
+                    MSC_Class_Page_Size = 64;
+                  }
+                  
+                  DEVICE_AUDIO_GPIO_PIN = 0;
+                  DEVICE_MSC_GPIO_PIN = 0;  
+                #endif  
+              #else 
+C51 COMPILER V9.60.7.0   MAIN                                                              06/18/2026 10:50:16 PAGE 16  
+
+ 906   1        MSC_Class_Page_Size = USB_MSC_CLASS_PAGE_SIZ;
+ 907   1      #endif  
+ 908   1      }
+ 909          
+ 910          
+ 911          /* End of main.c */
+ 912          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1274    ----
+   CONSTANT SIZE    =    655    ----
+   XDATA SIZE       =     98      17
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =    655    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

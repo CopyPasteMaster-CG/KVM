@@ -1,0 +1,183 @@
+C51 COMPILER V9.60.7.0   USBDC_VMSC_DESC                                                   06/18/2026 10:50:20 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBDC_VMSC_DESC
+OBJECT MODULE PLACED IN .\usbdc_vmsc_desc.obj
+COMPILER INVOKED BY: C:\Users\Administrator\AppData\Local\Keil_v5\C51\BIN\C51.EXE ..\Src\usbdc\usbdc_msc\usbdc_vmsc_desc
+                    -.c LARGE OMF2 ROM(D16M) OPTIMIZE(9,SIZE) BROWSE NOAREGS INCDIR(..\src\main\;..\src\cpu\;..\src\flash\;..\src\uart\;..\sr
+                    -c\swdma\;..\src\mstimer\;..\src\i2c\;..\src\spi\;..\src\task_man\;..\src\project\;..\Src\ps2_host;..\Src\console_edid;..
+                    -\Src\storage;..\Src\data_stream;..\Src\kvm_control\kvm_hotkey;..\Src\kvm_control\kvm_console;..\Src\kvm_control\kvm_butt
+                    -on;..\Src\kvm_control\kvm_edid;..\Src\kvm_control\kvm_buzzer;..\src\gpio\;..\Src\hardware_ps2;..\Src\usbdc;..\Src\usbdc\
+                    -usbdc_virtual;..\Src\usb_std;..\Src\usbhc;..\Src\kvm_control\power_saving;..\Src\usbhc\MSC;..\Src\usbhc\AUDIO;..\Src\usb
+                    -hc\HUB;..\Src\usbhc\HID;..\Src\usbhc\HID_PARSER;..\Src\usbhc\ROOT_HUB;..\Src\usbdc\usbdc_hub;..\Src\usbdc\usbdc_hid;..\S
+                    -rc\kvm_control\kvm_storage\spi_flash;..\Src\usbdc\usbdc_msc\usb_scsi;..\Src\usbdc\usbdc_msc;..\Src\handler\logitech;..\S
+                    -rc\handler\A4_Tech;..\Src\usbdc\usbdc_vendor;..\Src\hsur;..\Src\extender\core;..\Src\extender\receiver;..\Src\uart_conso
+                    -le;..\Src\kvm_control\km_sync;..\Src\hsur;..\Src\kvm_control\km_log;..\Src\kvm_control\km_api;..\Src\kvm_control\kvm_ir;
+                    -..\Src\kvm_control\kvm_rtc;..\Src\i2c;..\Src\kvm_control\kvm_multiview) STRING(FAR) DEFINE(RuntimeCodeAt0KH,MCU_TYPE_AX6
+                    -8004,KVM,HC_TIMEOUT=10000,VHID,HID_PARSER_CORE_KB,HID_PARSER_CORE_MS,API,NO_AUDIO,NO_MSC,NO_EDID,HUART_BAUD=HUART_115K,S
+                    -YNC,CROSS_JUMP_MAP0,VPID_CHANGER,SYNC_KB_HOTKEY,SYNC_MS_HOTKEY,REPEAT_MODE=1,HSUART,MULTIVIEW) VARBANKING DEBUG PRINT(.\
+                    -usbdc_vmsc_desc.lst) TABS(2) OBJECT(.\usbdc_vmsc_desc.obj)
+
+line level    source
+
+   1          /*
+   2           ******************************************************************************
+   3           *     Copyright (c) 2014 ASIX Electronic Corporation      All rights reserved.
+   4           *
+   5           *     This is an proprietary source code of ASIX Electronic Corporation
+   6           *
+   7           *     The copyright notice above does not evidence any actual or intended
+   8           *     publication of such source code.
+   9           ******************************************************************************
+  10           */
+  11           /*============================================================================
+  12           * Module Name: usbdc_vmsc_desc.c
+  13           * Purpose:
+  14           * Author:
+  15           * Date:
+  16           * Notes:
+  17           *=============================================================================
+  18           */
+  19          
+  20          /* Includes ------------------------------------------------------------------*/
+  21          #include "project_include.h"
+  22          
+  23          #if (SYSTEM_USB_PEN_DRIVE_SUPPORT)
+              
+              /* Private typedef -----------------------------------------------------------*/
+              /* Private define ------------------------------------------------------------*/
+              /* Private macro -------------------------------------------------------------*/
+              /* Private variables ---------------------------------------------------------*/
+              /* Extern variables ----------------------------------------------------------*/
+              /* Private function prototypes -----------------------------------------------*/
+              /* Private functions ---------------------------------------------------------*/
+              
+              /* USB Standard Device Descriptor */
+              
+              CODE U8_T VMSC_DeviceDescriptor[VMSC_SIZ_DEVICE_DESC] =
+              {
+                0x12,           /*bLength */
+                USB_DEVICE_DESCRIPTOR_TYPE, /*bDescriptorType*/
+                0x10,           /*bcdUSB Low*/
+                0x01,           /*bcdUSB High*/
+                0x00,           /*bDeviceClass*/
+                0x00,           /*bDeviceSubClass*/
+C51 COMPILER V9.60.7.0   USBDC_VMSC_DESC                                                   06/18/2026 10:50:20 PAGE 2   
+
+                0x00,           /*bDeviceProtocol*/
+                0x08,           /*bMaxPacketSize40*/
+                0x0b, 0x95,         /*idVendor (0x950b)*/
+                0x02, 0x0c,         /*idProduct = 0x0ca*/ 
+                0x00, 0x02,         /*bcdDevice rel. 2.00*/
+                1,              /*Index of string descriptor describing
+                                                 manufacturer */
+                2,              /*Index of string descriptor describing
+                                                 product*/
+                3,              /*Index of string descriptor describing the
+                                                 device serial number */
+                0x01            /*bNumConfigurations*/
+              }; /* VMSC_DeviceDescriptor */
+              
+              
+              
+              /* USB Configuration Descriptor */
+              /*   All Descriptors (Configuration, Interface, Endpoint, Class, Vendor */
+              CODE U8_T VMSC_ConfigDescriptor[VMSC_SIZ_CONFIG_DESC] =
+              {
+                0x09,               /* bLength: Configuration Descriptor size */
+                USB_CONFIGURATION_DESCRIPTOR_TYPE,  /* bDescriptorType: Configuration */
+                VMSC_SIZ_CONFIG_DESC, 0x00,     /* wTotalLength: Bytes returned */
+                
+                0x01,               /* bNumInterfaces: 1 interface */
+                0x01,               /* bConfigurationValue: Configuration value */
+                0x00,               /* iConfiguration: Index of string descriptor describing
+                                               the configuration*/
+                0x80,               /* bmAttributes: Bus powered */
+                0x32,               /* MaxPower 100 mA: this current is used for detecting Vbus */
+              
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                //  Descriptor of Custom STORAGE interface  
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     
+                0x09,               /* bLength: Interface Descriptor size */
+                USB_INTERFACE_DESCRIPTOR_TYPE,    /* bDescriptorType: Interface descriptor type */
+                0x00,               /* bInterfaceNumber: Number of Interface */
+                0x00,               /* bAlternateSetting: Alternate setting */
+                0x02,               /* bNumEndpoints */
+                0x08,               /* bInterfaceClass: MSC */
+                0x06,               /* bInterfaceSubClass : 0x06=SCSI transparent command set */
+                0x50,               /* nInterfaceProtocol : 0x50=Bulk-Only Transport */
+                0x00,               /* iInterface: Index of string descriptor */
+              
+                /******************** Descriptor of Storage endpoints ******************/
+                /* Endpoint 1 */
+                0x07,             /* bLength: Endpoint Descriptor size */
+                USB_ENDPOINT_DESCRIPTOR_TYPE, /* bDescriptorType: */
+                0x81,             /* bEndpointAddress: Endpoint Address (IN) 1*/
+                0x02,             /* bmAttributes: Bulk endpoint */
+                0x40, 0x00,           /* wMaxPacketSize: 64 Bytes max */
+                0x00,             /* bInterval: Polling Interval (10 ms) */
+                0x07,             /* bLength: Endpoint Descriptor size */
+                USB_ENDPOINT_DESCRIPTOR_TYPE, /* bDescriptorType: */
+                0x02,             /* bEndpointAddress: Endpoint Address (OUT) 2*/
+                0x02,             /* bmAttributes: Bulk endpoint */
+                0x40, 0x00,           /* wMaxPacketSize: 64 Bytes max */
+                0x00,             /* bInterval: Polling Interval (10 ms) */ 
+              } ; /* VMSC_ConfigDescriptor */ 
+              
+              CODE U8_T VMSC_StringProduct[VMSC_SIZ_STRING_PRODUCT] =
+              {
+C51 COMPILER V9.60.7.0   USBDC_VMSC_DESC                                                   06/18/2026 10:50:20 PAGE 3   
+
+                VMSC_SIZ_STRING_PRODUCT,    /* bLength */
+                USB_STRING_DESCRIPTOR_TYPE,   /* bDescriptorType */
+                'U', 0, //1
+                'S', 0, //2
+                'B', 0, //3
+                ' ', 0, //4
+                'P', 0, //5
+                'e', 0, //6
+                'n', 0, //7
+                ' ', 0, //8
+                'D', 0, //9
+                'r', 0, //10
+                'i', 0, //11
+                'v', 0, //12
+                'e', 0, //13
+                ' ', 0, //14
+                'V', 0, //15
+                'e', 0, //16
+                'r', 0, //17
+                ':', 0, //18
+                '0', 0, //19
+                '.', 0, //20
+                '0', 0, //21
+                '1', 0  //22
+              };
+              
+              CODE U8_T VMSC_StringSerial[VMSC_SIZ_STRING_SERIAL] =
+              {
+                VMSC_SIZ_STRING_SERIAL,           /* bLength */
+                USB_STRING_DESCRIPTOR_TYPE,         /* bDescriptorType */
+                '0', 0, '0', 0, '0', 0,'0', 0,'0', 0,'0', 
+              };
+              #endif
+ 138          
+ 139          /* End of usbdc_vmsc_desc.c */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

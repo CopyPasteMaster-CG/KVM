@@ -1,0 +1,388 @@
+//======================================================================
+Version 2.1.3.2 (2019-09-05)
+1. modify USBHC_Remove_HID_Buffer(U8_T intt_id), replace 4 by KVM_MAX_PORT
+memset(HC_IntTransfer_Table[intt_id].PassControl.SyncRp,HC_IntTransfer_Table[intt_id].PassControl.Rp,KVM_MAX_PORT);
+
+Version 2.1.3 (2019-05-22)
+1. Add MultiView function 
+
+Version 2.1.0 (2018-11-23)
+1. Add master I2C bus software control function.
+2. Add Keyboard/Mouse parser core, relase as LIB file.
+3. Add mouse roaming function.
+4. Add API for mouse roaming funciton control.
+
+Version 2.0.8 (2018-11-23)
+1. Official release version 
+
+Version 2.0.7 (2018-11-16)
+1. Fix the problem of Rapoo keyboard X120S.   
+   if the Set Address is the first command will caused this device fail to response to next command Get Devcie Descriptor, need to change the 
+   Get Device Descriptor become the first command, then the device will be normal.
+
+Version 1.0.0.1 (2018-01-05)
+1.Change button operation, will active if release button, before that is when button is down.
+1.Add Button1+Button2 to active the autoscan
+
+Version 1.0.0.0 (2018-01-01)
+1. Reset the version number for new project.
+2. Add Mouse parser engineer funciton.
+
+Version 2.0.4.5 (2017-12-30)
+1. Add Keyboard,Mouse sync in 4 PCs feature(Noted: SYNC mode must enable the PS2_HOST define)
+2. Hotkey=>AY (K+M)
+   Hotkey=>KY (K)
+   Hotkey=>MY (M)	
+
+Version 2.0.4.4 (2017-12-18)
+1. Fxied GuanJian X7,VB/T20145-2010 mouse, can't work issue.
+
+Version 2.0.3 (2017-2-21)
+1. Fixed the extender system firmware, bug:use the wrong interrupt HOST control tabale id as the interface idx, changed back to interface id.
+2. Fixed the USBDC_VHub_Resume_Port(), when downstream attached with a hub, then PC get into suspend mode, move the device under downstream HUB will caused computer fail to conntect with AX6800x.
+3. Fixed the bug in USBHC_GetStringDesc(), the stringidx value should between from 1 to 3
+4. Fixed the Intel Skylake mother board USB resume issue, when start to resume but move mouse in the same time, after wakeup, the usb upstream port will not work.
+5. Fixed the USB speaker N19,mouse imation:PCM-220DB, the default reset time is too long, the device will grenerate the SE0 state on the bus, this will cause the enuerate fail, reduce the reset time to 100ms.
+6. Modified USBHC_State_Machine_Busy_Check(), add the if (USB_PDevice[devinx].Hc.gState == HOST_CLASS_ENUMERATION), judgement statement to avoid the PC send out the LED command to generic usb hid device, and caused the device
+   enumerate faile.
+7. Add the EC FPGA firmware, use the FPGA project option item to active the FPGA version.
+Version 2.0.3.2 (2017-06-11)
+8. Fixed the Skylake cpu mother board resume issue, when use mouse to operate the windows system into sleeping mode, but still move the mouse to wakeup the computer at once,
+   this will caused the KVM system crash, so fixed the issue.
+Version 2.0.3.3(EC2) (2017-06-14)
+9. Add Endpoint buffer with 2 directions but 1 address into MSC case.
+
+Version 2.0.2 (2016-08-19)
+1. Fixed the issue, if PC set device to suspend, but hub not, then will caused the device can not be operated.
+2. Add a compiler option in Extender project, VIRTUAL_HUB_RESET, when the local device in transmitter or remote device
+   in receiver plug out or plug in, will cause the transmitter reset the virtual hub to the PC.
+3. If downstream has connected with a USB audio device, if play music and use the system audio volume control to adjust the volume will cause the adjust bar not move.
+4. Fixed the issue, after switch usb audio, will cause nosie during play music.
+5. Fixed the buzzer on/off hotkey control error.
+6. Fixed if PC only ask one device suspend but other device still actived, will cause the suspend device can not work any more.
+7. Fixed EDID issue, the system didn't enable the slave edid table, when no console screen connected with console in the first beginning.
+8. Reduce the HC reset device time.
+
+Version 2.0.1 (2016-06-14)
+1. Change extender_receiver.c, if transmite data time out, then change the SOF pulling time to 200ms.
+2. Change ExtenderR_Skip_TimeoutUpdate setup condition is only when (Receiver_Control_State & TRANSMITTER_CONNECTION_MASK)
+3. Change #define   TRANSMITTER_PLUG_OFF_CNT  3
+
+	  #if (SYSTEM_EXTENDER_RS232_MODE)
+	      #define   TRANSMITTER_CHECK_TIME	200
+          #endif
+4. Change extender_transmitter.c, in Extender_Transmitter_Command_Token_Handle(), the NAK and STALL condition responsed has been disable for since the data page parser error, 
+   then just to skip, for current has NO ACK data package.
+
+5. Fixed Rx mouse can't wake up the PC in Tx, In ExtenderT_Intr_Data_In_Handle() add the suspend condition check for mouse data.
+
+6. Fixed the auto detect HID interval feature, add when reset, will reget the interval time.
+
+7. Fixed the °T©Ý T03 keyboard can't used hotkey issue.
+
+
+Version 2.0.0 (2016-06-13)
+1. Merge the KVM firmware version 1.0.8 with Extender version 1.1.3 
+
+Version 1.1.3 (2016-01-22)
+1. Fixed the problem, when device report to hc with no vender string and product string, then 
+issue the language id will get a nak state for ever.
+
+Version 1.1.2 (2015-12-28)
+1. Add Compiler define DEVICE_GOIO_DEFINE
+P3_0 => 1-Audio device support, 0-Audio not support
+P3_1 => 1-MSC device support, 0-MSC not support
+
+If audio and msc support, then msc page size is 192, if no audio but msc, page size is 512, if both audio and msc not support page size is 64
+2.Add HID interrupt transfer interval auto measure feature in T & R.
+3.Fixed the bug, when DC virtual HUB device get into suspend state, will cause the new plug in device can not work in T.
+
+Version 1.1.1 (2015-12-24)
+1. Add PS/2 device in Receiver & Transmitter.
+
+Version 1.0.5 (2015-09-24)
+1. Add Project Item:
+   [1].KVM_4_Ports
+   [2].KVM_2_Ports
+   [3].KVM_4_Ports_1BTN
+   [3].KVM_2_Ports_1BTN
+Version 1.0.4 (2015-08-12)
+1. Move the parameter [Extender_MSC_Devinx] initial for Extender-T only.
+2. Add three parameters initial for Extender_MSC_StallFlag, Extender_MSC_BurstWait
+   and Extender_MSC_TimeOut.
+3. Fix the RS485 connection loss if Extender-T does not monitor the disconnection when
+   fast plug off/on. In this case, Extender-R will send a RS485 restart command to
+   Extneder-T with a replied command checking and Extender-T will reconnect to 
+   Extender-R again.
+4. Fix the MSC storage can not be enumerated when re-plug the Extender-T upstream port.
+   The Extender-R will clean the MSC device and mount again.
+5. Fix the IBM keyboard SK-8845 can not work for all function that has one keyboard
+   and two mouse devices.
+   In the "PASSTHROUGH_DC_SETUP_DATA_IN" state of TASK_USBHC_ExtenderR_PassThrough(),
+   checking the HC actual byte is 0 to fo CTRL_STATUS_OUT state function.
+
+Version 1.0.3 (2015-07-28)
+1. Remove the single command of keyboard led report to Extender-R, because of the 
+   SET_REPORT always be transmitted by the pass-throught path.
+2. In the CTRL_DATA_IN state of TASK_USBHC_CORE_Control_Transfer_Handle(),
+   fix the control in packets transfer to check the endpoint size that is 
+   the packets transfer will be fragmented by SW.
+3. Take off patching an IN token while total length of datastage IN of downstream setup
+   command is multiple of max endpoint size. Do status out directly for better device compatible.
+   Below devices could not mount successfully for CTRL_DATA_LAST_IN:
+   1. Microsoft Wheel Mouse Optical USB
+   2. Microsoft Optical Mouse Blue USB
+   3. A4 TECH X7 G800V keyboard
+   4. Microsoft  LifeChat LX-300 audio device
+   5. USB PnP audio device(no brand, white single USB microphone)
+   6. USB PnP sound device(no brand, microphone + speaker)
+
+Version 1.0.2 (2015-06-25)
+1. Extend Extender-T time-out interval to 3sec for checking the
+   Extender-R plug-off that some MSC devices reply ACK too long.
+2. Fix the Extender-R MSC bulk out transfer without checking the RS485 TX FIFO timeout,
+   when waiting an ACK from the MSC device.
+
+Version 1.0.1 (2015-06-10)
+1. Change allocation of software configuration from 2 parts to 4 parts
+   (primary/secondary/thirdary/fourth partition), software will check all
+   4 partitions. If total available partitions are less than 2, software will
+   recovery all by any one available partition. If there is no any available
+   partitions, software will recovery by default.
+2. Add house keeping mechanism for checking/recovery software configuration
+   area (Interval is 24 hours).
+
+Version 1.0.0 (2015-05-27)
+1. Add other baudrate setting.
+2. Change allocation of software configuration from single part to 2 parts.
+   (master part + slave part for backup).
+3. Fix the toggle error occurred in the data in transaction of the control transfer.
+   For HC control state machine, add toggle error handler routine in the 
+   CTRL_DATA_IN_WAIT state and CTRL_STATUS_IN_WAIT state.
+4. For Microsoft low speed mouse, it will reply a STALL when getting the last zero data in.
+   Fix this by directly sending control status out to complete the transfer.
+   Base on the Microsoft mouse VIP & PID to check the control transfer.
+
+Version 0.3.9 (2015-04-14)
+1. Remove the USBHC_SWDMA_Inused_Flag cleared in the intr_PeripheralIntr5ISR().
+2. Add the RS485 baudrate to support 1Mbps & 9600bps.
+3. Add the Extender baudrate message display for RS485 and RS232.
+4. Use "SYSTEM_EXTENDER_RS232_MODE" to define the Extender RS232 mode
+   instead of "EXTENDER_RS232_MODE".
+5. In Extender-T, rename "ExtenderR_Connection_Check_TASK" to
+   "ExtenderT_Connection_Check_TASK".
+6. In Extender-T, rename "TASK_Extender_Receiver_Plug_Check" to 
+   "TASK_Extender_Transmitter_Plug_Check".
+7. In Extender-T, rename "TASK_ExtenderR_Connection_Check_ActiveID" to 
+   "TASK_ExtenderT_Connection_Check_ActiveID".
+8. Add software workaround for HC TD deadlock by some overcurrent case.
+9. Patch an IN token while total length of datastage IN of downstream setup
+   command is multiple of max endpoint size.
+10.Correct for task fifo overrun under TASK_EVENT_WAIT case in TASK_Event_Main().
+
+
+Version 0.3.8 (2015-03-10)
+1. Add a baudrate setting of 1024Kbps for RS232 mode.
+2. Configure the MSC default burst size to 128 bytes.
+3. Add a definition "SYSTEM_EXTENDER_RS232_MODE" for set the extender to RS232 mode.
+
+Version 0.3.7 (2015-02-12)
+1. Fix the RS485 baudrate to 12Mbps @ 96MHz.
+2. In USBDC_VIRTUAL_Setup_Process(), fix the processing device index from 2
+   in VENDOR_REQUEST type.
+3. Add the bulk burst out timeout counter to check loss HC done event.
+4. Fix the Extender-R RS485 receiver buffer counter checking to restart the
+   EXTENDER_Receiver_Receive_Handle_Restart(). This will solve the ADATA C906
+   read failed.
+5. Fix the Extender-R RS485 receiver buffer counter checking by 2 bytes CRC
+   to restart the ExtenderR_Responsed_Received_Data_Parser().
+6. Remove the MSC burst out wait flag that is uncalled-for the IN direction.
+7. For MSC change direction from OUT to IN, initial the pinpong_td by
+   USBHC_MSC_EnableNextBurstTD().
+8. Remove the definition of AX6800X_MP.
+9. Fix the DMA function, DMA_GrantXdata(), disable the interrupt with EA bit and
+   enable EA after checked status completely. This will solve the audio out by
+   playing the flash file and control volume.
+
+Version 0.3.6 (2015-01-19)
+1. In Extender_Receive_Data_Token_Parser(), check the data remain length
+   with 386 bytes.
+2. Remove the redundance definition in the extender.h
+3. Fix the bulk out transfer toggle error, software must retrieve the RS485 data
+   after the HC TD transmitting complete and update toggle bit by the hardware setting.
+   This can fix the issue that Extender-R will halt when playing audio out from a flash
+   device reading and control volume continuously. 
+4. Fix the Extender-R host LED flashing stop when reset Extender-R only.
+5. Add USBHC_MSC_CSW_After_Control() to send CSW for functions used.
+
+Version 0.3.5 (2015-01-07)
+1. Fix the error endian convert of the function Endian_32_Convert().
+2. Omit the function USBHC_MSC_CSW_After_Control().
+3. Add new members of hardware configuration data structure:
+   iapGpioSetting, iapLedGpioSetting.
+4. Restore USBDC_Maintain_PDevice() motion in USBHC_MSC_Umount_Report()
+   and fixed HUB failed case.
+5. Fixed an issue that KVM did not reset/clear MSC device 
+   while MSC port switching is early than active port switching.
+6. Fixed an issue that AX6800x could not enter power saving mode 
+   while mounting audio device with microphone interface and
+   all upstream ports does not connect to any upper systems.
+   (Take off USBHC_AUDIO_In_Start() motion in downstream enumeration)
+7. Optimize the function :
+   CPU_GpioWkupEntryFunc(), PS2H_WkupEntryFunc(), 
+   USBHC_MSC_BOT_Check_Next_In(), USBHC_MSC_BOT_DC_Data_Out_Handle(),
+   USBHC_MSC_BOT_Done_Handle(), USBHC_MSC_Get_Burst_Length_From_DC(),
+   USBHC_ISR_Handle(), USBDC_Search_EndpAddr(),
+   USBDC_Vritul_Hub_DeviceMount_Control(), USBDC_VIRTUAL_Fill_Device_Reg(),
+   USBDC_VHub_Port_SetFeature().
+8. Fixed an issue that Logitech zone touch mouse T400 and unifying wireless
+   HID device could not work under BIOS of AMD platform.
+9. Fixed an issue that Microsoft Wireless Mouse 1000 could not work under BIOS of
+   AMD platform.(If the host set boot protocol to interface 0, we set all related
+   bootable HID interfaces to boot protocol).
+10.Correct the function USBHC_MSC_Class_Verify() for referencing total interface number.
+
+Version 0.3.4 (2014-12-19)
+1. Setup the Extender to RS-485 with 12MHz.
+2. Change the CPU WTST and STC to fit chips.
+3. Setup the RS-232 mode with default 115200bps.
+4. In Extender-R, removed the current protocol global values initial
+   when received the "EXTENDER_USB_SET_PROTOCOL" command.
+5. In Extender-R, handle the setup token process by USBDC_VIRTUAL_Setup_Process()
+   after got the command "EXTENDER_USB_SETUP_STAGE".
+6. In Extender-R, after got the command EXTENDER_USB_DATA_OUT_STAGE, handle the
+   setup data out process by ExtenderR_Passthrough_SetupOutProcess().
+7. Remove the I2C function for old shuttle chip.
+8. Change calling method of TASK_KVM_Accessory() task 
+   (only 1 time after 8 seconds -> 8 times / 8 seconds).
+9. Optimize the functions: KVM_Power_Status_Check(), 
+   USBDC_Audio_Switch_Check(), USBHC_AUDIO_In_Start() and
+   USBHC_AUDIO_ReportModeChanged_Mount_Control().
+10.Configure the GPIOx to fit the chip's LED port.
+11.Remove the SPI functions of the shuttle chip version.
+12.Support isochronous IN enable command for starting microphone.
+13.In Extender-T, the SET_CONFIGURATION and SET_REPORT will passthrough to Extender-R.
+14.Reuse the function USBHC_AUDIO_In_Start() for related places.
+15.Correct judgement of DC bus reset(check reset done).
+16.Correct code description for usbdc_ISR(void).
+17.Fixed an issue that AX680xx could not enter power saving mode 
+   while mounting audio device with microphone interface.
+18.Fix the audio out can not be recovery after switching port back that
+   initiated the audio out buffer and ETDR_AudioOutHcDoingFlag.
+19.Removed USBDC_Maintain_PDevice() to fix that MSC port switching may get failed
+   by hot key while the storage does behind the HUB.
+20.Adjust isochronous OUT flow that change clearing done map motion
+   from DC ISR to HC ISR and add set skip motion in HC ISR).
+
+Version 0.3.3 (2014-12-10)
+1. Enhance the Extender-R transfer loading by reducing enqueue too many SOF commands.
+2. Fix the SET_PROTOCOL passthrough path in Extender-R. When getting the SET_PROTOCOL
+   packet from Extender-T, must update the global variables .Current_Protocol of 
+   USB_PDevice[] and .Current_Protocol[] of USBDC_Device[].
+3. Remodify the function, USBDC_WakeupUpstreamHost(), to carry a value of current host ID.
+4. Change the task of TASK_KVM_Btn_Boot_Disable() to TASK_KVM_Accessory() and also
+   validate SOF after DC wakeup interrupt in new task.
+5. Remove the USBHC_CORE_Resmue() in TASK_KVM_PowerSaving_Start().
+6. Change the way to set the control event of task from Task_Event to taskCtrl
+   when using a definition of "TaskControlEnable".
+7. In TASK_Period_MS_Maintain(), checking .Task_Event with TASK_EVENT_SKIP before updating
+   the Task_MS_Period_Table_RP to point to the first task of time expired.
+8. Fix the Task_MS_Period_Table will be halted by a task with TASK_EVENT_SKIP that do not 
+   update .Task_Interval.w by .Task_Reload.w. 
+9. Redefine USBDC_VHID_PORT_NUM to 5 and USBDC_VMSC_PORT_NUM to 6.
+10.Add the function USBDC_REGS_Endp_Reset() when DC interrupt to DC_ISR_CT_SET.
+   And do it in free devices and clear ports to avoid other issue without reset endpoints.
+11.Remodify the function, USBDC_HAL_Endp_Out_Buf_Copy(), to copy setup token header
+   with the maximum 8 bytes.
+12.In DC ISR handle function, add checking a valid endpoint number for audio ISO transfer.
+13.Fixed an issue that the enumeration will fail when plugged the devices at same time
+   that interlaced the pass-through and the basic enumeration of get descriptors.
+14.In USBDC_Port_Normal(), checking USBDC_UpPortState[] with USBDC_ROOTHUB_SUSPEND_MASK 
+   and USBDC_ROOTHUB_RESUME_MASK.
+15.Added the warning buzzer if the number of device is larger than KVM supported.
+16.Fix the TASK_USBHC_Resume_Command() by checking the interface number bit error.
+
+Version 0.3.2 (2014-12-02)
+1. Correction of plug-in jump one time.
+2. Correct MSC device index does not set used and clear completely.
+3. Fix the function, USBHC_MSC_Umount_Report(), to maintain the MSC bulk out transfer
+   without extender remote port.
+4. Fix the Extender-R to retrieve SET_PROTOCOL packet that does not re-configure 
+   the boot protocol value for sending to mouse devices.
+
+Version 0.3.1 (2014-11-28)
+1. Fixed the issue while Receicer lost the RESTART command from Transmitter, it does not
+   mount devices to Transmitter and Transmitter does not re-send the RESTART command again.
+2. Modify the transmitter host LED will be on/off by the transmitter DC port connection.
+3. Modify the receiver host LED will be on/off by the transmitter DC port connection.
+4. Support download firmware by a hotkey.
+5. In RS485 initiation, enable the RTS bit.
+6. Change the UART2 mode to RS485 with 6Mbps.
+7. Fix the MSC burst out with a flow control flag, EXTENDER_MSC_BurstWait.
+8. Disable the power saving mode for transmitter and receiver.
+9. Extend the burst in/out buffer to 384bytes.
+
+Version 0.3.0 (2014-11-18)
+1. Remove T2IF of SFR definition.
+2. Remove MD0_, MD1_, MD2_ of the CKCON.
+3. Add a definition HUART_BAUD to indicate UART baudrate of RS232 or RS485.
+4. Support the MSC device transfer by the burst mode with 256bytes bulk data.
+5. Remodify the Trainsmit_FIFO[].Control and Extender_Transmit_Complete_Handle() to
+   handle the HC & DC buffer relased.
+6. Configure the UART to RS232 mode with 921Kbps.
+  
+Version 0.2.3 (2014-11-12)
+1. Added function to support Interrupt OUT transferring from DC to HC directly in both
+   Transmitter and Receiver firmware.
+2. Fixed the issue that Transmitter HC does not support AUDIO device but it could be
+   enumerated successfully and reported to remote PC.
+3. Fixed the issue when total device count connected with both Transmitter/Receiver
+   HC ports is more than maximum device (6), all devices could not work normally.
+4. Transmitter/Receiver alert user when total devices connected with both
+   Transmitter/Receiver HC ports is more than maximum device (6).
+5. Transmitter/Receiver alert user when total HUB devices connected with both 
+   Transmitter/Receiver HC ports is more than maximum device (4).
+6. Added function in Receiver to support re-mount a device to Transmitter again 
+   automatically when total device count is more than 6 and Receiver detected
+   one mounted device had been unplugged.
+7. Fixed a software issue while RS485 data lose and firmware got a wrong total data length.
+8. Fixed the DC isr handle to process INTR transfer in the transmitter
+   when plugged with a mouse device.
+9. In receiver side, fixed the jump by power of DC port 0 that is
+   updated by RS485 connection status.
+
+//======================================================================
+Version 0.2.2 (2014-10-28)
+1. Solved the issue that the key "My Favorite" of PS/2 keyboard does not work.
+2. Solved the issue that ACER T231H touch pad does not work.
+3. Solved the issue that the enumeration will fail when plugged the devices at same time that
+   interlaced the passthru and the basic enumeration of get descriptors.
+4. Solved the issue that the MSC device will fail in 407 endurance test after MSC port switch using
+   the hotkey.
+5. Enhanced the hotkey core to check if the range of input value is valid and allowed
+   the numeric char to be included.
+6. Solved the issue that failed to support PS3 via rs232 at 115200 bps.
+7. Changed the default baud rate of rs232 to 115200 bps.
+8. Solved the issue that PS3 does not work after unplugged/plugged.
+9. Solved the issue that the led of PS3 does not work well.
+10. Enhanced the polling interval that is adaptive and depends on the endpoint size of device
+    when the rs232 mode at 115200 bps is selected.
+11. Modified code to support four downstream ports in Transmitter board.
+    (only support both keyboard & mouse)
+12. Added function to support Interrupt OUT endpoint in both RS485 extender and
+    Transmitter/Receiver downstream passthrough paths.
+13. Solved the issue that enumeration will fail over 8 devices for HUB.
+14. Enhanced the HC polling interval to 1ms for Interrupt OUT.
+
+//======================================================================
+Version 0.2.1 (2014-10-09)
+1. Rewrite some function to reduce firmware code size.
+2. Support RS-232 mode for 115200bps with defined "EXTENDER_RS232_MODE".
+3. Remove the unused element "Task_Wait" of the type definition "TASK_ActiveTable_TypeDef".
+4. Fix the passthrough state initial by checking the host port is 0.
+5. Fix the MSC unmount report by checking hub port number with USBDC_VHUB_PORT_NUM.
+6. Remove some debug message.
+
+//======================================================================
+Version 0.2.0 (2014-09-26)
+1. KVM RS-485 Extender Initial Release.

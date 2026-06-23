@@ -1,0 +1,1326 @@
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KM_API
+OBJECT MODULE PLACED IN .\km_api.obj
+COMPILER INVOKED BY: C:\Users\Administrator\AppData\Local\Keil_v5\C51\BIN\C51.EXE ..\Src\kvm_control\km_api\km_api.c LAR
+                    -GE OMF2 ROM(D16M) OPTIMIZE(9,SIZE) BROWSE NOAREGS INCDIR(..\src\main\;..\src\cpu\;..\src\flash\;..\src\uart\;..\src\swdm
+                    -a\;..\src\mstimer\;..\src\i2c\;..\src\spi\;..\src\task_man\;..\src\project\;..\Src\ps2_host;..\Src\console_edid;..\Src\s
+                    -torage;..\Src\data_stream;..\Src\kvm_control\kvm_hotkey;..\Src\kvm_control\kvm_console;..\Src\kvm_control\kvm_button;..\
+                    -Src\kvm_control\kvm_edid;..\Src\kvm_control\kvm_buzzer;..\src\gpio\;..\Src\hardware_ps2;..\Src\usbdc;..\Src\usbdc\usbdc_
+                    -virtual;..\Src\usb_std;..\Src\usbhc;..\Src\kvm_control\power_saving;..\Src\usbhc\MSC;..\Src\usbhc\AUDIO;..\Src\usbhc\HUB
+                    -;..\Src\usbhc\HID;..\Src\usbhc\HID_PARSER;..\Src\usbhc\ROOT_HUB;..\Src\usbdc\usbdc_hub;..\Src\usbdc\usbdc_hid;..\Src\kvm
+                    -_control\kvm_storage\spi_flash;..\Src\usbdc\usbdc_msc\usb_scsi;..\Src\usbdc\usbdc_msc;..\Src\handler\logitech;..\Src\han
+                    -dler\A4_Tech;..\Src\usbdc\usbdc_vendor;..\Src\hsur;..\Src\extender\core;..\Src\extender\receiver;..\Src\uart_console;..\
+                    -Src\kvm_control\km_sync;..\Src\hsur;..\Src\kvm_control\km_log;..\Src\kvm_control\km_api;..\Src\kvm_control\kvm_ir;..\Src
+                    -\kvm_control\kvm_rtc;..\Src\i2c;..\Src\kvm_control\kvm_multiview) STRING(FAR) DEFINE(RuntimeCodeAt0KH,MCU_TYPE_AX68004,K
+                    -VM,HC_TIMEOUT=10000,VHID,HID_PARSER_CORE_KB,HID_PARSER_CORE_MS,API,NO_AUDIO,NO_MSC,NO_EDID,HUART_BAUD=HUART_115K,SYNC,CR
+                    -OSS_JUMP_MAP0,VPID_CHANGER,SYNC_KB_HOTKEY,SYNC_MS_HOTKEY,REPEAT_MODE=1,HSUART,MULTIVIEW) VARBANKING DEBUG PRINT(.\km_api
+                    -.lst) TABS(2) OBJECT(.\km_api.obj)
+
+line level    source
+
+   1          /*
+   2           ******************************************************************************
+   3           *     Copyright (c) 2014 ASIX Electronic Corporation      All rights reserved.
+   4           *
+   5           *     This is an proprietary source code of ASIX Electronic Corporation
+   6           *
+   7           *     The copyright notice above does not evidence any actual or intended
+   8           *     publication of such source code.
+   9           ******************************************************************************
+  10           */
+  11           /*============================================================================
+  12           * Module Name: km_sync.c
+  13           * Purpose:
+  14           * Author:
+  15           * Date:
+  16           *=============================================================================
+  17           */
+  18          /* 
+  19          */
+  20          
+  21          /* INCLUDE FILE SECTION */
+  22          #include <stdio.h>
+  23          #include <string.h>
+  24          #include "project_include.h"
+  25          
+  26          #ifdef API
+  27          /* NAMING CONSTANT DECLARATIONS       */
+  28          /* GLOBAL VARIABLES DECLARATIONS      */
+  29          U8_T  API_User_Call_Back_Control = 0;
+  30          U8_T  Last_Absolute_Coordinate[6];
+  31          U8_T  Last_Relative_Coordinate[4];
+  32          U8_T  Last_Keyboard_Data[4];
+  33          U8_T  API_Current_Main_SCREEN;
+  34          float API_One_3_Xf[2];
+  35          U16_T API_One_3_X[2];
+  36          
+  37          float API_One_3_Yf[2];
+  38          U16_T API_One_3_Y[2];
+  39          
+  40          void  API_Roaming_1_3_Call(void);
+  41          void  API_Roaming_1_2_Call(void);
+  42          
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 2   
+
+  43          
+  44          
+  45          API_Roaming_Mapping_Def API_Roaming_One_2[4] = 
+  46          {
+  47              //Item 0: Main Port 0 不使用，占位置 
+  48                  0,        
+  49              
+  50                0,  0,  0,    
+  51            
+  52              0,1, //Port 0 Left  
+  53              0,1, //Port 0 Right
+  54              0,1, //Port 0 Up  
+  55              0,1, //Port 0 Down    
+  56              API_Roaming_1_2_Call, //call back function
+  57              //============================= 
+  58              3,1, //Port 1 Left  
+  59              1,1, //Port 1 Right     
+  60              2,1, //Port 1 Up  
+  61              1,1, //Port 1 Down    
+  62              API_Roaming_1_2_Call, //call back function
+  63              //=============================   
+  64              3,1, //Port 2 Left  
+  65              2,1, //Port 2 Right     
+  66              2,1, //Port 2 Up  
+  67              1,1, //Port 2 Down
+  68              API_Roaming_1_2_Call, //call back function
+  69              //=============================         
+  70              3,1, //Port 3 Left  
+  71              2,1, //Port 3 Right
+  72              3,1, //Port 3 Up  
+  73              3,1, //Port 3 Down
+  74              API_Roaming_1_2_Call, //call back function    
+  75            
+  76            
+  77            //--------------------------------
+  78            //Item 0: Main Port 1
+  79            //--------------------------------   
+  80            //Left_up,Left_Down,Right_Up,Right_Down   
+  81                3,        
+  82              
+  83                2,  1,  0,    
+  84            
+  85              0,1, //Port 0 Left  
+  86              0,1, //Port 0 Right
+  87              0,1, //Port 0 Up  
+  88              0,1, //Port 0 Down    
+  89              API_Roaming_1_2_Call, //call back function
+  90              //============================= 
+  91              3,1, //Port 1 Left  
+  92              1,1, //Port 1 Right     
+  93              2,1, //Port 1 Up  
+  94              1,1, //Port 1 Down    
+  95              API_Roaming_1_2_Call, //call back function
+  96              //=============================   
+  97              3,1, //Port 2 Left  
+  98              2,1, //Port 2 Right     
+  99              2,1, //Port 2 Up  
+ 100              1,1, //Port 2 Down
+ 101              API_Roaming_1_2_Call, //call back function
+ 102              //=============================         
+ 103              3,1, //Port 3 Left  
+ 104              2,1, //Port 3 Right
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 3   
+
+ 105              3,1, //Port 3 Up  
+ 106              3,1, //Port 3 Down
+ 107              API_Roaming_1_2_Call, //call back function    
+ 108            //--------------------------------
+ 109            //Item 1: Main Port 2
+ 110            //--------------------------------   
+ 111            //Left_up,Left_Down,Right_Up,Right_Down   
+ 112                2,        
+ 113              1,  3,  0,    
+ 114            
+ 115              0,1, //Port 0 Left  
+ 116              0,1, //Port 0 Right
+ 117              0,1, //Port 0 Up  
+ 118              0,1, //Port 0 Down    
+ 119              API_Roaming_1_2_Call, //call back function
+ 120              //============================= 
+ 121              2,1, //Port 1 Left  
+ 122              1,1, //Port 1 Right     
+ 123              1,1, //Port 1 Up  
+ 124              3,1, //Port 1 Down    
+ 125              API_Roaming_1_2_Call, //call back function
+ 126              //=============================   
+ 127              2,1, //Port 2 Left  
+ 128              1,1, //Port 2 Right     
+ 129              2,1, //Port 2 Up  
+ 130              2,1, //Port 2 Down
+ 131              API_Roaming_1_2_Call, //call back function
+ 132              //=============================         
+ 133              2,1, //Port 3 Left  
+ 134              3,1, //Port 3 Right
+ 135              1,1, //Port 3 Up  
+ 136              3,1, //Port 3 Down
+ 137              API_Roaming_1_2_Call, //call back function    
+ 138            //--------------------------------
+ 139            //Item 2: Main Port 3
+ 140            //--------------------------------   
+ 141            //Left_up,Left_Down,Right_Up,Right_Down   
+ 142                   1,        
+ 143              3,       2,         0,    
+ 144            
+ 145              0,1, //Port 0 Left  
+ 146              0,1, //Port 0 Right
+ 147              0,1, //Port 0 Up  
+ 148              0,1, //Port 0 Down    
+ 149              API_Roaming_1_2_Call, //call back function
+ 150              //============================= 
+ 151              1,1, //Port 1 Left  
+ 152              3,1, //Port 1 Right     
+ 153              1,1, //Port 1 Up  
+ 154              1,1, //Port 1 Down    
+ 155              API_Roaming_1_2_Call, //call back function
+ 156              //=============================   
+ 157              1,1, //Port 2 Left  
+ 158              2,1, //Port 2 Right     
+ 159              3,1, //Port 2 Up  
+ 160              2,1, //Port 2 Down
+ 161              API_Roaming_1_2_Call, //call back function
+ 162              //=============================         
+ 163              1,1, //Port 3 Left  
+ 164              3,1, //Port 3 Right
+ 165              3,1, //Port 3 Up  
+ 166              2,1, //Port 3 Down
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 4   
+
+ 167              API_Roaming_1_2_Call, //call back function    
+ 168          };
+ 169          
+ 170          
+ 171          
+ 172          
+ 173          API_Roaming_Mapping_Def API_Roaming_One_3[4] = //include 3 screen mode
+ 174          {
+ 175            //--------------------------------
+ 176            //Item 0: Main Port 0
+ 177            //--------------------------------   
+ 178            //Left_up,Left_Down,Right_Up,Right_Down   
+ 179                3,        
+ 180              2,  1,  0,    
+ 181            
+ 182              3,1, //Port 0 Left  
+ 183              0,1, //Port 0 Right
+ 184              1,1, //Port 0 Up  
+ 185              0,1, //Port 0 Down    
+ 186              API_Roaming_1_3_Call, //call back function
+ 187              //============================= 
+ 188              3,1, //Port 1 Left  
+ 189              1,1, //Port 1 Right     
+ 190              2,1, //Port 1 Up  
+ 191              0,1, //Port 1 Down    
+ 192              API_Roaming_1_3_Call, //call back function
+ 193              //=============================   
+ 194              3,1, //Port 2 Left  
+ 195              2,1, //Port 2 Right     
+ 196              2,1, //Port 2 Up  
+ 197              1,1, //Port 2 Down
+ 198              API_Roaming_1_3_Call, //call back function
+ 199              //=============================         
+ 200              3,1, //Port 3 Left  
+ 201              2,1, //Port 3 Right
+ 202              3,1, //Port 3 Up  
+ 203              3,1, //Port 3 Down
+ 204              API_Roaming_1_3_Call, //call back function    
+ 205            //--------------------------------
+ 206            //Item 1: Main Port 1
+ 207            //--------------------------------   
+ 208            //Left_up,Left_Down,Right_Up,Right_Down   
+ 209                2,        
+ 210              1,  0,  3,    
+ 211            
+ 212              2,1, //Port 0 Left  
+ 213              0,1, //Port 0 Right
+ 214              1,1, //Port 0 Up  
+ 215              3,1, //Port 0 Down    
+ 216              API_Roaming_1_3_Call, //call back function
+ 217              //============================= 
+ 218              2,1, //Port 1 Left  
+ 219              1,1, //Port 1 Right     
+ 220              1,1, //Port 1 Up  
+ 221              0,1, //Port 1 Down    
+ 222              API_Roaming_1_3_Call, //call back function
+ 223              //=============================   
+ 224              2,1, //Port 2 Left  
+ 225              1,1, //Port 2 Right     
+ 226              2,1, //Port 2 Up  
+ 227              2,1, //Port 2 Down
+ 228              API_Roaming_1_3_Call, //call back function
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 5   
+
+ 229              //=============================         
+ 230              2,1, //Port 3 Left  
+ 231              3,1, //Port 3 Right
+ 232              0,1, //Port 3 Up  
+ 233              3,1, //Port 3 Down
+ 234              API_Roaming_1_3_Call, //call back function    
+ 235            //--------------------------------
+ 236            //Item 2: Main Port 2
+ 237            //--------------------------------   
+ 238            //Left_up,Left_Down,Right_Up,Right_Down   
+ 239                   1,        
+ 240              0,       3,         2,    
+ 241            
+ 242              1,1, //Port 0 Left  
+ 243              0,1, //Port 0 Right
+ 244              0,1, //Port 0 Up  
+ 245              3,1, //Port 0 Down    
+ 246              API_Roaming_1_3_Call, //call back function
+ 247              //============================= 
+ 248              1,1, //Port 1 Left  
+ 249              0,1, //Port 1 Right     
+ 250              1,1, //Port 1 Up  
+ 251              1,1, //Port 1 Down    
+ 252              API_Roaming_1_3_Call, //call back function
+ 253              //=============================   
+ 254              1,1, //Port 2 Left  
+ 255              2,1, //Port 2 Right     
+ 256              3,1, //Port 2 Up  
+ 257              2,1, //Port 2 Down
+ 258              API_Roaming_1_3_Call, //call back function
+ 259              //=============================         
+ 260              1,1, //Port 3 Left  
+ 261              3,1, //Port 3 Right
+ 262              0,1, //Port 3 Up  
+ 263              2,1, //Port 3 Down
+ 264              API_Roaming_1_3_Call, //call back function    
+ 265              
+ 266            //--------------------------------
+ 267            //Item 3: Main Port 3
+ 268            //--------------------------------   
+ 269            //Left_up,Left_Down,Right_Up,Right_Down   
+ 270                0,        
+ 271              3,  2,  1,    
+ 272            
+ 273              0,1, //Port 0 Left  
+ 274              3,1, //Port 0 Right
+ 275              0,1, //Port 0 Up  
+ 276              0,1, //Port 0 Down    
+ 277              API_Roaming_1_3_Call, //call back function
+ 278              //============================= 
+ 279              0,1, //Port 1 Left  
+ 280              1,1, //Port 1 Right     
+ 281              2,1, //Port 1 Up  
+ 282              1,1, //Port 1 Down    
+ 283              API_Roaming_1_3_Call, //call back function
+ 284              //=============================   
+ 285              0,1, //Port 2 Left  
+ 286              2,1, //Port 2 Right     
+ 287              3,1, //Port 2 Up  
+ 288              1,1, //Port 2 Down
+ 289              API_Roaming_1_3_Call, //call back function
+ 290              //=============================         
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 6   
+
+ 291              0,1, //Port 3 Left  
+ 292              3,1, //Port 3 Right
+ 293              3,1, //Port 3 Up  
+ 294              2,1, //Port 3 Down
+ 295              API_Roaming_1_3_Call, //call back function      
+ 296          };
+ 297          //-----------------------------------------------
+ 298          // Single screen
+ 299          //  0 <-> 1 <-> 2 <-> 3 
+ 300          //-----------------------------------------------
+ 301          void  API_Roaming_Single_Call(void);
+ 302          //-----------------------------------------------
+ 303          // Four screen
+ 304          //  0 <-> 2 
+ 305          //  |  X  | 
+ 306          //  1 <-> 3 
+ 307          //-----------------------------------------------
+ 308          void  API_Roaming_Quad_Call(void);
+ 309          #ifdef SYNC
+ 310          API_Roaming_Mapping_Def API_Roaming[5] = //include 3 screen mode  //daniel
+ 311          { 
+ 312          #ifdef TOP_BOTTOM
+                //Left_up,Left_Down,Right_Up,Right_Down   
+                    0,
+                    1,
+                    2,
+                    3,
+                //--------------------------------
+                //Item 0:Single Screen
+                //--------------------------------       
+                0,1, //Port 0 Left  
+                0,1, //Port 0 Right     
+                3,1, //Port 0 Up  
+                1,1, //Port 0 Down  
+                API_Roaming_Single_Call, //call back function
+                //=============================
+                1,1, //Port 1 Left  
+                1,1, //Port 1 Right     
+                0,1, //Port 1 Up  
+                2,1, //Port 1 Down  
+              
+                API_Roaming_Single_Call, //call back function
+                //=============================
+                2,1, //Port 2 Left  
+                2,1, //Port 2 Right     
+                2,1, //Port 2 Up  
+                3,1, //Port 2 Down    
+                API_Roaming_Single_Call, //call back function
+                //=============================   
+                3,1, //Port 3 Left  
+                3,1, //Port 3 Right     
+                2,1, //Port 3 Up  
+                0,1, //Port 3 Down      
+                API_Roaming_Single_Call, //call back function     
+              #else
+ 346            //Left_up,Left_Down,Right_Up,Right_Down   
+ 347                0,        1,       2,         3,
+ 348            //--------------------------------
+ 349            //Item 0:Single Screen
+ 350            //--------------------------------       
+ 351            3,1, //Port 0 Left  
+ 352            1,1, //Port 0 Right     
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 7   
+
+ 353            0,1, //Port 0 Up  
+ 354            0,1, //Port 0 Down  
+ 355            API_Roaming_Single_Call, //call back function
+ 356            //=============================
+ 357            0,1, //Port 1 Left  
+ 358            2,1, //Port 1 Right     
+ 359            1,1, //Port 1 Up  
+ 360            1,1, //Port 1 Down  
+ 361          
+ 362            API_Roaming_Single_Call, //call back function
+ 363            //=============================
+ 364            1,1, //Port 2 Left  
+ 365            3,1, //Port 2 Right     
+ 366            2,1, //Port 2 Up  
+ 367            2,1, //Port 2 Down    
+ 368            API_Roaming_Single_Call, //call back function
+ 369            //=============================   
+ 370            2,1, //Port 3 Left  
+ 371            0,1, //Port 3 Right     
+ 372            3,1, //Port 3 Up  
+ 373            3,1, //Port 3 Down      
+ 374            API_Roaming_Single_Call, //call back function     
+ 375          #endif /* #ifdef TOP_BOTTOM */
+ 376            //--------------------------------
+ 377            //Item 1:Four Equal Screen
+ 378            //--------------------------------  
+ 379          #ifdef CROSS_JUMP_MAP0  
+ 380            //Left_up,Left_Down,Right_Up,Right_Down   
+ 381                3,        1,       2,         0,
+ 382            //  3 <-> 2 
+ 383            //  |  X  | 
+ 384            //  1 <-> 0 
+ 385          
+ 386              
+ 387                  // Port 0
+ 388              1,1,   // Left -> 1
+ 389              0,1,   // Right -> 0
+ 390              2,1,   // Up -> 2
+ 391              0,1,   // Down -> 0
+ 392              API_Roaming_Quad_Call,
+ 393          
+ 394              // Port 1
+ 395              1,1,
+ 396              0,1,
+ 397              3,1,
+ 398              1,1,
+ 399              API_Roaming_Quad_Call,
+ 400          
+ 401              // Port 2
+ 402              3,1,
+ 403              2,1,
+ 404              2,1,
+ 405              0,1,
+ 406              API_Roaming_Quad_Call,
+ 407          
+ 408              // Port 3
+ 409              3,1,
+ 410              2,1,
+ 411              3,1,
+ 412              1,1,
+ 413              API_Roaming_Quad_Call,
+ 414                
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 8   
+
+ 415          #endif /* #ifdef CROSS_JUMP_MAP0 */ 
+ 416          
+ 417          #ifdef CROSS_JUMP_MAP1  
+                //Left_up,Left_Down,Right_Up,Right_Down   
+                    0,        2,       1,         3,
+                //  0 <-> 1 
+                //  |  X  | 
+                //  2 <-> 3 
+              
+                  1,1, //Port 0 Left  
+                  1,1, //Port 0 Right
+                  2,1, //Port 0 Up  
+                  2,1, //Port 0 Down    
+                  API_Roaming_Quad_Call, //call back function
+                  //============================= 
+                  0,1, //Port 1 Left  
+                  0,1, //Port 1 Right     
+                  3,1, //Port 1 Up  
+                  3,1, //Port 1 Down    
+                  API_Roaming_Quad_Call, //call back function
+                  //=============================   
+                  3,1, //Port 2 Left  
+                  3,1, //Port 2 Right     
+                  0,1, //Port 2 Up  
+                  0,1, //Port 2 Down
+                  API_Roaming_Quad_Call, //call back function
+                  //=============================         
+                  2,1, //Port 3 Left  
+                  2,1, //Port 3 Right
+                  1,1, //Port 3 Up  
+                  1,1, //Port 3 Down
+                  API_Roaming_Quad_Call, //call back function     
+              #endif    
+ 448              //双屏鼠标滑动设置
+ 449              //Left_up,Left_Down,Right_Up,Right_Down   
+ 450                3,        1,       2,         0,
+ 451            //  3 <-> 2 
+ 452            //  |  X  | 
+ 453            //  1 <-> 0 
+ 454          
+ 455                  // Port 0
+ 456              1,1,   // Left -> 1
+ 457              0,1,   // Right -> 0
+ 458              0,1,   // Up -> 2
+ 459              0,1,   // Down -> 0
+ 460              API_Roaming_Quad_Call,
+ 461          
+ 462              // Port 1
+ 463              1,1,
+ 464              0,1,
+ 465              1,1,
+ 466              1,1,
+ 467              API_Roaming_Quad_Call,
+ 468          
+ 469              // Port 2
+ 470              3,1,
+ 471              2,1,
+ 472              2,1,
+ 473              2,1,
+ 474              API_Roaming_Quad_Call,
+ 475          
+ 476              // Port 3
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 9   
+
+ 477              3,1,
+ 478              2,1,
+ 479              3,1,
+ 480              3,1,
+ 481              API_Roaming_Quad_Call,
+ 482          
+ 483          #if 0
+                //--------------------------------
+                //Item 2:1 big , 3 small
+                //--------------------------------   
+                //Left_up,Left_Down,Right_Up,Right_Down   
+                       0,        
+                  1,       2,         3,    
+                //      0 
+                //  |  X  |  X  |
+                //  1 <-> 2 <-> 3  
+              
+                  0,1, //Port 0 Left  
+                  0,1, //Port 0 Right
+                  1,1, //Port 0 Up  
+                  1,1, //Port 0 Down    
+                  API_Roaming_Quad_Call, //call back function
+                  //============================= 
+                  3,1, //Port 1 Left  
+                  2,1, //Port 1 Right     
+                  0,1, //Port 1 Up  
+                  0,1, //Port 1 Down    
+                  API_Roaming_Quad_Call, //call back function
+                  //=============================   
+                  1,1, //Port 2 Left  
+                  3,1, //Port 2 Right     
+                  0,1, //Port 2 Up  
+                  0,1, //Port 2 Down
+                  API_Roaming_Quad_Call, //call back function
+                  //=============================         
+                  2,1, //Port 3 Left  
+                  1,1, //Port 3 Right
+                  0,1, //Port 3 Up  
+                  0,1, //Port 3 Down
+                  API_Roaming_Quad_Call, //call back function    
+              #endif
+ 518          };
+ 519          #endif /* #ifdef SYNC */
+ 520          //#endif
+ 521          /* LOCAL VARIABLES DECLARATIONS       */
+ 522          /* LOCAL SUBPROGRAM DECLARATIONS      */
+ 523          static void API_Debug_Print_Roaming_Map(U8_T main_port, API_Roaming_Mapping_Def *map);
+ 524          /* EXTERNAL GLOBAL VARIABLES DECLARATIONS   */
+ 525          /* EXTERNAL SUBPROGRAM DECLARATIONS     */
+ 526          void API_Set_Mouse_Mode(U8_T Mode);
+ 527          void API_Set_Roaming_Mode(U8_T Mode);
+ 528          void API_Set_Sync_Mode(U8_T Mode);
+ 529          #ifdef SYNC
+ 530          void API_Set_Roaming_Mapping(U8_T Mapid,API_Roaming_Mapping_Def *Romaing_map);
+ 531          #endif /* #ifdef SYNC */
+ 532          void API_Get_Relative_Mouse_Data(U8_T *Msbuf,U8_T *Msbuf_len);
+ 533          void API_Get_Absolute_Mouse_Data(U8_T *Msbuf,U8_T *Msbuf_len);
+ 534          void API_Get_Keyboard_Data(U8_T *Kbbuf,U8_T *Kbbuf_len);
+ 535          void API_Set_Relative_Mouse_Data(U8_T *Msbuf,U8_T Msbuf_len);
+ 536          void API_Set_Absolute_Mouse_Data(U8_T *Msbuf,U8_T Msbuf_len);
+ 537          void API_Set_Keyboard_Data(U8_T *Kbbuf,U8_T Kbbuf_len);
+ 538          void API_Port_Connect(U8_T Portmask,U8_T Connectmask);
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 10  
+
+ 539          void API_Port_Jump(U8_T Targetport);
+ 540          void API_Call_Back_Control(U8_T Mask,U8_T Mode);
+ 541          void API_Keyboard_Data_Call_Back(U8_T *Kbbuf,U8_T Kbbuf_len); 
+ 542          void API_Relative_Mouse_Data_Call_Back(U8_T *Msbuf,U8_T Msbuf_len); 
+ 543          void API_Absolute_Mouse_Data_Call_Back(U8_T *Msbuf,U8_T Msbuf_len); 
+ 544          
+ 545          /** ----------------------------------------------------------------------------
+ 546           * Function Name: API_Init(void)
+ 547           * Purpose:
+ 548           * Params:
+ 549           * Returns:
+ 550           * Note:
+ 551           * ----------------------------------------------------------------------------*/
+ 552          void API_Init(void)
+ 553          { 
+ 554   1        //Init call back funciton pointer
+ 555   1        API_One_3_Yf[0] = VHID_Y_MAX/3;
+ 556   1        API_One_3_Yf[1] = (VHID_Y_MAX / 3) * 2;
+ 557   1        
+ 558   1        API_One_3_Y[0] = (U16_T)API_One_3_Yf[0]; 
+ 559   1        API_One_3_Y[1] = (U16_T)API_One_3_Yf[1]; 
+ 560   1        
+ 561   1        //1.Assing SINGLE_SCREEN_MODE roaming control table
+ 562   1      #ifdef SYNC
+ 563   1        API_Set_Roaming_Mapping(SINGLE_SCREEN_MODE,&API_Roaming[0]);
+ 564   1        
+ 565   1        //2.Assing QUAD_SCREEN_MODE roaming control table
+ 566   1        API_Set_Roaming_Mapping(QUAD_SCREEN_MODE  ,&API_Roaming[1]);
+ 567   1        
+ 568   1        //3.Assing ONE_3_SCREEN_MODE roaming control table
+ 569   1        API_Set_Roaming_Mapping(ONE_3_SCREEN_MODE  ,&API_Roaming[3]); //zbb
+ 570   1        API_Set_Roaming_Mapping(TWO_SCREEN_MODE  ,&API_Roaming[2]); //daniel
+ 571   1      
+ 572   1        API_Set_Roaming_Mapping(ONE_2_SCREEN_MODE  ,&API_Roaming[4]);
+ 573   1        
+ 574   1        //3.Default active Quad screen mode 
+ 575   1        API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
+ 576   1        
+ 577   1      #endif /* #ifdef SYNC */
+ 578   1        //4.Set call back function disable
+ 579   1        //API_Call_Back_Control(CALL_BACK_RELATIVE_MOUSE_MASK|CALL_BACK_ABSOLUTE_MOUSE_MASK|CALL_BACK_KEYBOARD_MA
+             -SK,CALL_BACK_DISABLE);
+ 580   1        //Enbable keyboard, mouse relative data report to UART1
+ 581   1        API_Call_Back_Control(CALL_BACK_RELATIVE_MOUSE_MASK|CALL_BACK_KEYBOARD_MASK,CALL_BACK_DISABLE);
+ 582   1        
+ 583   1      #ifdef SYNC
+ 584   1        //5.Set mouse absolute coordinate mode
+ 585   1        API_Set_Mouse_Mode(API_ABSOLUTE_MODE);
+ 586   1        
+ 587   1        //6.Set mouse roaming mode
+ 588   1        API_Set_Roaming_Mode(API_ROAMING_ENABLE);
+ 589   1        
+ 590   1        //7.Set mouse sync mode
+ 591   1        API_Set_Sync_Mode(API_SYNC_ENABLE);
+ 592   1      #else
+                //5.Set mouse absolute coordinate mode
+                API_Set_Mouse_Mode(API_RELATIVE_MODE);
+                
+                //6.Set mouse roaming mode
+                API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+                
+                //7.Set mouse sync mode
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 11  
+
+                API_Set_Sync_Mode(API_SYNC_DISABLE);
+              #endif /* #ifdef SYNC */
+ 602   1      }
+ 603          
+ 604          static void API_Debug_Print_Roaming_Map(U8_T main_port, API_Roaming_Mapping_Def *map)
+ 605          {
+ 606   1        U8_T i;
+ 607   1        
+ 608   1        printf("CG:API_Roaming[%bu]\n\r", main_port);
+ 609   1        printf("CG:Sequence=%bu,%bu,%bu,%bu\n\r",
+ 610   1               map->Sequence[0],
+ 611   1               map->Sequence[1],
+ 612   1               map->Sequence[2],
+ 613   1               map->Sequence[3]);
+ 614   1        
+ 615   1        for (i = 0; i < KVM_MAX_PORT; i++)
+ 616   1        {
+ 617   2          printf("CG:Port%bu L=%bu/%bu R=%bu/%bu U=%bu/%bu D=%bu/%bu\n\r",
+ 618   2                 i,
+ 619   2                 map->Edge.Item[i].Left.Portid,
+ 620   2                 map->Edge.Item[i].Left.Latency,
+ 621   2                 map->Edge.Item[i].Right.Portid,
+ 622   2                 map->Edge.Item[i].Right.Latency,
+ 623   2                 map->Edge.Item[i].Up.Portid,
+ 624   2                 map->Edge.Item[i].Up.Latency,
+ 625   2                 map->Edge.Item[i].Down.Portid,
+ 626   2                 map->Edge.Item[i].Down.Latency);
+ 627   2        }
+ 628   1      }
+ 629          
+ 630          /** ----------------------------------------------------------------------------
+ 631           * Function Name:API_Call_Back_Control(U8_T Mask,U8_T Mode)
+ 632           * Purpose:
+ 633           * Params:
+ 634           *  Mask : CALL_BACK_RELATIVE_MOUSE_MASK,CALL_BACK_ABSOLUTE_MOUSE_MASK,CALL_BACK_KEYBOARD_MASK
+ 635           *  Mode : CALL_BACK_ENABLE,CALL_BACK_DISABLE
+ 636           * Returns:
+ 637           * Note:
+ 638           * ----------------------------------------------------------------------------*/
+ 639          void API_Call_Back_Control(U8_T Mask,U8_T Mode)
+ 640          {
+ 641   1        if (Mode == CALL_BACK_ENABLE)
+ 642   1          API_User_Call_Back_Control |= Mask;
+ 643   1        else
+ 644   1          API_User_Call_Back_Control &= ~Mask;  
+ 645   1      }
+ 646          
+ 647          /** ----------------------------------------------------------------------------
+ 648           * Function Name: API_Set_Mouse_Mode(U8_T Mode)
+ 649           * Purpose:
+ 650           * Params:
+ 651           *  Mode : API_ABSOLUTE_MODE,API_RELATIVE_MODE
+ 652           * Returns:
+ 653           * Note:
+ 654           * ----------------------------------------------------------------------------*/
+ 655          void API_Set_Mouse_Mode(U8_T Mode)
+ 656          {
+ 657   1        #ifdef SYNC
+ 658   1        if (Mode == API_ABSOLUTE_MODE)
+ 659   1        {
+ 660   2          KM_SYNC_Mouse_Absolute_Mode();
+ 661   2        }   
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 12  
+
+ 662   1        else
+ 663   1        {
+ 664   2          KM_SYNC_Mouse_Relative_Mode();
+ 665   2        }     
+ 666   1        #else
+                if (Mode == API_ABSOLUTE_MODE)
+                {
+                  KVM_Flash.cSystemFlag2 &= ~SYSTEM_MS_DN_MASK;
+                }   
+                else
+                {
+                  KVM_Flash.cSystemFlag2 |= SYSTEM_MS_DN_MASK;
+                }
+                #endif  
+ 676   1      } 
+ 677          
+ 678          /** ----------------------------------------------------------------------------
+ 679           * Function Name: API_Set_Roaming_Mode(U8_T Mode)
+ 680           * Purpose:
+ 681           * Params:
+ 682           *  Mode : API_ROAMING_ENABLE,API_ROAMING_DISALBE
+ 683           * Returns:
+ 684           * Note:
+ 685           * ----------------------------------------------------------------------------*/
+ 686          void API_Set_Roaming_Mode(U8_T Mode)
+ 687          { 
+ 688   1        #ifdef SYNC
+ 689   1          KM_SYNC_ModeAccross_Control(Mode);
+ 690   1        #else
+                  if (Mode == API_ROAMING_ENABLE)
+                    KVM_Flash.cSystemFlag3 |= (MPASS_ACROSS_MODE | SYSTEM_MOUSE_SW_MASK); 
+                  else
+                    KVM_Flash.cSystemFlag3 &= ~(MPASS_ACROSS_MODE | SYSTEM_MOUSE_SW_MASK);      
+                #endif
+ 696   1      } 
+ 697          
+ 698          #ifdef SYNC
+ 699          /** ----------------------------------------------------------------------------
+ 700           * Function Name: API_Set_Sync_Mode(U8_T Mode)
+ 701           * Purpose:
+ 702           * Params:
+ 703           *  Mode : API_SYNC_ENABLE,API_SYNC_DISALBE
+ 704           * Returns:
+ 705           * Note:
+ 706           * ----------------------------------------------------------------------------*/
+ 707          void API_Set_Sync_Mode(U8_T Mode)
+ 708          {
+ 709   1        KM_SYNC_ModeSync_Control(Mode);
+ 710   1      } 
+ 711          
+ 712          /** ------------------------------------------------------------------------------------------------------
+ 713           * Function Name: API_Set_Roaming_Mapping(U8_T Mapid,API_Roaming_Mapping_Def *Roaming)
+ 714           * Purpose:
+ 715           * Params:
+ 716           * Returns:
+ 717           * Note:
+ 718           * ------------------------------------------------------------------------------------------------------*
+             -/
+ 719          void API_Set_Roaming_Mapping(U8_T Mapid,API_Roaming_Mapping_Def *Roaming_Table)
+ 720          {
+ 721   1        if (Mapid < API_ROAMING_TABLE_MAX)
+ 722   1        { 
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 13  
+
+ 723   2          Roaming[Mapid]=Roaming_Table;
+ 724   2        } 
+ 725   1      } 
+ 726          
+ 727          /** ------------------------------------------------------------------------------------------------------
+ 728           * Function Name: API_Active_Roaming_Mapping(U8_T Mapid)
+ 729           * Purpose:
+ 730           * Params:
+ 731           * Returns:
+ 732           * Note:
+ 733           * ------------------------------------------------------------------------------------------------------*
+             -/
+ 734          void API_Active_Roaming_Mapping(U8_T Mapid)
+ 735          {
+ 736   1        if (Mapid < API_ROAMING_TABLE_MAX)
+ 737   1        { 
+ 738   2          if (Roaming[Mapid] != NULL)
+ 739   2          { 
+ 740   3            Current_Roaming_Table = Mapid;
+ 741   3          }
+ 742   2        } 
+ 743   1      }
+ 744          
+ 745          /**----------------------------------------------------------------------------
+ 746           * void API_Send_Mouse_Absolute(void)
+ 747           * Purpose : 
+ 748           * Params  : none
+ 749           * Returns : none
+ 750           * Note    : none
+ 751           * ----------------------------------------------------------------------------*/ 
+ 752          void API_Send_Mouse_Absolute(void)
+ 753          {
+ 754   1        Last_Absolute_Coordinate[0] = Mouse_Data.b.wBtn.bbw.lsb; //button
+ 755   1        Last_Absolute_Coordinate[1] = (MouseX & 0xff00) >> 8;   //X high byte
+ 756   1        Last_Absolute_Coordinate[2] = MouseX & 0x00ff;      //X-high byte
+ 757   1        Last_Absolute_Coordinate[3] = (MouseY & 0xff00) >> 8; //Y-high byte   
+ 758   1        Last_Absolute_Coordinate[4] = MouseY & 0x00ff;      //Y-low byte    
+ 759   1        Last_Absolute_Coordinate[5] = Mouse_Data.b.wZ.bbw.lsb;     //Z-low byte   
+ 760   1      
+ 761   1        if (API_User_Call_Back_Control & CALL_BACK_ABSOLUTE_MOUSE_MASK)
+ 762   1        {   
+ 763   2          API_Absolute_Mouse_Data_Call_Back(Last_Absolute_Coordinate,6);
+ 764   2        }   
+ 765   1        /*  
+ 766   1        Km_Data.bHeader   = KMLOG_HEADER0;
+ 767   1        Km_Data.bDataType   = KMLOG_TYPE_MS;    
+ 768   1        Km_Data.bPayload[0] = msdata[0];
+ 769   1        Km_Data.bPayload[1] = msdata[1];
+ 770   1        Km_Data.bPayload[2] = msdata[2];
+ 771   1        Km_Data.bPayload[3] = msdata[3];  
+ 772   1        Km_Data.bPayload[4] = 0x00;
+ 773   1        Km_Data.bPayload[5] = 0x00;
+ 774   1        REMOTE_PutStr((U8_T *)&Km_Data,sizeof(Kmlog_Data_Packet_Def));
+ 775   1        */
+ 776   1      }
+ 777          
+ 778          #endif /* #ifdef SYNC */
+ 779          /** ---------------------------------------------------------------------------- 
+ 780           * Function Name: API_Get_Relative_Mouse_Data(U8_T *Msbuf,U8_T *Msbuf_len)
+ 781           * Purpose:
+ 782           * Params:
+ 783           * Returns:
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 14  
+
+ 784           * Note:
+ 785           * ----------------------------------------------------------------------------*/
+ 786          void API_Get_Relative_Mouse_Data(U8_T *Msbuf,U8_T *Msbuf_len)
+ 787          {
+ 788   1        memcpy(Msbuf,Last_Relative_Coordinate,4);
+ 789   1        *Msbuf_len = 4;
+ 790   1      } 
+ 791          
+ 792          /** ---------------------------------------------------------------------------- 
+ 793           * Function Name: API_Get_Absolute_Mouse_Data(U8_T *Msbuf,U8_T *Msbuf_len)
+ 794           * Purpose:
+ 795           * Params:
+ 796           * Returns:
+ 797           * Note:
+ 798           * ----------------------------------------------------------------------------*/
+ 799          void API_Get_Absolute_Mouse_Data(U8_T *Msbuf,U8_T *Msbuf_len)
+ 800          {
+ 801   1        memcpy(Msbuf,Last_Absolute_Coordinate,6);
+ 802   1        *Msbuf_len = 6;
+ 803   1      }
+ 804          
+ 805          /** ---------------------------------------------------------------------------- 
+ 806           * Function Name: API_Get_Keyboard_Data(U8_T *Kbbuf,U8_T *Kbbuf_len)
+ 807           * Purpose:
+ 808           * Params:
+ 809           * Returns:
+ 810           * Note:
+ 811           * ----------------------------------------------------------------------------*/
+ 812          void API_Get_Keyboard_Data(U8_T *Kbbuf,U8_T *Kbbuf_len)
+ 813          {
+ 814   1        if (Last_Keyboard_Data[1] == 0x0c)
+ 815   1          *Kbbuf_len = 4;
+ 816   1        else
+ 817   1          *Kbbuf_len = 3;
+ 818   1        memcpy(Kbbuf,Last_Keyboard_Data,*Kbbuf_len);
+ 819   1        
+ 820   1      }
+ 821          
+ 822          /** ---------------------------------------------------------------------------- 
+ 823           * Function Name: API_Set_Relative_Mouse_Data(U8_T *Msbuf,U8_T Msbuf_len)
+ 824           * Purpose:
+ 825           * Params:
+ 826           * Returns:
+ 827           * Note:
+ 828           * ----------------------------------------------------------------------------*/
+ 829          void API_Set_Relative_Mouse_Data(U8_T *Msbuf,U8_T Msbuf_len)
+ 830          { 
+ 831   1        Msbuf_len = 4;
+ 832   1        DATAST_Generic_USB_MS_Report[0] = Msbuf[0]; //button
+ 833   1        DATAST_Generic_USB_MS_Report[1] = Msbuf[1]; //X
+ 834   1        DATAST_Generic_USB_MS_Report[2] = Msbuf[2]; //Y
+ 835   1        DATAST_Generic_USB_MS_Report[3] = Msbuf[3]; //Z 
+ 836   1        USBHC_InterruptTransfer_HID_Mouse(DATAST_Generic_USB_MS_Report,GENERIC_USAGE_07_MAKE);    
+ 837   1      }
+ 838          
+ 839          /** ---------------------------------------------------------------------------- 
+ 840           * Function Name: API_Set_Absolute_Mouse_Data(U8_T *Msbuf,U8_T Msbuf_len)
+ 841           * Purpose:
+ 842           * Params:
+ 843           * Returns:
+ 844           * Note:
+ 845           * ----------------------------------------------------------------------------*/
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 15  
+
+ 846          #ifdef SYNC
+ 847          void API_Set_Absolute_Mouse_Data(U8_T *Msbuf,U8_T Msbuf_len)
+ 848          {
+ 849   1        Msbuf_len = 6;
+ 850   1        MouseX = (Msbuf[1] << 8) + Msbuf[2];
+ 851   1        MouseY = (Msbuf[3] << 8) + Msbuf[4];  
+ 852   1        //MouseZ = Km_Data.bPayload[5]; 
+ 853   1          //Km_Data.bHeader   = KMLOG_HEADER0;
+ 854   1        //Km_Data.bDataType   = KMLOG_TYPE_MSA; 
+ 855   1        //DATAST_Generic_USB_MS_Report[0] = 0x04; //Absolute
+ 856   1        DATAST_Generic_USB_MS_Report[0] = Msbuf[0]; //button
+ 857   1        DATAST_Generic_USB_MS_Report[1] = Msbuf[5]; //Z
+ 858   1        DATAST_Generic_USB_MS_Report[2] = Msbuf[2]; //X low
+ 859   1        DATAST_Generic_USB_MS_Report[3] = Msbuf[1]; //X high
+ 860   1        DATAST_Generic_USB_MS_Report[4] = Msbuf[4]; //Y low
+ 861   1        DATAST_Generic_USB_MS_Report[5] = Msbuf[3]; //Y high  
+ 862   1        USBHC_InterruptTransfer_HID_Mouse(DATAST_Generic_USB_MS_Report,GENERIC_USAGE_ABS_MAKE);
+ 863   1      } 
+ 864          #endif
+ 865          /** ---------------------------------------------------------------------------- 
+ 866           * Function Name: API_Set_Keyboard_Data(U8_T *Kbbuf,U8_T Kbbuf_len)
+ 867           * Purpose:
+ 868           * Params:
+ 869           * Returns:
+ 870           * Note:
+ 871           * ----------------------------------------------------------------------------*/
+ 872          void API_Set_Keyboard_Data(U8_T *Kbbuf,U8_T Kbbuf_len)
+ 873          {
+ 874   1        U8_T  key_type;
+ 875   1        
+ 876   1        Kbbuf_len = 3;
+ 877   1        //printf("[Make=%02bx,keytype=%02bx,code=%02bx]",Receive_Data->bPayload[0],Receive_Data->bPayload[1],Rece
+             -ive_Data->bPayload[2]);
+ 878   1        switch(Kbbuf[1])
+ 879   1        {
+ 880   2          case 0x07: //normal keyboard data
+ 881   2            key_type = HID_USAGE_PAGE_07_MAKE + (Kbbuf[0] & 0x01);    
+ 882   2            //KM_SYNC_Send_VHID_Key(key_type,Kbbuf[2]);
+ 883   2      #ifdef SYNC
+ 884   2            KM_SYNC_Send_VHID_Key(key_type,Kbbuf[2]);
+ 885   2      #else
+                    DATAST_Keyboard_Send(KVM_CurrentHost,key_type,Kbbuf[2]);
+              #endif
+ 888   2            break;
+ 889   2          case 0x01: //system keyboard data
+ 890   2          case 0x0c: //consumer keyboard data 
+ 891   2            key_type = GENERIC_USAGE_0C_MAKE + (Kbbuf[0] & 0x01);
+ 892   2            if (Kbbuf[1] == 0x01)
+ 893   2              DATAST_Generic_USB_MS_Report[0] = 0x01; //system       
+ 894   2            else
+ 895   2              DATAST_Generic_USB_MS_Report[0] = 0x04; //system       
+ 896   2            DATAST_Generic_USB_MS_Report[2] = Kbbuf[2];
+ 897   2            DATAST_Generic_USB_MS_Report[1] = Kbbuf[3];   
+ 898   2            USBHC_InterruptTransfer_HID_Mouse(DATAST_Generic_USB_MS_Report,GENERIC_USAGE_07_MAKE);      
+ 899   2            break;    
+ 900   2        } 
+ 901   1      }
+ 902          
+ 903          /** ---------------------------------------------------------------------------- 
+ 904           * Function Name: API_Port_Connect(U8_T Portmask,U8_T Connectmask)
+ 905           * Purpose:
+ 906           * Params:
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 16  
+
+ 907           * Returns:
+ 908           * Note:
+ 909           * ----------------------------------------------------------------------------*/
+ 910          void API_Port_Connect(U8_T Portmask,U8_T Connectmask)
+ 911          {
+ 912   1        /*
+ 913   1        Receive_Data->bPayload[1] = Portmask;
+ 914   1        Receive_Data->bPayload[2] = Connectmask;
+ 915   1        KMLog_Handle_Host_Connect_Set();
+ 916   1        */
+ 917   1        //just skip the warning message for compile, need to mark when user want to
+ 918   1        //use this call back
+ 919   1        if (Portmask)
+ 920   1        {
+ 921   2          Connectmask = 0x0f;
+ 922   2        }
+ 923   1      }
+ 924          
+ 925          /** ---------------------------------------------------------------------------- 
+ 926           * Function Name: API_Port_Jump(U8_T Targetport)
+ 927           * Purpose:
+ 928           * Params:
+ 929           * Returns:
+ 930           * Note:
+ 931           * ----------------------------------------------------------------------------*/
+ 932          void API_Port_Jump(U8_T Targetport)
+ 933          {
+ 934   1        KVM_Port_Jump(Targetport);  
+ 935   1      }
+ 936          
+ 937          /** ---------------------------------------------------------------------------- 
+ 938           * Function Name: API_Keyboard_Data_Call_Back(U8_T *Kbbuf,U8_T *Kbbuf_len)
+ 939           * Purpose:
+ 940           * Params:
+ 941           * Returns:
+ 942           * Note:
+ 943           * ----------------------------------------------------------------------------*/
+ 944          void API_Keyboard_Data_Call_Back(U8_T *Kbbuf,U8_T Kbbuf_len)
+ 945          { 
+ 946   1        //just skip the warning message for compile, need to mark when user want to
+ 947   1        //use this call back
+ 948   1        if (Kbbuf)
+ 949   1        {
+ 950   2          //output to UART1
+ 951   2          Kbbuf_len = 4;    
+ 952   2      #ifdef KMLOG        
+                  Km_Data.bHeader   = KMLOG_HEADER0;
+                  Km_Data.bDataType   = KMLOG_TYPE_KB;    
+                  Km_Data.bPayload[0] = Kbbuf[0];
+                  Km_Data.bPayload[1] = Kbbuf[1];
+                  Km_Data.bPayload[2] = Kbbuf[2];
+                  Km_Data.bPayload[3] = Kbbuf[3];
+                  Km_Data.bPayload[4] = 0x00;
+                  Km_Data.bPayload[5] = 0x00;
+                  REMOTE_PutStr((U8_T *)&Km_Data,sizeof(Kmlog_Data_Packet_Def));  
+              #endif    
+ 963   2        }     
+ 964   1      } 
+ 965          
+ 966          /** ---------------------------------------------------------------------------- 
+ 967           * Function Name: API_Relative_Mouse_Data_Call_Back(U8_T *Msbuf,U8_T *Msbuf_len)
+ 968           * Purpose:
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 17  
+
+ 969           * Params:  Msbuf[0]: Mouse button value
+ 970           *      Msbuf[1]: X coordinate value(-127~+127)
+ 971           *      Msbuf[2]: Y coordinate value(-127~+127)
+ 972           *      Msbuf[3]: Z coordinate value(-127~+127)
+ 973           *      Msbuf_len : should be always 4
+ 974           * Returns:
+ 975           * Note:
+ 976           * ----------------------------------------------------------------------------*/
+ 977          void API_Relative_Mouse_Data_Call_Back(U8_T *Msbuf,U8_T Msbuf_len)
+ 978          {
+ 979   1        //just skip the warning message for compile, need to mark when user want to
+ 980   1        //use this call back
+ 981   1        if (Msbuf)
+ 982   1        {
+ 983   2          //output to UART1
+ 984   2          Msbuf_len = 4;  
+ 985   2      #ifdef KMLOG            
+                  Km_Data.bHeader   = KMLOG_HEADER0;
+                  Km_Data.bDataType   = KMLOG_TYPE_MS;    
+                  Km_Data.bPayload[0] = Msbuf[0];
+                  Km_Data.bPayload[1] = Msbuf[1];
+                  Km_Data.bPayload[2] = Msbuf[2];
+                  Km_Data.bPayload[3] = Msbuf[3]; 
+                  Km_Data.bPayload[4] = 0x00;
+                  Km_Data.bPayload[5] = 0x00;
+                  REMOTE_PutStr((U8_T *)&Km_Data,sizeof(Kmlog_Data_Packet_Def));  
+              #endif    
+ 996   2        } 
+ 997   1      } 
+ 998          
+ 999          /** ---------------------------------------------------------------------------- 
+1000           * Function Name: API_Absolute_Mouse_Data_Call_Back(U8_T *Msbuf,U8_T *Msbuf_len)
+1001           * Purpose:
+1002           * Params:
+1003           * Returns:
+1004           * Note:
+1005           * ----------------------------------------------------------------------------*/
+1006          void API_Absolute_Mouse_Data_Call_Back(U8_T *Msbuf,U8_T Msbuf_len)
+1007          {
+1008   1        //just skip the warning message for compile, need to mark when user want to
+1009   1        //use this call back
+1010   1        if (Msbuf)
+1011   1        {
+1012   2          Msbuf_len = 6;
+1013   2        }
+1014   1      } 
+1015          
+1016          /** ---------------------------------------------------------------------------- 
+1017           * Function Name: API_Roaming_Single_Call(void)
+1018           * Purpose:
+1019           * Params:
+1020           * Returns:
+1021           * Note:
+1022           * ----------------------------------------------------------------------------*/
+1023          void API_Roaming_Single_Call(void)
+1024          { 
+1025   1      //-----------------------------------------------
+1026   1      // Single screen call back function
+1027   1      //  0 <-> 1 <-> 2 <-> 3 
+1028   1      //-----------------------------------------------   
+1029   1      }
+1030          /** ---------------------------------------------------------------------------- 
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 18  
+
+1031           * Function Name: API_Roaming_Quad_Call(void)
+1032           * Purpose:
+1033           * Params:
+1034           * Returns:
+1035           * Note:
+1036           * ----------------------------------------------------------------------------*/
+1037          //-----------------------------------------------
+1038          // Quad screen call back function
+1039          //  0 <-> 1 
+1040          //  |  X  | 
+1041          //  2 <-> 3 
+1042          //-----------------------------------------------
+1043          void API_Roaming_Quad_Call(void)
+1044          {
+1045   1      }
+1046          
+1047          //-----------------------------------------------
+1048          // void API_Roaming_1_3_Call(void)
+1049          //     0 
+1050          //  |  X  | 
+1051          //  2 <-> 3 
+1052          //-----------------------------------------------
+1053          void API_Roaming_1_3_Call(void)
+1054          {
+1055   1        U16_T one_quarter;
+1056   1        U16_T half;
+1057   1        U16_T three_quarter;
+1058   1        U8_T i;
+1059   1        
+1060   1        one_quarter = (Y_MAX >> 2);
+1061   1        half = (Y_MAX >> 1);
+1062   1        three_quarter = ((Y_MAX * 3) >> 2);
+1063   1        
+1064   1        if ((KVM_CurrentHost == API_Current_Main_SCREEN) &&
+1065   1          (Current_Roaming_Direction == ROAMING_RIGHT))
+1066   1        {
+1067   2          if (MouseY < one_quarter)
+1068   2          {
+1069   3            MouseY = half + (MouseY * 2);
+1070   3          }
+1071   2          else if (MouseY < three_quarter)
+1072   2          {
+1073   3            MouseY = (MouseY - one_quarter) * 2;
+1074   3          }
+1075   2          else
+1076   2          {
+1077   3            MouseY = (MouseY - three_quarter) * 2;
+1078   3          }
+1079   2          
+1080   2          MouseX = X_LEFT_EDGE;
+1081   2          if (MouseY > Y_MAX)
+1082   2          {
+1083   3            MouseY = Y_MAX;
+1084   3          }
+1085   2        }
+1086   1        else if ((KVM_CurrentHost != API_Current_Main_SCREEN) &&
+1087   1             (Current_Roaming_Direction == ROAMING_LEFT))
+1088   1        {
+1089   2          for (i = 1; i < 4; i++)
+1090   2          {
+1091   3            if (Roaming[Current_Roaming_Table]->Sequence[i] == KVM_CurrentHost)
+1092   3            {
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 19  
+
+1093   4              if (i == 1)
+1094   4              {
+1095   5                if (MouseY < half)
+1096   5                {
+1097   6                  MouseY = 0;
+1098   6                }
+1099   5                else
+1100   5                {
+1101   6                  MouseY = (MouseY - half) / 2;
+1102   6                }
+1103   5              }
+1104   4              else if (i == 2)
+1105   4              {
+1106   5                MouseY = one_quarter + (MouseY / 2);
+1107   5              }
+1108   4              else
+1109   4              {
+1110   5                if (MouseY > half)
+1111   5                {
+1112   6                  MouseY = Y_MAX;
+1113   6                }
+1114   5                else
+1115   5                {
+1116   6                  MouseY = three_quarter + (MouseY / 2);
+1117   6                }
+1118   5              }
+1119   4              
+1120   4              MouseX = X_RIGHT_EDGE;
+1121   4              if (MouseY > Y_MAX)
+1122   4              {
+1123   5                MouseY = Y_MAX;
+1124   5              }
+1125   4              break;
+1126   4            }
+1127   3          }
+1128   2        }
+1129   1      }
+1130          void API_Roaming_1_2_Call(void)
+1131          {
+1132   1        U16_T section_start;
+1133   1        U8_T i;
+1134   1        
+1135   1        if ((KVM_CurrentHost == API_Current_Main_SCREEN) &&
+1136   1          (Current_Roaming_Direction == ROAMING_RIGHT))
+1137   1        {
+1138   2          if (MouseY < (Y_MAX >> 1))
+1139   2          {
+1140   3            section_start = 0;
+1141   3          }
+1142   2          else
+1143   2          {
+1144   3            section_start = (Y_MAX >> 1);
+1145   3          }
+1146   2          
+1147   2          MouseX = X_LEFT_EDGE;
+1148   2          MouseY = (MouseY - section_start) * 2;
+1149   2          if (MouseY > Y_MAX)
+1150   2          {
+1151   3            MouseY = Y_MAX;
+1152   3          }
+1153   2        }
+1154   1        else if ((KVM_CurrentHost != API_Current_Main_SCREEN) &&
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 20  
+
+1155   1             (Current_Roaming_Direction == ROAMING_LEFT))
+1156   1        {
+1157   2          for (i = 1; i < 3; i++)
+1158   2          {
+1159   3            if (Roaming[Current_Roaming_Table]->Sequence[i] == KVM_CurrentHost)
+1160   3            {
+1161   4              if (i == 1)
+1162   4              {
+1163   5                section_start = 0;
+1164   5              }
+1165   4              else
+1166   4              {
+1167   5                section_start = (Y_MAX >> 1);
+1168   5              }
+1169   4              
+1170   4              MouseX = X_RIGHT_EDGE;
+1171   4              MouseY = section_start + (MouseY / 2);
+1172   4              if (MouseY > Y_MAX)
+1173   4              {
+1174   5                MouseY = Y_MAX;
+1175   5              }
+1176   4              break;
+1177   4            }
+1178   3          }
+1179   2        }
+1180   1      }
+1181          /** ------------------------------------------------------------------------------------------------------
+1182           * Function Name: API_Roaming_Mapping2_Handle(U8_T Mapid,API_Roaming_Mapping_Def *Roaming)
+1183           * Purpose:
+1184           * Params:
+1185           * Returns:
+1186           * Note:
+1187           * ------------------------------------------------------------------------------------------------------*
+             -/
+1188          void API_Roaming_Mapping2_Handle(U8_T main_port)
+1189          { 
+1190   1        // API_Current_Map2_Id = main_port;
+1191   1        // printf("ONE_THREE Screen Roaming Mode:%bu\n\r",main_port);
+1192   1        // API_Set_Roaming_Mode(API_ROAMING_ENABLE);      
+1193   1        // API_Active_Roaming_Mapping(ONE_3_SCREEN_MODE);    //zbb
+1194   1      
+1195   1        // memcpy(&API_Roaming[2],&API_Roaming[main_port],sizeof(API_Roaming_Mapping_Def)); 
+1196   1      } 
+*** WARNING C280 IN LINE 1188 OF ..\Src\kvm_control\km_api\km_api.c: 'main_port': unreferenced local variable
+1197          #endif /* #ifdef API */
+1198          
+1199          
+1200          
+1201          void API_SET_ONE_3_SCREEN_MODE(U8_T main_port)
+1202          { 
+1203   1        if (main_port >= KVM_MAX_PORT)
+1204   1        {
+1205   2          return;
+1206   2        }
+1207   1      
+1208   1        API_Debug_Print_Roaming_Map(main_port, &API_Roaming_One_3[main_port]);
+1209   1      
+1210   1        memcpy(&API_Roaming[3],
+1211   1               &API_Roaming_One_3[main_port],
+1212   1               sizeof(API_Roaming_Mapping_Def));
+1213   1        printf("one_3\r\n");
+1214   1        API_Set_Sync_Mode(API_SYNC_DISABLE);
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 21  
+
+1215   1        API_Set_Roaming_Mode(API_ROAMING_ENABLE);     
+1216   1        API_Active_Roaming_Mapping(ONE_3_SCREEN_MODE);
+1217   1      
+1218   1      }
+1219          
+1220          void API_SET_ONE_2_SCREEN_MODE(U8_T main_port)
+1221          {
+1222   1      
+1223   1        if ((main_port < 1) || (main_port > 3))
+1224   1        {
+1225   2          printf("main_port %d",main_port);
+1226   2          return;
+1227   2        }
+1228   1        API_Debug_Print_Roaming_Map(main_port, &API_Roaming_One_2[main_port]);
+1229   1        printf("one_2\r\n");
+1230   1        
+1231   1        memcpy(&API_Roaming[4],
+1232   1               &API_Roaming_One_2[main_port],
+1233   1               sizeof(API_Roaming_Mapping_Def));
+1234   1             
+1235   1        API_Set_Sync_Mode(API_SYNC_DISABLE);
+1236   1        API_Set_Roaming_Mode(API_ROAMING_ENABLE);
+1237   1        API_Active_Roaming_Mapping(ONE_2_SCREEN_MODE);
+1238   1      }
+1239          
+1240          /* End of km_api.c */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2171    ----
+   CONSTANT SIZE    =    134    ----
+   XDATA SIZE       =    664      45
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =    134    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
