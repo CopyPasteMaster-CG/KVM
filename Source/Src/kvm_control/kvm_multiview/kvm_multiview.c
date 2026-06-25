@@ -109,7 +109,9 @@ void MULTIVIEW_Receive_Handle(void)
 		MULTIVIEW_RxCount++;		
 		//----------------------------------------------------------
 		//update the ring buffer end pointer for RX ring buffer
-//MULTIVIEW_Recieve_Exit:		
+//MULTIVIEW_Recieve_Exit:	
+
+
 		hsuart_RxHead++;
 		hsuart_RxHead &= MAX_RX_HSUART_MASK;						
 		MULTIVIEW_RxTail++;			
@@ -129,11 +131,11 @@ void TASK_MULTIVIEW_Receive_TimeOut_Start(void)
 	if (TASK_MULTIVIEW_Receive_TimeOut_ActiveID == 0)
 	{
 		TASK_MULTIVIEW_Receive_TimeOut_ActiveID =
-			TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_MULTIVIEW_Receive_TimeOut_ID,0,0,500,500)+1;		
+			TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_MULTIVIEW_Receive_TimeOut_ID,0,0,200,200)+1;		
 	}		
 	else
 	{
-		Task_Active_Table[TASK_MULTIVIEW_Receive_TimeOut_ActiveID-1].Task_Interval.w = 500; //200ms
+		Task_Active_Table[TASK_MULTIVIEW_Receive_TimeOut_ActiveID-1].Task_Interval.w = 200; //200ms
 	}		
 }
 
