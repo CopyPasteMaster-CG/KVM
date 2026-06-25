@@ -256,223 +256,84 @@ void TASK_BTN_Polling(void)
 		printf("---- btn_state:%bx ----\n\r", btn_state);
 		switch(btn_state)
 		{
-			// case PORT0_ACTIVE:
-			// 	API_Set_Roaming_Mode(API_ROAMING_DISABLE);
-			// 	API_Set_Sync_Mode(API_SYNC_DISABLE);
-			// 	KVM_Console_Port_Jump(3);
-			// 	break;
-			// case PORT1_ACTIVE:
-			// 	API_Set_Roaming_Mode(API_ROAMING_DISABLE);
-			// 	API_Set_Sync_Mode(API_SYNC_DISABLE);
-			// 	KVM_Console_Port_Jump(2);
-			// 	break;
-			// case PORT2_ACTIVE:
-			// 	API_Set_Roaming_Mode(API_ROAMING_DISABLE);
-			// 	API_Set_Sync_Mode(API_SYNC_DISABLE);
-			// 	KVM_Console_Port_Jump(1);
-			// 	break;
-			// case PORT3_ACTIVE:
-			// 	API_Set_Roaming_Mode(API_ROAMING_DISABLE);
-			// 	API_Set_Sync_Mode(API_SYNC_DISABLE);
-			// 	KVM_Console_Port_Jump(0);
-			// 	break;
-			// case PORT12_ACTIVE:
-			// 	printf("PORT1_2 Screen Roaming Mode\n\r");
-			// 	API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
-			// 	API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
-			// 	KVM_Console_Port_Jump(3);
-			// 	break;
-			// case PORT34_ACTIVE:
-			// 	printf("PORT3_4 Screen Roaming Mode\n\r");
-			// 	API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
-			// 	API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
-			// 	KVM_Console_Port_Jump(1);
-			// 	break;
-			// case PORT_ALL_ACTIVE:
-			// 	printf("PORT_ALL Screen Roaming Mode\n\r");
-			// 	API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
-			// 	API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
-			// 	KVM_Console_Port_Jump(3);
-			// 	break;
-			// case PORT_ALL_SYNC:
-			// 	printf("PORT_ALL Screen SYNC Mode\n\r");
-			// 	API_Set_Roaming_Mode(API_ROAMING_DISABLE);					
-			// 	API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
-			// 	API_Set_Sync_Mode(API_SYNC_ENABLE);
-			// 	break;
-			// default:
-			// 	break;
 
-			// case PORT0_ACTIVE:				
-			// 	API_SET_ONE_3_SCREEN_MODE(0);
-			// 	API_Current_Main_SCREEN = 3;
-			// 	KVM_Console_Port_Jump(3);
-			// 	break;
-			// case PORT1_ACTIVE:					
-			// 	API_SET_ONE_3_SCREEN_MODE(1);
-			// 	API_Current_Main_SCREEN = 2;
-			// 	KVM_Console_Port_Jump(2);
-			// 	break;
-			// case PORT2_ACTIVE:				
-			// 	API_SET_ONE_3_SCREEN_MODE(2);
-			// 	API_Current_Main_SCREEN = 1;
-			// 	KVM_Console_Port_Jump(1);
-			// 	break;
-			// case PORT3_ACTIVE:				
-			// 	API_SET_ONE_3_SCREEN_MODE(3);
-			// 	API_Current_Main_SCREEN = 0;
-			// 	KVM_Console_Port_Jump(0);
-			// 	break;
-			// case PORT12_ACTIVE:
-			// 	printf("PORT1_2 Screen Roaming Mode\n\r");
-			// 	API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
-			// 	API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
-			// 	KVM_Console_Port_Jump(3);
-			// 	break;
-			// case PORT34_ACTIVE:
-			// 	printf("PORT3_4 Screen Roaming Mode\n\r");
-			// 	API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
-			// 	API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
-			// 	KVM_Console_Port_Jump(1);
-			// 	break;
-			// case PORT_ALL_ACTIVE:
-			// 	printf("PORT_ALL Screen Roaming Mode\n\r");
-			// 	API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
-			// 	API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
-			// 	KVM_Console_Port_Jump(3);
-			// 	break;
-			// case PORT_ALL_SYNC:
-			// 	printf("PORT_ALL Screen SYNC Mode\n\r");
-			// 	API_Set_Roaming_Mode(API_ROAMING_DISABLE);					
-			// 	API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
-			// 	API_Set_Sync_Mode(API_SYNC_ENABLE);
-			// 	break;
-			// default:
-			// 	break;
-
-
-
-
-			// case PORT0_ACTIVE:				
-			// 	API_SET_ONE_2_SCREEN_MODE(1);
-			// 	API_Current_Main_SCREEN = 3;
-			// 	KVM_Console_Port_Jump(3);
-			// 	break;
-			// case PORT1_ACTIVE:					
-			// 	API_SET_ONE_2_SCREEN_MODE(2);
-			// 	API_Current_Main_SCREEN = 2;
-			// 	KVM_Console_Port_Jump(2);
-			// 	break;
-			// case PORT2_ACTIVE:				
-			// 	API_SET_ONE_2_SCREEN_MODE(3);
-			// 	API_Current_Main_SCREEN = 1;
-			// 	KVM_Console_Port_Jump(1);
-			// 	break;
-			// case PORT3_ACTIVE:				
-			// 	API_SET_ONE_3_SCREEN_MODE(3);
-			// 	API_Current_Main_SCREEN = 0;
-			// 	KVM_Console_Port_Jump(0);
-			// 	break;
-			// case PORT12_ACTIVE:
-			// 	printf("PORT1_2 Screen Roaming Mode\n\r");
-			// 	API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
-			// 	API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
-			// 	KVM_Console_Port_Jump(3);
-			// 	break;
-			// case PORT34_ACTIVE:
-			// 	printf("PORT3_4 Screen Roaming Mode\n\r");
-			// 	API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
-			// 	API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
-			// 	KVM_Console_Port_Jump(1);
-			// 	break;
-			// case PORT_ALL_ACTIVE:
-			// 	printf("PORT_ALL Screen Roaming Mode\n\r");
-			// 	API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
-			// 	API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
-			// 	KVM_Console_Port_Jump(3);
-			// 	break;
-			// case PORT_ALL_SYNC:
-			// 	printf("PORT_ALL Screen SYNC Mode\n\r");
-			// 	API_Set_Roaming_Mode(API_ROAMING_DISABLE);					
-			// 	API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
-			// 	API_Set_Sync_Mode(API_SYNC_ENABLE);
-			// 	break;
-			// default:
-			// 	break;
-
-
-
-
-// 	API_SET_ONE_3_SCREEN_MODE(0);
-			// 	API_Current_Main_SCREEN = 3;
-			// 	KVM_Console_Port_Jump(3);
-			// 	break;
-			// case PORT1_ACTIVE:					
-			// 	API_SET_ONE_3_SCREEN_MODE(1);
-			// 	API_Current_Main_SCREEN = 2;
-			// 	KVM_Console_Port_Jump(2);
-			// 	break;
-			// case PORT2_ACTIVE:				
-			// 	API_SET_ONE_3_SCREEN_MODE(2);
-			// 	API_Current_Main_SCREEN = 1;
-			// 	KVM_Console_Port_Jump(1);
-			// 	break;
-			// case PORT3_ACTIVE:				
-			// 	API_SET_ONE_3_SCREEN_MODE(3);
-			// 	API_Current_Main_SCREEN = 0;
-			// 	KVM_Console_Port_Jump(0);
-
-
-
-
-
-
-			case PORT0_ACTIVE:				
+			case PORT0_ACTIVE:
+				API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+				API_Set_Sync_Mode(API_SYNC_DISABLE);
+				KVM_Console_Port_Jump(3);
+				break;
+			case PORT1_ACTIVE:
+				API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+				API_Set_Sync_Mode(API_SYNC_DISABLE);
+				KVM_Console_Port_Jump(2);
+				break;
+			case PORT2_ACTIVE:
+				API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+				API_Set_Sync_Mode(API_SYNC_DISABLE);
+				KVM_Console_Port_Jump(1);
+				break;
+			case PORT3_ACTIVE:
+				API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+				API_Set_Sync_Mode(API_SYNC_DISABLE);
+				KVM_Console_Port_Jump(0);
+				break;
+			case PORT12_ACTIVE:
+				API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
+				API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
+				KVM_Console_Port_Jump(3);
+				break;
+			case PORT34_ACTIVE:
+				API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
+				API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
+				KVM_Console_Port_Jump(1);
+				break;
+			case PORT_ALL_ACTIVE:
+				API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
+				API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
+				KVM_Console_Port_Jump(3);
+				break;
+			case PORT_ALL_SYNC:
+				API_Set_Roaming_Mode(API_ROAMING_DISABLE);					
+				API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
+				API_Set_Sync_Mode(API_SYNC_ENABLE);
+				break;
+			case PORT_ONE_2_MAIN1_ACTIVE:
 				API_SET_ONE_2_SCREEN_MODE(1);
 				API_Current_Main_SCREEN = 3;
 				KVM_Console_Port_Jump(3);
 				break;
-			case PORT1_ACTIVE:					
+			case PORT_ONE_2_MAIN2_ACTIVE:
 				API_SET_ONE_2_SCREEN_MODE(2);
 				API_Current_Main_SCREEN = 2;
 				KVM_Console_Port_Jump(2);
 				break;
-			case PORT2_ACTIVE:				
+			case PORT_ONE_2_MAIN3_ACTIVE:
 				API_SET_ONE_2_SCREEN_MODE(3);
 				API_Current_Main_SCREEN = 1;
 				KVM_Console_Port_Jump(1);
 				break;
-			case PORT3_ACTIVE:				
-				API_SET_ONE_3_SCREEN_MODE(3);
-				API_Current_Main_SCREEN = 0;
-				KVM_Console_Port_Jump(0);
-				break;
-			case PORT12_ACTIVE:
+			case PORT_ONE_3_MAIN0_ACTIVE:
 				API_SET_ONE_3_SCREEN_MODE(0);
 				API_Current_Main_SCREEN = 3;
 				KVM_Console_Port_Jump(3);
 				break;
-			case PORT34_ACTIVE:
+			case PORT_ONE_3_MAIN1_ACTIVE:
 				API_SET_ONE_3_SCREEN_MODE(1);
 				API_Current_Main_SCREEN = 2;
 				KVM_Console_Port_Jump(2);
 				break;
-			case PORT_ALL_ACTIVE:
+			case PORT_ONE_3_MAIN2_ACTIVE:
 				API_SET_ONE_3_SCREEN_MODE(2);
 				API_Current_Main_SCREEN = 1;
 				KVM_Console_Port_Jump(1);
 				break;
-			case PORT_ALL_SYNC:
+			case PORT_ONE_3_MAIN3_ACTIVE:
 				API_SET_ONE_3_SCREEN_MODE(3);
 				API_Current_Main_SCREEN = 0;
 				KVM_Console_Port_Jump(0);
 				break;
 			default:
 				break;
-
-
-
-
 		}
 
 		return;

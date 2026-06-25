@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   HSUART2                                                           06/18/2026 10:50:21 PAGE 1   
+C51 COMPILER V9.60.7.0   HSUART2                                                           06/23/2026 16:04:47 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE HSUART2
@@ -62,7 +62,7 @@ line level    source
               //static U8_T   hsur2RxDataAvail;
               static U8_T  XDATA* ptHsur2RxDmaRingStart;
               static U8_T  XDATA* ptHsur2RxDmaRingEnd;
-C51 COMPILER V9.60.7.0   HSUART2                                                           06/18/2026 10:50:21 PAGE 2   
+C51 COMPILER V9.60.7.0   HSUART2                                                           06/23/2026 16:04:47 PAGE 2   
 
               static U8_T  XDATA* ptHsur2RxDmaRingSwRead;
               //static U8_T   hsur2TxDmaComplete;
@@ -126,7 +126,7 @@ line level    source
                   fifoCtrl = (hsur2FifoCtrl | HSFCR_RSTOP | HSFCR_RFR | HSFCR_TFR);
                   UR2DR = fifoCtrl;
                   UR2CIR = HSFCR;
-C51 COMPILER V9.60.7.0   HSUART2                                                           06/18/2026 10:50:21 PAGE 3   
+C51 COMPILER V9.60.7.0   HSUART2                                                           06/23/2026 16:04:47 PAGE 3   
 
                   /* Read the error data pointer */
                   UR2CIR = HSRBDEP;
@@ -190,7 +190,7 @@ line level    source
               /*
                *--------------------------------------------------------------------------------
                * BOOL HSUR2_RegRead(U8_T addr, U8_T *ptData, U8_T dataLen)
-C51 COMPILER V9.60.7.0   HSUART2                                                           06/18/2026 10:50:21 PAGE 4   
+C51 COMPILER V9.60.7.0   HSUART2                                                           06/23/2026 16:04:47 PAGE 4   
 
                * Purpose: Read data bytes from a register with interrupt locked.
                * Params : addr:An index address to UART2 register.
@@ -254,7 +254,7 @@ line level    source
                   if (ISR_FIFO_Wp >= ISR_FIFO_DEPTH)
                     ISR_FIFO_Wp = 0;      
                 } 
-C51 COMPILER V9.60.7.0   HSUART2                                                           06/18/2026 10:50:21 PAGE 5   
+C51 COMPILER V9.60.7.0   HSUART2                                                           06/23/2026 16:04:47 PAGE 5   
 
                 else if ((intrStatus == HSIIR_RD_TI_INTR) || (intrStatus == HSIIR_RD_TRIG_INTR))  
                 { /* Receiver Timeout */
@@ -318,7 +318,7 @@ line level    source
                 U8_T  lineCtrl, dll, dlh;
               
                 hsur2IntrEnbType = intEnb;
-C51 COMPILER V9.60.7.0   HSUART2                                                           06/18/2026 10:50:21 PAGE 6   
+C51 COMPILER V9.60.7.0   HSUART2                                                           06/23/2026 16:04:47 PAGE 6   
 
                 /* Set UART2 Baudrate */
                 lineCtrl = HSLCR_DLAB_ENB;
@@ -382,7 +382,7 @@ line level    source
                 HSUR2_RegWrite(HSRBRP, (U8_T *)&temp[1], 2);
               
                 *pTempShort = UR2_RX_TRIGGER_LEVEL;
-C51 COMPILER V9.60.7.0   HSUART2                                                           06/18/2026 10:50:21 PAGE 7   
+C51 COMPILER V9.60.7.0   HSUART2                                                           06/23/2026 16:04:47 PAGE 7   
 
                 HSUR2_RegWrite(HSRBOTL, (U8_T *)&temp[1], 2);
               
@@ -446,7 +446,7 @@ line level    source
               //      UR2CIR = HSRBDEP;
               //      reg16b = (U16_T)UR2DR;
               //      reg16b |= (U16_T)UR2DR << 8;
-C51 COMPILER V9.60.7.0   HSUART2                                                           06/18/2026 10:50:21 PAGE 8   
+C51 COMPILER V9.60.7.0   HSUART2                                                           06/23/2026 16:04:47 PAGE 8   
 
                     /* Flush all characters in the RX buffer ring by HSRBRP = HSRBWP when UART2 is in DMA mode */
               //      UR2CIR = HSRBWP;
@@ -510,7 +510,7 @@ line level    source
               //  return TRUE;
               //}
               
-C51 COMPILER V9.60.7.0   HSUART2                                                           06/18/2026 10:50:21 PAGE 9   
+C51 COMPILER V9.60.7.0   HSUART2                                                           06/23/2026 16:04:47 PAGE 9   
 
               /*
                *--------------------------------------------------------------------------------

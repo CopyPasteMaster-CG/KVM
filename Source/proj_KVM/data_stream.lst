@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 1   
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/23/2026 16:04:43 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE DATA_STREAM
@@ -62,7 +62,7 @@ line level    source
   40          void DATAST_Move_Intr_Buffer(U8_T currentHost,U8_T devinx,U8_T endpidx,U8_T intt_id);
   41          
   42          /*
-C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 2   
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/23/2026 16:04:43 PAGE 2   
 
   43           * -------------------------------------------------------------------------------
   44           * void    DATAST_Init(void)
@@ -126,7 +126,7 @@ line level    source
  102   1        intt_id = TASK_Register0 & 0x3f;
  103   1        devinx = HC_IntTransfer_Table[intt_id].Used_DeviceID & USBHC_TD_DEVICE_ADDR_MASK;
  104   1      
-C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 3   
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/23/2026 16:04:43 PAGE 3   
 
  105   1        //printf("<dp=%bu,%bu>",targethost,TASK_Active_ID);
  106   1      #ifdef ONEHID 
@@ -190,7 +190,7 @@ line level    source
                   goto DATAST_USB_Virtual_HID_Output_Reset;   
                 }
               #endif /* #if (SYSTEM_EXTENDER_RECEIVER) */
-C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 4   
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/23/2026 16:04:43 PAGE 4   
 
  164   1      
  165   1      #if (SYSTEM_EXTENDER_RECEIVER)
@@ -254,7 +254,7 @@ line level    source
                 if ((USBDC_Device[USBDC_VHID_DEVINX].DevAddr[currenthost] == 0x00) || 
                   ((USBDC_Device[USBDC_VHID_DEVINX].Feature[currenthost] & (FEATURE_SUSPEND|FEATURE_REMOTE)) == FEATURE_SU
              -SPEND))  
-C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 5   
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/23/2026 16:04:43 PAGE 5   
 
               #else
  226   1        if ((USBDC_Device[devinx].DevAddr[currenthost] == 0x00) || 
@@ -318,7 +318,7 @@ line level    source
  281   1        {
  282   2          wp = HC_IntTransfer_Table[intt_id].PassControl.Wp;
  283   2          rp = HC_IntTransfer_Table[intt_id].PassControl.Rp;
-C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 6   
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/23/2026 16:04:43 PAGE 6   
 
  284   2        } 
  285   1        
@@ -382,7 +382,7 @@ line level    source
  341   1          rp = 0;
  342   1         
  343   1        for (index=0;index < length ;index++)
-C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 7   
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/23/2026 16:04:43 PAGE 7   
 
  344   1        {
  345   2          transmit_buf[index] = HC_IntTransfer_Table[intt_id].PassControl.Buf[rp];
@@ -446,7 +446,7 @@ line level    source
                   {
                     printf("%02x ",(U16_T)p[index]);
                   }
-C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/18/2026 10:50:17 PAGE 8   
+C51 COMPILER V9.60.7.0   DATA_STREAM                                                       06/23/2026 16:04:43 PAGE 8   
 
                   printf("]\n\r");
               

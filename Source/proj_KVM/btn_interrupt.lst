@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 10:02:49 PAGE 1   
+C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 16:04:44 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE BTN_INTERRUPT
@@ -62,7 +62,7 @@ line level    source
   40              #if (PCB_TEST_BOARD)
   41                #ifdef MCU_TYPE_AX68002
                       const GPIO_PinTypeDef BTN_POLLING_PIN[] = {GPIO_Pin_0,GPIO_Pin_1,};
-C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 10:02:49 PAGE 2   
+C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 16:04:44 PAGE 2   
 
                       const GPIO_PinTypeDef BTN_POLLING_SHIFT[] = {0,2,4,6,};
                     #else
@@ -126,7 +126,7 @@ line level    source
  102   1        
  103   1      #if (KVM_BUTTON_HARDWARE) 
  104   1      #if (KVM_BUTTON_WAKEUP)// Allow Button to wakeup Sleep Vinson
-C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 10:02:49 PAGE 3   
+C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 16:04:44 PAGE 3   
 
                 #if (KVM_MULITY_BUTTON_TYPE)
                   #if (MCU_REAL_CHIP)
@@ -190,7 +190,7 @@ line level    source
                   } 
                   _MISC_CIR_SFR(de_bounce_sfr);
                   _MISC_DR_READ_SFR(regvalue0);
-C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 10:02:49 PAGE 4   
+C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 16:04:44 PAGE 4   
 
                   regvalue0 &= ~BTN_POLLING_PIN[index]; //Clear debounce time
                   _MISC_DR_SFR(regvalue0);
@@ -254,7 +254,7 @@ line level    source
  226   2          #if 0
                   for (index = 0; index < KVM_MAX_PORT; index++)
                   {
-C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 10:02:49 PAGE 5   
+C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 16:04:44 PAGE 5   
 
                     if (btnstate & BTN_POLLING_PIN[index]) // button pressed
                     {
@@ -286,250 +286,107 @@ line level    source
  256   2          printf("---- btn_state:%bx ----\n\r", btn_state);
  257   2          switch(btn_state)
  258   2          {
- 259   3            // case PORT0_ACTIVE:
- 260   3            //  API_Set_Roaming_Mode(API_ROAMING_DISABLE);
- 261   3            //  API_Set_Sync_Mode(API_SYNC_DISABLE);
- 262   3            //  KVM_Console_Port_Jump(3);
- 263   3            //  break;
- 264   3            // case PORT1_ACTIVE:
- 265   3            //  API_Set_Roaming_Mode(API_ROAMING_DISABLE);
- 266   3            //  API_Set_Sync_Mode(API_SYNC_DISABLE);
- 267   3            //  KVM_Console_Port_Jump(2);
- 268   3            //  break;
- 269   3            // case PORT2_ACTIVE:
- 270   3            //  API_Set_Roaming_Mode(API_ROAMING_DISABLE);
- 271   3            //  API_Set_Sync_Mode(API_SYNC_DISABLE);
- 272   3            //  KVM_Console_Port_Jump(1);
- 273   3            //  break;
- 274   3            // case PORT3_ACTIVE:
- 275   3            //  API_Set_Roaming_Mode(API_ROAMING_DISABLE);
- 276   3            //  API_Set_Sync_Mode(API_SYNC_DISABLE);
- 277   3            //  KVM_Console_Port_Jump(0);
- 278   3            //  break;
- 279   3            // case PORT12_ACTIVE:
- 280   3            //  printf("PORT1_2 Screen Roaming Mode\n\r");
- 281   3            //  API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
- 282   3            //  API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
- 283   3            //  KVM_Console_Port_Jump(3);
- 284   3            //  break;
- 285   3            // case PORT34_ACTIVE:
- 286   3            //  printf("PORT3_4 Screen Roaming Mode\n\r");
- 287   3            //  API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
- 288   3            //  API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
- 289   3            //  KVM_Console_Port_Jump(1);
- 290   3            //  break;
-C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 10:02:49 PAGE 6   
+ 259   3      
+ 260   3            case PORT0_ACTIVE:
+ 261   3              API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+ 262   3              API_Set_Sync_Mode(API_SYNC_DISABLE);
+ 263   3              KVM_Console_Port_Jump(3);
+ 264   3              break;
+ 265   3            case PORT1_ACTIVE:
+ 266   3              API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+ 267   3              API_Set_Sync_Mode(API_SYNC_DISABLE);
+ 268   3              KVM_Console_Port_Jump(2);
+ 269   3              break;
+ 270   3            case PORT2_ACTIVE:
+ 271   3              API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+ 272   3              API_Set_Sync_Mode(API_SYNC_DISABLE);
+ 273   3              KVM_Console_Port_Jump(1);
+ 274   3              break;
+ 275   3            case PORT3_ACTIVE:
+ 276   3              API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+ 277   3              API_Set_Sync_Mode(API_SYNC_DISABLE);
+ 278   3              KVM_Console_Port_Jump(0);
+ 279   3              break;
+ 280   3            case PORT12_ACTIVE:
+ 281   3              API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
+ 282   3              API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
+ 283   3              KVM_Console_Port_Jump(3);
+ 284   3              break;
+ 285   3            case PORT34_ACTIVE:
+ 286   3              API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
+ 287   3              API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
+ 288   3              KVM_Console_Port_Jump(1);
+ 289   3              break;
+ 290   3            case PORT_ALL_ACTIVE:
+C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 16:04:44 PAGE 6   
 
- 291   3            // case PORT_ALL_ACTIVE:
- 292   3            //  printf("PORT_ALL Screen Roaming Mode\n\r");
- 293   3            //  API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
- 294   3            //  API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
- 295   3            //  KVM_Console_Port_Jump(3);
- 296   3            //  break;
- 297   3            // case PORT_ALL_SYNC:
- 298   3            //  printf("PORT_ALL Screen SYNC Mode\n\r");
- 299   3            //  API_Set_Roaming_Mode(API_ROAMING_DISABLE);          
- 300   3            //  API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
- 301   3            //  API_Set_Sync_Mode(API_SYNC_ENABLE);
- 302   3            //  break;
- 303   3            // default:
- 304   3            //  break;
- 305   3      
- 306   3            // case PORT0_ACTIVE:       
- 307   3            //  API_SET_ONE_3_SCREEN_MODE(0);
- 308   3            //  API_Current_Main_SCREEN = 3;
- 309   3            //  KVM_Console_Port_Jump(3);
- 310   3            //  break;
- 311   3            // case PORT1_ACTIVE:         
- 312   3            //  API_SET_ONE_3_SCREEN_MODE(1);
- 313   3            //  API_Current_Main_SCREEN = 2;
- 314   3            //  KVM_Console_Port_Jump(2);
- 315   3            //  break;
- 316   3            // case PORT2_ACTIVE:       
- 317   3            //  API_SET_ONE_3_SCREEN_MODE(2);
- 318   3            //  API_Current_Main_SCREEN = 1;
- 319   3            //  KVM_Console_Port_Jump(1);
- 320   3            //  break;
- 321   3            // case PORT3_ACTIVE:       
- 322   3            //  API_SET_ONE_3_SCREEN_MODE(3);
- 323   3            //  API_Current_Main_SCREEN = 0;
- 324   3            //  KVM_Console_Port_Jump(0);
- 325   3            //  break;
- 326   3            // case PORT12_ACTIVE:
- 327   3            //  printf("PORT1_2 Screen Roaming Mode\n\r");
- 328   3            //  API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
- 329   3            //  API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
- 330   3            //  KVM_Console_Port_Jump(3);
- 331   3            //  break;
- 332   3            // case PORT34_ACTIVE:
- 333   3            //  printf("PORT3_4 Screen Roaming Mode\n\r");
- 334   3            //  API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
- 335   3            //  API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
- 336   3            //  KVM_Console_Port_Jump(1);
- 337   3            //  break;
- 338   3            // case PORT_ALL_ACTIVE:
- 339   3            //  printf("PORT_ALL Screen Roaming Mode\n\r");
- 340   3            //  API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
- 341   3            //  API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
- 342   3            //  KVM_Console_Port_Jump(3);
- 343   3            //  break;
- 344   3            // case PORT_ALL_SYNC:
- 345   3            //  printf("PORT_ALL Screen SYNC Mode\n\r");
- 346   3            //  API_Set_Roaming_Mode(API_ROAMING_DISABLE);          
- 347   3            //  API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
- 348   3            //  API_Set_Sync_Mode(API_SYNC_ENABLE);
- 349   3            //  break;
- 350   3            // default:
- 351   3            //  break;
- 352   3      
-C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 10:02:49 PAGE 7   
-
- 353   3      
- 354   3      
- 355   3      
- 356   3            // case PORT0_ACTIVE:       
- 357   3            //  API_SET_ONE_2_SCREEN_MODE(1);
- 358   3            //  API_Current_Main_SCREEN = 3;
- 359   3            //  KVM_Console_Port_Jump(3);
- 360   3            //  break;
- 361   3            // case PORT1_ACTIVE:         
- 362   3            //  API_SET_ONE_2_SCREEN_MODE(2);
- 363   3            //  API_Current_Main_SCREEN = 2;
- 364   3            //  KVM_Console_Port_Jump(2);
- 365   3            //  break;
- 366   3            // case PORT2_ACTIVE:       
- 367   3            //  API_SET_ONE_2_SCREEN_MODE(3);
- 368   3            //  API_Current_Main_SCREEN = 1;
- 369   3            //  KVM_Console_Port_Jump(1);
- 370   3            //  break;
- 371   3            // case PORT3_ACTIVE:       
- 372   3            //  API_SET_ONE_3_SCREEN_MODE(3);
- 373   3            //  API_Current_Main_SCREEN = 0;
- 374   3            //  KVM_Console_Port_Jump(0);
- 375   3            //  break;
- 376   3            // case PORT12_ACTIVE:
- 377   3            //  printf("PORT1_2 Screen Roaming Mode\n\r");
- 378   3            //  API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
- 379   3            //  API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
- 380   3            //  KVM_Console_Port_Jump(3);
- 381   3            //  break;
- 382   3            // case PORT34_ACTIVE:
- 383   3            //  printf("PORT3_4 Screen Roaming Mode\n\r");
- 384   3            //  API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
- 385   3            //  API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
- 386   3            //  KVM_Console_Port_Jump(1);
- 387   3            //  break;
- 388   3            // case PORT_ALL_ACTIVE:
- 389   3            //  printf("PORT_ALL Screen Roaming Mode\n\r");
- 390   3            //  API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
- 391   3            //  API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
- 392   3            //  KVM_Console_Port_Jump(3);
- 393   3            //  break;
- 394   3            // case PORT_ALL_SYNC:
- 395   3            //  printf("PORT_ALL Screen SYNC Mode\n\r");
- 396   3            //  API_Set_Roaming_Mode(API_ROAMING_DISABLE);          
- 397   3            //  API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
- 398   3            //  API_Set_Sync_Mode(API_SYNC_ENABLE);
- 399   3            //  break;
- 400   3            // default:
- 401   3            //  break;
- 402   3      
- 403   3      
- 404   3      
- 405   3      
- 406   3      //  API_SET_ONE_3_SCREEN_MODE(0);
- 407   3            //  API_Current_Main_SCREEN = 3;
- 408   3            //  KVM_Console_Port_Jump(3);
- 409   3            //  break;
- 410   3            // case PORT1_ACTIVE:         
- 411   3            //  API_SET_ONE_3_SCREEN_MODE(1);
- 412   3            //  API_Current_Main_SCREEN = 2;
- 413   3            //  KVM_Console_Port_Jump(2);
- 414   3            //  break;
-C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 10:02:49 PAGE 8   
-
- 415   3            // case PORT2_ACTIVE:       
- 416   3            //  API_SET_ONE_3_SCREEN_MODE(2);
- 417   3            //  API_Current_Main_SCREEN = 1;
- 418   3            //  KVM_Console_Port_Jump(1);
- 419   3            //  break;
- 420   3            // case PORT3_ACTIVE:       
- 421   3            //  API_SET_ONE_3_SCREEN_MODE(3);
- 422   3            //  API_Current_Main_SCREEN = 0;
- 423   3            //  KVM_Console_Port_Jump(0);
- 424   3      
- 425   3      
- 426   3      
- 427   3      
- 428   3      
- 429   3      
- 430   3            case PORT0_ACTIVE:        
- 431   3              API_SET_ONE_2_SCREEN_MODE(1);
- 432   3              API_Current_Main_SCREEN = 3;
- 433   3              KVM_Console_Port_Jump(3);
- 434   3              break;
- 435   3            case PORT1_ACTIVE:          
- 436   3              API_SET_ONE_2_SCREEN_MODE(2);
- 437   3              API_Current_Main_SCREEN = 2;
- 438   3              KVM_Console_Port_Jump(2);
- 439   3              break;
- 440   3            case PORT2_ACTIVE:        
- 441   3              API_SET_ONE_2_SCREEN_MODE(3);
- 442   3              API_Current_Main_SCREEN = 1;
- 443   3              KVM_Console_Port_Jump(1);
- 444   3              break;
- 445   3            case PORT3_ACTIVE:        
- 446   3              API_SET_ONE_3_SCREEN_MODE(3);
- 447   3              API_Current_Main_SCREEN = 0;
- 448   3              KVM_Console_Port_Jump(0);
- 449   3              break;
- 450   3            case PORT12_ACTIVE:
- 451   3              API_SET_ONE_3_SCREEN_MODE(0);
- 452   3              API_Current_Main_SCREEN = 3;
- 453   3              KVM_Console_Port_Jump(3);
- 454   3              break;
- 455   3            case PORT34_ACTIVE:
- 456   3              API_SET_ONE_3_SCREEN_MODE(1);
- 457   3              API_Current_Main_SCREEN = 2;
- 458   3              KVM_Console_Port_Jump(2);
- 459   3              break;
- 460   3            case PORT_ALL_ACTIVE:
- 461   3              API_SET_ONE_3_SCREEN_MODE(2);
- 462   3              API_Current_Main_SCREEN = 1;
- 463   3              KVM_Console_Port_Jump(1);
- 464   3              break;
- 465   3            case PORT_ALL_SYNC:
- 466   3              API_SET_ONE_3_SCREEN_MODE(3);
- 467   3              API_Current_Main_SCREEN = 0;
- 468   3              KVM_Console_Port_Jump(0);
- 469   3              break;
- 470   3            default:
- 471   3              break;
- 472   3      
- 473   3      
- 474   3      
- 475   3      
- 476   3          }
-C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 10:02:49 PAGE 9   
-
- 477   2      
- 478   2          return;
- 479   2        }
- 480   1      
- 481   1        
- 482   1        if (BTN_Processing_Flag == 0) // no any button down
- 483   1        {
- 484   2      #if (KVM_MULITY_BUTTON_TYPE)
- 485   2          for (index = 0; index < KVM_MAX_PORT; index++)
- 486   2      #endif
- 487   2          {
- 488   3            if (btnstate & BTN_POLLING_PIN[index]) // button pressed
- 489   3            {
- 490   4      #ifdef KMLOG
+ 291   3              API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
+ 292   3              API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
+ 293   3              KVM_Console_Port_Jump(3);
+ 294   3              break;
+ 295   3            case PORT_ALL_SYNC:
+ 296   3              API_Set_Roaming_Mode(API_ROAMING_DISABLE);          
+ 297   3              API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
+ 298   3              API_Set_Sync_Mode(API_SYNC_ENABLE);
+ 299   3              break;
+ 300   3            case PORT_ONE_2_MAIN1_ACTIVE:
+ 301   3              API_SET_ONE_2_SCREEN_MODE(1);
+ 302   3              API_Current_Main_SCREEN = 3;
+ 303   3              KVM_Console_Port_Jump(3);
+ 304   3              break;
+ 305   3            case PORT_ONE_2_MAIN2_ACTIVE:
+ 306   3              API_SET_ONE_2_SCREEN_MODE(2);
+ 307   3              API_Current_Main_SCREEN = 2;
+ 308   3              KVM_Console_Port_Jump(2);
+ 309   3              break;
+ 310   3            case PORT_ONE_2_MAIN3_ACTIVE:
+ 311   3              API_SET_ONE_2_SCREEN_MODE(3);
+ 312   3              API_Current_Main_SCREEN = 1;
+ 313   3              KVM_Console_Port_Jump(1);
+ 314   3              break;
+ 315   3            case PORT_ONE_3_MAIN0_ACTIVE:
+ 316   3              API_SET_ONE_3_SCREEN_MODE(0);
+ 317   3              API_Current_Main_SCREEN = 3;
+ 318   3              KVM_Console_Port_Jump(3);
+ 319   3              break;
+ 320   3            case PORT_ONE_3_MAIN1_ACTIVE:
+ 321   3              API_SET_ONE_3_SCREEN_MODE(1);
+ 322   3              API_Current_Main_SCREEN = 2;
+ 323   3              KVM_Console_Port_Jump(2);
+ 324   3              break;
+ 325   3            case PORT_ONE_3_MAIN2_ACTIVE:
+ 326   3              API_SET_ONE_3_SCREEN_MODE(2);
+ 327   3              API_Current_Main_SCREEN = 1;
+ 328   3              KVM_Console_Port_Jump(1);
+ 329   3              break;
+ 330   3            case PORT_ONE_3_MAIN3_ACTIVE:
+ 331   3              API_SET_ONE_3_SCREEN_MODE(3);
+ 332   3              API_Current_Main_SCREEN = 0;
+ 333   3              KVM_Console_Port_Jump(0);
+ 334   3              break;
+ 335   3            default:
+ 336   3              break;
+ 337   3          }
+ 338   2      
+ 339   2          return;
+ 340   2        }
+ 341   1      
+ 342   1        
+ 343   1        if (BTN_Processing_Flag == 0) // no any button down
+ 344   1        {
+ 345   2      #if (KVM_MULITY_BUTTON_TYPE)
+ 346   2          for (index = 0; index < KVM_MAX_PORT; index++)
+ 347   2      #endif
+ 348   2          {
+ 349   3            if (btnstate & BTN_POLLING_PIN[index]) // button pressed
+ 350   3            {
+ 351   4      #ifdef KMLOG
                       KM_Btn_State |= BIT_MASK[index];
+C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 16:04:44 PAGE 7   
+
               #endif
- 493   4              
- 494   4      #ifdef BTN_RESET        
+ 354   4              
+ 355   4      #ifdef BTN_RESET        
                       if (TASK_BTN_Reset_ActiveID == 0)
                       {     
                         TASK_BTN_Reset_ActiveID = 
@@ -541,25 +398,25 @@ line level    source
                         Task_Active_Table[TASK_BTN_Reset_ActiveID-1].Task_Interval.w = BTN_RESET_WAIT_TIME;
                       } 
               #endif    
- 506   4            
- 507   4      #if (KVM_CONSOLE_DEBUG_MODE)
+ 367   4            
+ 368   4      #if (KVM_CONSOLE_DEBUG_MODE)
                       printf("BTN:%bx Pressed\n\r", index);
               #endif
- 510   4              if (KVM_Control_Status & KVM_AUTOSCAN_MASK)
- 511   4              {
- 512   5                KVM_AutoscanStop_Jump(1,index);
- 513   5                KVM_Control_Status &= ~KVM_AUTOSCAN_MASK; // clear the autoscan flag
- 514   5                Task_Active_Table[TASK_KVM_AUTOSCAN_ACTIVE_ID].Task_Interval.w = 1; //wait for 1 ms
- 515   5                return; // no more check about button down
- 516   5              }
- 517   4              else
- 518   4              {
- 519   5      #if (!KVM_MULITY_BUTTON_TYPE)
+ 371   4              if (KVM_Control_Status & KVM_AUTOSCAN_MASK)
+ 372   4              {
+ 373   5                KVM_AutoscanStop_Jump(1,index);
+ 374   5                KVM_Control_Status &= ~KVM_AUTOSCAN_MASK; // clear the autoscan flag
+ 375   5                Task_Active_Table[TASK_KVM_AUTOSCAN_ACTIVE_ID].Task_Interval.w = 1; //wait for 1 ms
+ 376   5                return; // no more check about button down
+ 377   5              }
+ 378   4              else
+ 379   4              {
+ 380   5      #if (!KVM_MULITY_BUTTON_TYPE)
                                 index = KVM_CurrentHost + 1;
                         if (index >= KVM_MAX_PORT)
                                       index = 0;
               #endif
- 524   5      #if (SYSTEM_POWER_SAVING_MODE_SUPPORT)          
+ 385   5      #if (SYSTEM_POWER_SAVING_MODE_SUPPORT)          
                         if (KVM_CurrentHost == index) // if the port is not active now
                         {
                           if (PowerSavingStartFlag)
@@ -573,61 +430,61 @@ line level    source
                         }
                         else
               #endif            
- 537   5                {
-C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 10:02:49 PAGE 10  
-
- 538   6                  #ifdef SYNC
- 539   6                  KM_SYNC_ModeSync_Control(0);
- 540   6                  #endif
- 541   6                  KVM_Console_Port_Jump(index);           
- 542   6                  return; // no more check about button down
- 543   6                }
- 544   5              }
- 545   4            }
- 546   3          }
- 547   2      #ifdef KMLOG
+ 398   5                {
+ 399   6                  #ifdef SYNC
+ 400   6                  KM_SYNC_ModeSync_Control(0);
+ 401   6                  #endif
+ 402   6                  KVM_Console_Port_Jump(index);           
+ 403   6                  return; // no more check about button down
+ 404   6                }
+ 405   5              }
+ 406   4            }
+ 407   3          }
+ 408   2      #ifdef KMLOG
                   KMLog_Send_Button_State(KM_Btn_State);
               #endif    
- 550   2        } 
- 551   1      }
- 552          
- 553          //#ifdef BTN_RESET
- 554          /*
- 555           * ----------------------------------------------------------------------------
- 556           * Function Name: void TASK_BTN_Reset(void)
- 557           * Purpose: Detect the Button Pin low and become high(complete cycle)
- 558           * Params:
- 559           * Returns:
- 560           * Note:
- 561           * ----------------------------------------------------------------------------
- 562           */
- 563          void TASK_BTN_Reset(void)
- 564          {
- 565   1        U8_T btn_id;
- 566   1        
- 567   1        
- 568   1        btn_id = TASK_Register0;
- 569   1        
- 570   1        if (GPIO_GetPinValue(BTN_POLLING_PORT[btn_id],BTN_POLLING_PIN[btn_id]) == 0)
- 571   1        {
- 572   2          FirmwareUpgradeFlag[0] = 'i';
- 573   2          FirmwareUpgradeFlag[1] = 'a';
- 574   2          FirmwareUpgradeFlag[2] = 'p';   
- 575   2          CPU_SoftReboot();   
- 576   2        } 
- 577   1        
- 578   1        TASK_Destory_Current();
- 579   1        
- 580   1      }
- 581          //#endif
- 582          
- 583          #endif //#if (KVM_BUTTON_HARDWARE)
- 584          
- 585          /* End of btn_interrupt.c */
+ 411   2        } 
+ 412   1      }
+ 413          
+C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 16:04:44 PAGE 8   
+
+ 414          //#ifdef BTN_RESET
+ 415          /*
+ 416           * ----------------------------------------------------------------------------
+ 417           * Function Name: void TASK_BTN_Reset(void)
+ 418           * Purpose: Detect the Button Pin low and become high(complete cycle)
+ 419           * Params:
+ 420           * Returns:
+ 421           * Note:
+ 422           * ----------------------------------------------------------------------------
+ 423           */
+ 424          void TASK_BTN_Reset(void)
+ 425          {
+ 426   1        U8_T btn_id;
+ 427   1        
+ 428   1        
+ 429   1        btn_id = TASK_Register0;
+ 430   1        
+ 431   1        if (GPIO_GetPinValue(BTN_POLLING_PORT[btn_id],BTN_POLLING_PIN[btn_id]) == 0)
+ 432   1        {
+ 433   2          FirmwareUpgradeFlag[0] = 'i';
+ 434   2          FirmwareUpgradeFlag[1] = 'a';
+ 435   2          FirmwareUpgradeFlag[2] = 'p';   
+ 436   2          CPU_SoftReboot();   
+ 437   2        } 
+ 438   1        
+ 439   1        TASK_Destory_Current();
+ 440   1        
+ 441   1      }
+ 442          //#endif
+ 443          
+ 444          #endif //#if (KVM_BUTTON_HARDWARE)
+ 445          
+ 446          /* End of btn_interrupt.c */
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    694    ----
+   CODE SIZE        =    868    ----
    CONSTANT SIZE    =     26    ----
    XDATA SIZE       =     20       9
    PDATA SIZE       =   ----    ----
@@ -638,8 +495,6 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    HDATA SIZE       =   ----    ----
    XDATA CONST SIZE =   ----    ----
    FAR CONST SIZE   =     26    ----
-C51 COMPILER V9.60.7.0   BTN_INTERRUPT                                                     06/23/2026 10:02:49 PAGE 11  
-
 END OF MODULE INFORMATION.
 
 

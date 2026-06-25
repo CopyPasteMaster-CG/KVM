@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBDC_VENDOR                                                      06/18/2026 10:50:21 PAGE 1   
+C51 COMPILER V9.60.7.0   USBDC_VENDOR                                                      06/23/2026 16:04:47 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBDC_VENDOR
@@ -62,7 +62,7 @@ line level    source
   40               0x0b=> Audio+Port Combo Switch => INDEX=ON/OFF
   41               .
   42               .
-C51 COMPILER V9.60.7.0   USBDC_VENDOR                                                      06/18/2026 10:50:21 PAGE 2   
+C51 COMPILER V9.60.7.0   USBDC_VENDOR                                                      06/23/2026 16:04:47 PAGE 2   
 
   43               .
   44               .
@@ -126,7 +126,7 @@ line level    source
               #ifdef RuntimeCodeAt12KH
                       case REPROT_BOOTLOADER_VERSION:
                         for (indx=0; indx < 10; indx++)
-C51 COMPILER V9.60.7.0   USBDC_VENDOR                                                      06/18/2026 10:50:21 PAGE 3   
+C51 COMPILER V9.60.7.0   USBDC_VENDOR                                                      06/23/2026 16:04:47 PAGE 3   
 
                           KVM_Vendor_State[indx] = FCVAR(U8_T, 0x2000 + indx);
               
@@ -190,7 +190,7 @@ line level    source
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-C51 COMPILER V9.60.7.0   USBDC_VENDOR                                                      06/18/2026 10:50:21 PAGE 4   
+C51 COMPILER V9.60.7.0   USBDC_VENDOR                                                      06/23/2026 16:04:47 PAGE 4   
 
    CODE SIZE        =   ----    ----
    CONSTANT SIZE    =   ----    ----

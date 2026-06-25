@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   POWER_SAVING                                                      06/18/2026 10:50:20 PAGE 1   
+C51 COMPILER V9.60.7.0   POWER_SAVING                                                      06/23/2026 16:04:46 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE POWER_SAVING
@@ -62,7 +62,7 @@ line level    source
               
               /* LOCAL SUBPROGRAM DECLARATIONS */
               void TASK_KVM_PowerSaving_Start(void);
-C51 COMPILER V9.60.7.0   POWER_SAVING                                                      06/18/2026 10:50:20 PAGE 2   
+C51 COMPILER V9.60.7.0   POWER_SAVING                                                      06/23/2026 16:04:46 PAGE 2   
 
               void TASK_KVM_PowerSaving_Check(void);
               
@@ -126,7 +126,7 @@ line level    source
                   {
                     return;
                   } 
-C51 COMPILER V9.60.7.0   POWER_SAVING                                                      06/18/2026 10:50:20 PAGE 3   
+C51 COMPILER V9.60.7.0   POWER_SAVING                                                      06/23/2026 16:04:46 PAGE 3   
 
                   /* Need to Check DC Suspend Status */
                   if (USBDC_PortSuspendCheck() == 0)
@@ -190,7 +190,7 @@ line level    source
                   EDID_ctrl.TaskPauseRequest = 0;
               #endif
                 }
-C51 COMPILER V9.60.7.0   POWER_SAVING                                                      06/18/2026 10:50:20 PAGE 4   
+C51 COMPILER V9.60.7.0   POWER_SAVING                                                      06/23/2026 16:04:46 PAGE 4   
 
                 TASK_Destory_Current();
               }
@@ -254,7 +254,7 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    BIT SIZE         =   ----    ----
    EDATA SIZE       =   ----    ----
    HDATA SIZE       =   ----    ----
-C51 COMPILER V9.60.7.0   POWER_SAVING                                                      06/18/2026 10:50:20 PAGE 5   
+C51 COMPILER V9.60.7.0   POWER_SAVING                                                      06/23/2026 16:04:46 PAGE 5   
 
    XDATA CONST SIZE =   ----    ----
    FAR CONST SIZE   =   ----    ----

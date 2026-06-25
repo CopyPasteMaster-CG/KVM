@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBDC_VMSC_DESC                                                   06/18/2026 10:50:20 PAGE 1   
+C51 COMPILER V9.60.7.0   USBDC_VMSC_DESC                                                   06/23/2026 16:04:47 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBDC_VMSC_DESC
@@ -62,7 +62,7 @@ line level    source
                 0x01,           /*bcdUSB High*/
                 0x00,           /*bDeviceClass*/
                 0x00,           /*bDeviceSubClass*/
-C51 COMPILER V9.60.7.0   USBDC_VMSC_DESC                                                   06/18/2026 10:50:20 PAGE 2   
+C51 COMPILER V9.60.7.0   USBDC_VMSC_DESC                                                   06/23/2026 16:04:47 PAGE 2   
 
                 0x00,           /*bDeviceProtocol*/
                 0x08,           /*bMaxPacketSize40*/
@@ -126,7 +126,7 @@ line level    source
               
               CODE U8_T VMSC_StringProduct[VMSC_SIZ_STRING_PRODUCT] =
               {
-C51 COMPILER V9.60.7.0   USBDC_VMSC_DESC                                                   06/18/2026 10:50:20 PAGE 3   
+C51 COMPILER V9.60.7.0   USBDC_VMSC_DESC                                                   06/23/2026 16:04:47 PAGE 3   
 
                 VMSC_SIZ_STRING_PRODUCT,    /* bLength */
                 USB_STRING_DESCRIPTOR_TYPE,   /* bDescriptorType */

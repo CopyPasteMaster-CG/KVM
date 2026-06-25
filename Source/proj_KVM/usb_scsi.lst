@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USB_SCSI                                                          06/18/2026 10:50:20 PAGE 1   
+C51 COMPILER V9.60.7.0   USB_SCSI                                                          06/23/2026 16:04:47 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USB_SCSI
@@ -62,7 +62,7 @@ line level    source
                       // Product identification : 16 bytes
                 'V', 'I', 'N', 'S', 'O', 'N', ' ', ' ',
                 'P', 'r', 'o', 'd', 'u', 'c', 't', ' ',
-C51 COMPILER V9.60.7.0   USB_SCSI                                                          06/18/2026 10:50:20 PAGE 2   
+C51 COMPILER V9.60.7.0   USB_SCSI                                                          06/23/2026 16:04:47 PAGE 2   
 
                       // Product Revision Level : 4 bytes
                 '1', '.', '0', '0'
@@ -126,7 +126,7 @@ line level    source
                 0x01, 0x0A, 0x80, 0x10, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00,   // Mode page(s)
               };
               
-C51 COMPILER V9.60.7.0   USB_SCSI                                                          06/18/2026 10:50:20 PAGE 3   
+C51 COMPILER V9.60.7.0   USB_SCSI                                                          06/23/2026 16:04:47 PAGE 3   
 
               static const U8_T scsi_FormatCapacityData[DATA_LENGTH_FORMATCAP] =
               {
@@ -190,7 +190,7 @@ line level    source
                *--------------------------------------------------------------------------------
                */
               static void scsi_CmdModeSelect(U8_T* cdb)
-C51 COMPILER V9.60.7.0   USB_SCSI                                                          06/18/2026 10:50:20 PAGE 4   
+C51 COMPILER V9.60.7.0   USB_SCSI                                                          06/23/2026 16:04:47 PAGE 4   
 
               {
                 switch (cdb[0]) {
@@ -254,7 +254,7 @@ line level    source
                *--------------------------------------------------------------------------------
                */
               static void scsi_CmdRead(U8_T* cdb)
-C51 COMPILER V9.60.7.0   USB_SCSI                                                          06/18/2026 10:50:20 PAGE 5   
+C51 COMPILER V9.60.7.0   USB_SCSI                                                          06/23/2026 16:04:47 PAGE 5   
 
               {
                 switch (cdb[0]) {
@@ -318,7 +318,7 @@ line level    source
                     SCSI_DataLength = cdb[4];
               
                     if (SCSI_DataLength > sizeof(scsi_RequestSenseData))
-C51 COMPILER V9.60.7.0   USB_SCSI                                                          06/18/2026 10:50:20 PAGE 6   
+C51 COMPILER V9.60.7.0   USB_SCSI                                                          06/23/2026 16:04:47 PAGE 6   
 
                       SCSI_DataLength = sizeof(scsi_RequestSenseData);
                       
@@ -382,7 +382,7 @@ line level    source
                     MSstate = MSC_CMD_RESPONSED;
                     break;
               
-C51 COMPILER V9.60.7.0   USB_SCSI                                                          06/18/2026 10:50:20 PAGE 7   
+C51 COMPILER V9.60.7.0   USB_SCSI                                                          06/23/2026 16:04:47 PAGE 7   
 
                   case SCSI_OP_START_STOP_UNIT :
                   case SCSI_OP_TEST_UNIT_READY:

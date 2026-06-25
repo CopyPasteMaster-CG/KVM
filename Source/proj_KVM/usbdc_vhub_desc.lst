@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBDC_VHUB_DESC                                                   06/18/2026 10:50:18 PAGE 1   
+C51 COMPILER V9.60.7.0   USBDC_VHUB_DESC                                                   06/23/2026 16:04:45 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBDC_VHUB_DESC
@@ -62,7 +62,7 @@ line level    source
   40            0x00,           /*bDeviceProtocol*/
   41            0x08,           /*bMaxPacketSize40*/
   42            0x95,           /*idVendor (0x0b95)*/
-C51 COMPILER V9.60.7.0   USBDC_VHUB_DESC                                                   06/18/2026 10:50:18 PAGE 2   
+C51 COMPILER V9.60.7.0   USBDC_VHUB_DESC                                                   06/23/2026 16:04:45 PAGE 2   
 
   43            0x0b,
   44            0x04,           /*idProduct = 0x6804*/ // KVM Autotype
@@ -126,7 +126,7 @@ line level    source
  102            USB_STRING_DESCRIPTOR_TYPE, /* bDescriptorType*/
  103            
  104            ' ', 0, //1
-C51 COMPILER V9.60.7.0   USBDC_VHUB_DESC                                                   06/18/2026 10:50:18 PAGE 3   
+C51 COMPILER V9.60.7.0   USBDC_VHUB_DESC                                                   06/23/2026 16:04:45 PAGE 3   
 
  105            'M', 0, //2
  106            'T', 0, //3
@@ -190,7 +190,7 @@ line level    source
  164            USBDC_VHUB_PORT_NUM,    // bNumberOfPorts
  165            0x10,           // wHubCharacteristics LSB
  166            0x00,           // wHubCharacteristics MSB
-C51 COMPILER V9.60.7.0   USBDC_VHUB_DESC                                                   06/18/2026 10:50:18 PAGE 4   
+C51 COMPILER V9.60.7.0   USBDC_VHUB_DESC                                                   06/23/2026 16:04:45 PAGE 4   
 
  167            0x32,           // bPowerOnToPowerGood, unit 2ms 
  168            0x01,           // bHubContrCurrent  100mA

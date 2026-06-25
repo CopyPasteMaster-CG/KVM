@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 1   
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KM_SYNC
@@ -62,7 +62,7 @@ line level    source
   40          
   41          /*
   42          $ U8_T    KM_SYNC_Sync_MS_HotkeyState;
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 2   
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 2   
 
   43          */
   44          #define KM_SYNC_MS_HOTKEY_SET       0x01
@@ -126,7 +126,7 @@ line level    source
  102          U8_T    Mouse_Btn;
  103          U8_T    *MouseXb,*MouseYb;  
  104          U8_T    Coordinate_Cnt[4]={0,0,0,0};
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 3   
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 3   
 
  105          U8_T    KM_SYNC_Hotkey_Function[2];
  106          U8_T    KM_SYNC_Hotkey_ScanCode[2];
@@ -190,7 +190,7 @@ line level    source
  164          void KM_SYNC_Send_VHID_Key(U8_T keytype,U8_T keycode);
  165          void KM_SYNC_KB_Hotkey_Function_3_ThirdKeyCheck(U8_T keytype,U8_T keycode);
  166          void TAKS_KM_SYNC_RepeatKeySend(void);
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 4   
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 4   
 
  167          void TASK_KM_HOTKEY_Active_Led_Indicate(void);
  168          void KM_SYNC_Force_Port_Jump(U8_T port);
@@ -254,7 +254,7 @@ line level    source
  226   1        //{
  227   1        //  KM_SYNC_KM_SyncModeLed(LED_ON);       
  228   1        //}   
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 5   
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 5   
 
  229   1        
  230   1        //KM_Power_Led_Control(LED_ON);
@@ -318,7 +318,7 @@ line level    source
  287   1        
  288   1        //1.Check current LED setting
  289   1        //printf("SYNC LED,Set=%02bx,Port=%bu,Led=%02bx\n\r",KM_SYNC_KbLed_Set_State,port,KVM_HostLed[port]);
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 6   
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 6   
 
  290   1        if (KVM_Flash.cSystemFlag2 & (SYSTEM_ALL_SYNC_MASK | SYSTEM_KB_SYNC_MASK))
  291   1        {      
@@ -382,7 +382,7 @@ line level    source
  349          /**----------------------------------------------------------------------------
  350           * Function Name: KM_SYNC_Mouse_Relative_Mode(void)
  351           * Purpose: 
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 7   
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 7   
 
  352           * Params:
  353           * Returns:
@@ -446,7 +446,7 @@ line level    source
  411   5                  break;
  412   5                }
  413   4                
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 8   
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 8   
 
  414   4                if ((ms_btn & 0x07) == (KVM_MS_LEFT_BTN|KVM_MS_MIDDLE_BTN))
  415   4                {
@@ -510,7 +510,7 @@ line level    source
  473   6                  }
  474   5                  else if (KM_SYNC_Sync_MS_HotkeyState & KM_SYNC_MS_HOTKEY_RIGHT)
  475   5                  {
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 9   
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 9   
 
  476   6                    //if (KM_SYNC_Sync_MS_HotkeyState & KM_SYNC_MS_HOTKEY_LEFT)
  477   6                    {
@@ -574,7 +574,7 @@ line level    source
  535   3            KVM_Flash.cSystemFlag3 &= ~SYSTEM_MPASS_MASK;     
  536   3            printf("Mouse Roaming Mode Stop\n\r");
  537   3            #if (KVM_BUZZER_SUPPORT)
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 10  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 10  
 
  538   3            BUZZER_Script_Active(Hotkey_Active_Sound);
  539   3            #endif
@@ -638,7 +638,7 @@ line level    source
  597   2        }
  598   1      } 
  599          
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 11  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 11  
 
  600          /**----------------------------------------------------------------------------
  601           * Function Name: KM_SYNC_Select_Led_Control(U8_T port)
@@ -702,7 +702,7 @@ line level    source
  658   2          { 
  659   3            printf("Switch Mode Start\n\r");        
  660   3            API_Set_Roaming_Mode(API_ROAMING_DISABLE);        
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 12  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 12  
 
  661   3            API_Set_Sync_Mode(API_SYNC_DISABLE);
  662   3            //KM_SYNC_ModeAccross_Control(API_ACROSS_DISABLE);
@@ -766,7 +766,7 @@ line level    source
  719   1          return 1;
  720   1        return 0; 
  721   1      }
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 13  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 13  
 
  722          
  723          #ifdef SYNC_KB_HOTKEY
@@ -830,7 +830,7 @@ line level    source
  780          {
  781   1        Hotkey_Queue[2] = 0;
  782   1        if ((keycode >= CHAR_PAD_1_END) && (keycode <= CHAR_PAD_9_PGUP))
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 14  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 14  
 
  783   1        { 
  784   2          Hotkey_Queue[2] = '1'+(keycode-CHAR_PAD_1_END);           
@@ -894,7 +894,7 @@ line level    source
  842   4                API_Set_Roaming_Mode(API_ROAMING_ENABLE);         
  843   4                API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);         
  844   4                break;
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 15  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 15  
 
  845   4              case KB_HOTKEY_VPID_CHANGER_MODE:
  846   4                KM_Sync_VPid_Change_Handle(0xff);
@@ -958,7 +958,7 @@ line level    source
  904           * void KM_SYNC_KB_Hotkey_Function_1_SecondKeyMakeCheck(U8_T keytype,U8_T keycode)
  905           * Purpose: 
  906           * Params:
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 16  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 16  
 
  907           * Returns:
  908           * Note:
@@ -1022,7 +1022,7 @@ line level    source
  966   5              }
  967   4            }        
  968   3            
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 17  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 17  
 
  969   3            if (KM_SYNC_Hotkey_Function[0])
  970   3            { 
@@ -1086,7 +1086,7 @@ line level    source
 1028   1        { //could be first/second key break   
 1029   2          if (Hotkey_Queue[0] == keycode) //if release the leading key
 1030   2          {
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 18  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 18  
 
 1031   3            Hotkey_Queue[0]= 0; 
 1032   3            KM_SYNC_Sync_KB_HotkeyInx = 3; //wait for final key release     
@@ -1150,7 +1150,7 @@ line level    source
 1090           * Function Name: KM_SYNC_MS_Hotkey_Check(USB_MS_Data_TypeDef *ms_data)
 1091           * Purpose: 
 1092           * Params:
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 19  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 19  
 
 1093           * Returns:
 1094           * Note:
@@ -1214,7 +1214,7 @@ line level    source
 1152   1        if (KVM_Flash.cSystemFlag3 & MPASS_ACROSS_MODE)
 1153   1        {
 1154   2          //KM_SYNC_KM_SyncModeLed(LED_OFF);
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 20  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 20  
 
 1155   2          if (GPIO_GetPinValue(SELECT_LED_PORT[KVM_CurrentHost],SELECT_LED[KVM_CurrentHost])) //if off
 1156   2          { 
@@ -1278,7 +1278,7 @@ line level    source
 1214   3            KM_SYNC_Select_Led_Control(KVM_CurrentHost);
 1215   3          } 
 1216   2          
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 21  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 21  
 
 1217   2          if ((KVM_Flash.cSystemFlag2 & SYSTEM_MS_DN_MASK) == 0x00)           
 1218   2          {
@@ -1342,7 +1342,7 @@ line level    source
 1276   2      
 1277   2          printf("Set Repate Active[%bu](%02bx):%bu\n\r",p,KM_SYNC_Sync_KB_RepeatActive,i);
 1278   2          for (i=2; i < 8;i++)
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 22  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 22  
 
 1279   2          {
 1280   3            if (KM_SYNC_Sync_KB_HID_RepeatTableMake[p][i] == 0x00)
@@ -1406,7 +1406,7 @@ line level    source
 1337   1        DATAST_Keyboard_Send(port,HID_USAGE_PAGE_07_BREAK,usbcode);       
 1338   1      } 
 1339          
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 23  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 23  
 
 1340          /*----------------------------------------------------------------------------
 1341           * void KM_SYNC_Send_VHID_Key(U8_T keytype,U8_T keycode)
@@ -1470,7 +1470,7 @@ line level    source
 1399   5                port = KVM_CurrentHost;
 1400   5                maxport = KVM_CurrentHost+1;
 1401   5              }
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 24  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 24  
 
 1402   4              
 1403   4              for ( ;port < maxport ; port++)
@@ -1534,7 +1534,7 @@ line level    source
 1461   1      }
 1462          
 1463          U8_T KM_SYNC_Port_One_2(void)
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 25  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 25  
 
 1464          {
 1465   1        if (MouseY < (Y_MAX >> 1))
@@ -1598,7 +1598,7 @@ line level    source
 1523          U8_T KM_SYNC_Port(U8_T current_port,U8_T direction)
 1524          {
 1525   1        U8_T nextport;
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 26  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 26  
 
 1526   1        
 1527   1        switch (direction)
@@ -1662,7 +1662,7 @@ line level    source
 1585   3            { // call user define call back function
 1586   4              if (Roaming[Current_Roaming_Table]->Edge.Item[current_port].CallBack_FunctionP)
 1587   4              {
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 27  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 27  
 
 1588   5                Current_Roaming_Direction = direction;
 1589   5                Roaming[Current_Roaming_Table]->Edge.Item[current_port].CallBack_FunctionP();
@@ -1726,7 +1726,7 @@ line level    source
 1647   2        }   
 1648   1        current_port = nextport;
 1649   1        if (current_port_hold != current_port)
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 28  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 28  
 
 1650   1        {
 1651   2          goto KM_SYNC_Power_Status_Check_Start;    
@@ -1790,7 +1790,7 @@ line level    source
 1709   2          
 1710   2          
 1711   2          if (Coordinate_State & ACROSS_TOP_MASK)
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 29  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 29  
 
 1712   2          {
 1713   3            MouseY = Y_BOTTOM_EDGE;
@@ -1854,7 +1854,7 @@ line level    source
 1770   1        if (current_host >= KVM_MAX_PORT)
 1771   1          current_host -= KVM_MAX_PORT;
 1772   1        #endif
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 30  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 30  
 
 1773   1        
 1774   1        //printf("[C:%bu]",current_host);
@@ -1918,7 +1918,7 @@ line level    source
 1832   2        }
 1833   1            
 1834   1        //2.Check Y coordinate  
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 31  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 31  
 
 1835   1        if (Mouse_Data.b.wY.w & 0x8000) //negative
 1836   1        {       
@@ -1982,7 +1982,7 @@ line level    source
 1894   1          }     
 1895   1        }   
 1896   1        else
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 32  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 32  
 
 1897   1        { 
 1898   1          Coordinate_Cnt[2] = 0;
@@ -2046,7 +2046,7 @@ line level    source
 1955   5                {       
 1956   6                  //printf("Left Trigger\n\r"); 
 1957   6                  if (KM_SYNC_Port_Jump_Power(KVM_CurrentHost,ROAMING_LEFT,1))
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 33  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 33  
 
 1958   6                  {
 1959   7                    MouseX = X_RIGHT_EDGE;
@@ -2110,7 +2110,7 @@ line level    source
 2017   4              if ((Coordinate_State & MOUSE_JUMP_MASK)==0)
 2018   4              {
 2019   5                Coordinate_Cnt[2]++;
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 34  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 34  
 
 2020   5                if (Coordinate_Cnt[2] >= Roaming[Current_Roaming_Table]->Edge.Item[KVM_CurrentHost].Up.Latency)
 2021   5                {                             
@@ -2174,7 +2174,7 @@ line level    source
 2079   1        U8_T tb,i;
 2080   1        
 2081   1        tb = table;       
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 35  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 35  
 
 2082   1        for (i=0; (i < KM_SYNC_REPEAT_SIZ) && tb;i++)
 2083   1        {                     
@@ -2238,7 +2238,7 @@ line level    source
 2141   1        if (KVM_Flash.cSystemFlag2 & SYSTEM_ALL_SYNC_MASK)
 2142   1        {   
 2143   2          for (uport=0; uport < USBDC_PORT_MAX ; uport++)
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 36  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 36  
 
 2144   2          {
 2145   3            if (USBDC_UpPortState[uport] & USBDC_ROOTHUB_ATTACHED_MASK)
@@ -2302,7 +2302,7 @@ line level    source
 2201   2        } 
 2202   1      }
 2203          
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 37  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 37  
 
 2204          void TAKS_KM_SYNC_RepeatKeySend(void)
 2205          { 
@@ -2366,7 +2366,7 @@ line level    source
 2262           * Purpose :  
 2263           * Params  :  
 2264           * Returns : none
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 38  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 38  
 
 2265           * Note    : none
 2266           *---------------------------------------------------------------------------- */
@@ -2430,7 +2430,7 @@ line level    source
 2324           * Note    : none
 2325           *---------------------------------------------------------------------------- */
 2326          void TASK_KM_SYNC_DCReset(void)
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 39  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 39  
 
 2327          { 
 2328   1        USBDC_Virtual_Hub_Reset(TASK_Register0,1);
@@ -2494,7 +2494,7 @@ line level    source
 2386   1        { 
 2387   2          KM_SYNC_Get_Ran((port+13));
 2388   2          Ran_Desc[port].idVendor = rand();
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 40  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 40  
 
 2389   2          
 2390   2          KM_SYNC_Get_Ran(port+28);
@@ -2558,7 +2558,7 @@ line level    source
 2448          void KM_SYNC_Manufacturer_Default(void)
 2449          {   
 2450   1        printf("Manufacturer Default\n\r");
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 41  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 41  
 
 2451   1        API_Active_Roaming_Mapping(SINGLE_SCREEN_MODE); 
 2452   1        API_Set_Mouse_Mode(API_ABSOLUTE_MODE);
@@ -2622,7 +2622,7 @@ line level    source
 2510   2          if (i == 0xff)  //if not in the repeat keycode table  
 2511   2          { // add repeat key
 2512   3            if (KM_SYNC_Sync_KB_Repeat != 0xff) //if not full
-C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 10:02:49 PAGE 42  
+C51 COMPILER V9.60.7.0   KM_SYNC                                                           06/23/2026 16:04:47 PAGE 42  
 
 2513   3            {         
 2514   4              tb = ~KM_SYNC_Sync_KB_Repeat;

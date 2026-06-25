@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/18/2026 10:50:20 PAGE 1   
+C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/23/2026 16:04:47 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBHC_ROOTHUB
@@ -62,7 +62,7 @@ line level    source
   40          #endif
   41          };
   42          
-C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/18/2026 10:50:20 PAGE 2   
+C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/23/2026 16:04:47 PAGE 2   
 
   43          /* Flag Declare ---------------------------- */
   44          bit   USBHC_RootHub_Bus_Occupy_Flag;
@@ -126,7 +126,7 @@ line level    source
  102           * Params  : none
  103           * Returns : none
  104           * Note    : none
-C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/18/2026 10:50:20 PAGE 3   
+C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/23/2026 16:04:47 PAGE 3   
 
  105           * ----------------------------------------------------------------------------
  106           */
@@ -190,7 +190,7 @@ line level    source
               #endif
  165   1      } /* End of USBHC_RootHub_Init */
  166          
-C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/18/2026 10:50:20 PAGE 4   
+C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/23/2026 16:04:47 PAGE 4   
 
  167          /*
  168           * -------------------------------------------------------------------------------------------
@@ -254,7 +254,7 @@ line level    source
  226   6                  
  227   6                  if (USB_HAL_Check_PDevice_Status(port))
  228   6                  {
-C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/18/2026 10:50:20 PAGE 5   
+C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/23/2026 16:04:47 PAGE 5   
 
  229   7        #if USBHC_OC_FORCE_SW_RESET
                             printf("Do software reset after 3 seconds\n\r");
@@ -318,7 +318,7 @@ line level    source
  288   8        #if (USBHC_ROOTHUB_DEBUG_MODE)
  289   8                      printf("Next=>Reset\n\r");
  290   8        #endif  
-C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/18/2026 10:50:20 PAGE 6   
+C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/23/2026 16:04:47 PAGE 6   
 
  291   8                      //USBHC_RootHub_Reset_Port(port,100 * (port + 1));
  292   8                      USBHC_RootHub_Reset_Port(port,30);
@@ -382,7 +382,7 @@ line level    source
  350   6                  {
  351   7                    USBHC_RootHub_State_Hold[port] &= ~HC_RH_STATE_PES_MASK;
  352   7                  }
-C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/18/2026 10:50:20 PAGE 7   
+C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/23/2026 16:04:47 PAGE 7   
 
  353   6                }
  354   5        
@@ -446,7 +446,7 @@ line level    source
  410   6                }
  411   5        #if (USBHC_ROOTHUB_DEBUG_MODE) 
  412   5                else
-C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/18/2026 10:50:20 PAGE 8   
+C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/23/2026 16:04:47 PAGE 8   
 
  413   5                {
  414   6                  // Nothing happened
@@ -510,7 +510,7 @@ line level    source
                               }
                               else
                               {
-C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/18/2026 10:50:20 PAGE 9   
+C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/23/2026 16:04:47 PAGE 9   
 
                                 printf("OK\n\r");
                               }
@@ -574,7 +574,7 @@ line level    source
  531   3            USBHC_RootHub_State_OldReport[port] = USBHC_RootHub_State_Report[port];
  532   3          }
  533   2      
-C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/18/2026 10:50:20 PAGE 10  
+C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/23/2026 16:04:47 PAGE 10  
 
  534   2          op_state &= ~portmask;
  535   2          if ((op_state & HC_OPINT_STATE_RHSC_MAP_MASK) == 0)
@@ -638,7 +638,7 @@ line level    source
  593          
  594          /*
  595           * -------------------------------------------------------------------------------------------
-C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/18/2026 10:50:20 PAGE 11  
+C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/23/2026 16:04:47 PAGE 11  
 
  596           * void TASK_USBHC_RootHub_Reset(void)
  597           * Purpose : Monitor the Will do the Root hub housekeeping maintain process
@@ -702,7 +702,7 @@ line level    source
  654   5                TASK_Destory_Current(); // terminiate now
  655   5              }
  656   4            }
-C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/18/2026 10:50:20 PAGE 12  
+C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/23/2026 16:04:47 PAGE 12  
 
  657   3          }
  658   2        }
@@ -766,7 +766,7 @@ line level    source
  716           * -------------------------------------------------------------------------------------------*/
  717          void TASK_USBHC_RootHub_Enumerate_Start(void)
  718          {
-C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/18/2026 10:50:20 PAGE 13  
+C51 COMPILER V9.60.7.0   USBHC_ROOTHUB                                                     06/23/2026 16:04:47 PAGE 13  
 
  719   1        TASK_Destory_Current();
  720   1        TASK_Active(TASK_TYPE_USB,TASK_USBHC_Process_ID,0x00,TASK_Register0,0,0);  // Generate the task

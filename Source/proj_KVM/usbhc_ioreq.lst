@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/18/2026 10:50:19 PAGE 1   
+C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/23/2026 16:04:46 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBHC_IOREQ
@@ -62,7 +62,7 @@ line level    source
   39   1        return USBH_OK;
   40   1      }
   41          
-C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/18/2026 10:50:19 PAGE 2   
+C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/23/2026 16:04:46 PAGE 2   
 
   42          /**
   43            * @brief  usbhc_Ctrl_TD_Header
@@ -126,7 +126,7 @@ line level    source
  101   1      }
  102          
  103          /**
-C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/18/2026 10:50:19 PAGE 3   
+C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/23/2026 16:04:46 PAGE 3   
 
  104            * @brief  USBHC_CtlSendSetup
  105            *         Sends the Setup Packet to the Device
@@ -190,7 +190,7 @@ line level    source
  163   1        td_header->Byte4_Total_Byte = (length & 0x00ff);
  164   1        td_header->Byte5 = (length & 0x0300) >>8;
  165   1        //2-5.(1)Error Count(ingore)
-C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/18/2026 10:50:19 PAGE 4   
+C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/23/2026 16:04:46 PAGE 4   
 
  166   1        //    (2)Dir Token
  167   1        td_header->Byte5 |= TD_DIR_TOKEN_OUT;
@@ -254,7 +254,7 @@ line level    source
  224   1        { 
  225   2          td_header->Byte3 |= TD_SPEED_LOW;
  226   2          td_header->Byte7 = 0x28; //Nake counter
-C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/18/2026 10:50:19 PAGE 5   
+C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/23/2026 16:04:46 PAGE 5   
 
  227   2        }
  228   1        else
@@ -318,7 +318,7 @@ line level    source
  286   1        U16_T         length;
  287   1      
  288   1        //1.Check if need to alloc a new free INTL TD position.
-C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/18/2026 10:50:19 PAGE 6   
+C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/23/2026 16:04:46 PAGE 6   
 
  289   1        td_offset = HC_IntTransfer_Table[intt_id].INTL_Num;
  290   1        //2.Set the Skip Map First
@@ -382,7 +382,7 @@ line level    source
                 {
                   td_header->Byte7 = 1;
                 }
-C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/18/2026 10:50:19 PAGE 7   
+C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/23/2026 16:04:46 PAGE 7   
 
               #else
  352   1        if (td_header->Byte5 & TD_DIR_TOKEN_IN)
@@ -446,7 +446,7 @@ line level    source
  410   1      }
  411          
  412          /**
-C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/18/2026 10:50:19 PAGE 8   
+C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/23/2026 16:04:46 PAGE 8   
 
  413            * @brief  USBHC_Istl_ReqData
  414            *         Used fixed ISTL TD id and fill up the necessary infromation
@@ -510,7 +510,7 @@ line level    source
  472   1        td_header->Byte1 |= COMPLETEION_CODE_MASK;
  473   1      
  474   1        return USBH_OK;
-C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/18/2026 10:50:19 PAGE 9   
+C51 COMPILER V9.60.7.0   USBHC_IOREQ                                                       06/23/2026 16:04:46 PAGE 9   
 
  475   1      }
  476          

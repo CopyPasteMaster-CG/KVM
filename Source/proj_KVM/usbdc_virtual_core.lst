@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 1   
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBDC_VIRTUAL_CORE
@@ -62,7 +62,7 @@ line level    source
   40          //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   41          //Setup Up Token Parser Usage
   42          //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 2   
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 2   
 
   43          U8_T      Request_No;
   44          U8_T      Type_Recipient;
@@ -126,7 +126,7 @@ line level    source
  101   1        // Get serial number
  102   1        if (USBDC_VIRTUAL_HwConfig.serialNum[0] <= HUB_SIZ_STRING_SERIAL)
  103   1        {
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 3   
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 3   
 
  104   2      #if (PROJECT_USB_GENERIC_HID_ENABLE)      
  105   2          memcpy(VHID_StringSerial, USBDC_VIRTUAL_HwConfig.serialNum, USBDC_VIRTUAL_HwConfig.serialNum[0]);
@@ -190,7 +190,7 @@ line level    source
              -D);
               #endif  
  160   1      }
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 4   
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 4   
 
  161          
  162          /*
@@ -254,7 +254,7 @@ line level    source
  220   8                      continue;
  221   8                    } 
  222   7                  }   
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 5   
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 5   
 
  223   6                }
  224   5                
@@ -318,7 +318,7 @@ line level    source
  282   3            //3.Assign DCIEPPR->Prefetch
  283   3            if (prefetch[pinx])
  284   3            {
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 6   
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 6   
 
  285   4              USBDC_Write_Regs(pinx, DCIEPPR, &prefetch[pinx], 1);
  286   4            }
@@ -382,7 +382,7 @@ line level    source
  344   1          in_nak &= ~endpmask;
  345   1        
  346   1        USBDC_Write_Regs(port,(DAyINAKE+devinx),&in_nak,1);
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 7   
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 7   
 
  347   1      }
  348          
@@ -446,7 +446,7 @@ line level    source
                     }
                   }
               #endif /* #if (SYSTEM_EXTENDER_TRANSMITTER) */
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 8   
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 8   
 
  406   2        }
  407   1      }
@@ -510,7 +510,7 @@ line level    source
                     {
                       ExtenderT_Device_Passthough_State[devinx] |= T_USB_PASSTHROUGH_DC_DONE_FLAG;
                       ExtenderT_Passthrough_Done_Check(devinx);
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 9   
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 9   
 
                     }
                   }
@@ -574,7 +574,7 @@ line level    source
  525   4              if (USBDC_Device[devinx].ControlState[port] == IN_DATA)
  526   4              {
  527   5                USBDC_Device[devinx].ControlState[port] = LAST_IN_DATA;
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 10  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 10  
 
  528   5                USBDC_HAL_Endp_Buf_Length_Write(0,port,devinx,0,USBDC_DIR_IN);
  529   5                goto USB_VIRTUAL_Setup_DataStageIn_Post;
@@ -638,7 +638,7 @@ line level    source
  587   5                  if (report_id >= 0x02)
  588   5                  {
  589   6                    return USB_SUCCESS;
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 11  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 11  
 
  590   6                  }
  591   5      #if (PROJECT_USB_GENERIC_HID_ENABLE)
@@ -702,7 +702,7 @@ line level    source
  649   5      #endif                        
  650   5                  
  651   5                }
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 12  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 12  
 
  652   4                break;
  653   4            }
@@ -766,7 +766,7 @@ line level    source
  711   3          }
  712   2          else
  713   2          {
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 13  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 13  
 
  714   3            if ((USBDC_Device[devinx].ControlState[port] != OUT_DATA) && (USBDC_Device[devinx].ControlState[port] !
              -= LAST_OUT_DATA))
@@ -830,7 +830,7 @@ line level    source
  771   6                  hc_passthroug_flag = 1;
  772   6                  //Special handle for Logitech unifying wirelsee mouse
  773   6                }
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 14  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 14  
 
  774   5                if (Length <= USBDC_Device[devinx].EndpMaxSize[0])
  775   5                {
@@ -894,7 +894,7 @@ line level    source
  831          * Input          : None.
  832          * Output         : None.
  833          * Return         : - Return USB_SUCCESS, if the request is performed.
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 15  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 15  
 
  834          *                  - Return USB_UNSUPPORT, if the request is invalid.
  835          *******************************************************************************/
@@ -958,7 +958,7 @@ line level    source
  892          * Output         : None.
  893          * Return         : - Return USB_SUCCESS, if the request is performed.
  894          *                  - Return USB_UNSUPPORT, if the request is invalid.
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 16  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 16  
 
  895          *******************************************************************************/
  896          RESULT USBDC_Standard_SetAddress(U8_T devinx,U8_T port)
@@ -1022,7 +1022,7 @@ line level    source
  953   2            if (endpaddr <= 0x07)
  954   2            {
  955   3              if (state == SET)
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 17  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 17  
 
  956   3              {
  957   4                USBDC_VIRTUAL_Endp_Stall_Control(port,devinx,endpidx,state);
@@ -1086,7 +1086,7 @@ line level    source
 1015          * Function Name  : USBDC_Standard_SetInterface.
 1016          * Description    : This routine is called to set the interface.
 1017          *                  Then each class should configure the interface them self.
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 18  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 18  
 
 1018          * Input          : None.
 1019          * Output         : None.
@@ -1150,7 +1150,7 @@ line level    source
 1077          {
 1078   1        U8_T  infidle;
 1079   1        
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 19  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 19  
 
 1080   1        infidle = 0x01 << wIndex_L;
 1081   1        if (USB_PDevice[devinx].Hid_SetIdle_Allow & infidle)
@@ -1214,7 +1214,7 @@ line level    source
 1139   5                goto USBDC_Class_SetReport_Next;
 1140   5              }
 1141   4            }
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 20  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 20  
 
 1142   3            return  USB_WAIT;
 1143   3          }
@@ -1278,7 +1278,7 @@ line level    source
 1201   2          /* If host of upper system set boot protocol for interface 0, we set all
 1202   2             bootable interfaces to boot protocol.
 1203   2          */
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 21  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 21  
 
 1204   2          if (wIndex_L == 0)
 1205   2          {
@@ -1342,7 +1342,7 @@ line level    source
 1261   1        {
 1262   2          if (devinx >= USBDC_VIRTUAL_DEVINX) // this is virtual devcie base address
 1263   2          {
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 22  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 22  
 
 1264   3            Result = USB_WAIT; // need to passthrough
 1265   3          }
@@ -1406,7 +1406,7 @@ line level    source
 1323   1        {
 1324   2          Related_Endpoint = (wIndex_L & 0x0f);
 1325   2          if (_ValBit(wIndex_L, 7)) 
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 23  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 23  
 
 1326   2          {
 1327   3            /* IN endpoint */
@@ -1470,7 +1470,7 @@ line level    source
 1385   1          && (USBDC_Device[devinx].Current_Configuration[port] != 0) && (USBDC_Device[devinx].Setup[port].b.wValue
              -.w == 0)
 1386   1          && (wIndex_H == 0) && (USBDC_Device[devinx].Setup[port].b.wLength.w == 0x0001)
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 24  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 24  
 
 1387   1          )
 1388   1        {
@@ -1534,7 +1534,7 @@ line level    source
 1443          
 1444          /*******************************************************************************
 1445          * Function Name  : USBDC_VIRTUAL_Port_Status_Control.
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 25  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 25  
 
 1446          * Description    : Return the Alternate Setting of the current interface.
 1447          * Input          : Length - How many bytes are needed.
@@ -1598,7 +1598,7 @@ line level    source
 1505          * Input          :  
 1506          * Output         : None.
 1507          * Return         : Return 0, if the request is invalid when "Length" is 0.
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 26  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 26  
 
 1508          *                  Return "Buffer" if the "Length" is not 0.
 1509          *******************************************************************************/
@@ -1662,7 +1662,7 @@ line level    source
 1566   3            }
 1567   2            else
 1568   2            {
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 27  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 27  
 
 1569   3              //Special Handling for HUB class, due to hub class could be in init processing, so need to put
 1570   3              //into local answer
@@ -1726,7 +1726,7 @@ line level    source
 1628   1        
 1629   1        return Result;
 1630   1      }
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 28  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 28  
 
 1631          
 1632          /*******************************************************************************
@@ -1790,7 +1790,7 @@ line level    source
 1690   2          USBDC_Device[devinx].Setup[port].b.wLength.w = USB_PDevice[devinx].Desc[descid].Len;
 1691   2        }
 1692   1      #endif /*#if (SYSTEM_EXTENDER_TRANSMITTER)*/
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 29  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 29  
 
 1693   1      
 1694   1        USBDC_Device[devinx].Ctrl_TotalByte[port]   = USBDC_Device[devinx].Setup[port].b.wLength.w;
@@ -1854,7 +1854,7 @@ line level    source
 1751   1        RESULT Result = USB_UNSUPPORT;
 1752   1        bit    passthrough_mode = 0;
 1753   1      
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 30  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 30  
 
 1754   1        USBDC_VIRTUAL_Setup_Token(devinx,port);
 1755   1      
@@ -1918,7 +1918,7 @@ line level    source
 1813   3            switch (Request_No)
 1814   3            {
 1815   4              case GET_STATUS:
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 31  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 31  
 
 1816   4                break;
 1817   4              case SET_FEATURE:
@@ -1982,7 +1982,7 @@ line level    source
 1875   5      #if (SYSTEM_USB_PEN_DRIVE_SUPPORT)
                           if (devinx == USBDC_VMSC_DEVINX)
                           {
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 32  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 32  
 
                             Result = USBDC_VMSC_Setup_Process(devinx,port);
                           }
@@ -2046,7 +2046,7 @@ line level    source
 1936   2          {
 1937   3            USBDC_VIRTUAL_Control_Statue_In(devinx,port);
 1938   3          }
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 33  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 33  
 
 1939   2        }
 1940   1        else
@@ -2110,7 +2110,7 @@ line level    source
 1996   4              USBDC_Device[devinx].PassThroughState[port] = PASSTHROUGH_IDLE;
 1997   4              USB_PDevice[devinx].Hc.PassThrough_State = PASSTHROUGH_IDLE;
 1998   4              malloc_free(USB_PDevice[devinx].Hc.Control.Buf);
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 34  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 34  
 
 1999   4              USB_PDevice[devinx].Hc.Control.Buf = 0;
 2000   4              USB_PDevice[devinx].Hc.gState = USB_PDevice[devinx].Hc.PassThrough_gState_bk;
@@ -2174,7 +2174,7 @@ line level    source
 2057   1      
 2058   1        //Skip task if the device is gone      
 2059   1        if ((USB_PDevice[devinx].Addr & USBHC_DEVICE_USED_MASK) == 0x00)  // Device is gone  
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 35  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 35  
 
 2060   1        {
 2061   2          //printf("Devinx:%bx,PassThroug wait cancel\n\r", devinx);
@@ -2238,7 +2238,7 @@ line level    source
 2117          {
 2118   1        U8_T dev_endp;
 2119   1        
-C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/18/2026 10:50:18 PAGE 36  
+C51 COMPILER V9.60.7.0   USBDC_VIRTUAL_CORE                                                06/23/2026 16:04:44 PAGE 36  
 
 2120   1        USBDC_Device[devinx].EndpInterval0[port][endpinx] = 0;
 2121   1        USBDC_Device[devinx].EndpInterval1[port][endpinx] = 0;

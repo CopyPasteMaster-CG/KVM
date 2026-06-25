@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/18/2026 10:50:21 PAGE 1   
+C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/23/2026 16:04:47 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE UARTX_CONSOLE
@@ -62,7 +62,7 @@ line level    source
               //$ Console Behavior define
               //------------------------------------------
               #define AUTO_0A       1
-C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/18/2026 10:50:21 PAGE 2   
+C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/23/2026 16:04:47 PAGE 2   
 
               #define CHAR_ECHO     1
               #define CHAR_TERMINATE1   0x0d
@@ -126,7 +126,7 @@ line level    source
               #define UART_CONSOLE_TAB_MAX  (sizeof(Console_Handle_Tab) /  sizeof(UartConsole_Handle_TypeDef))
                   
               #define CMD_GET_USERNAME    0
-C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/18/2026 10:50:21 PAGE 3   
+C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/23/2026 16:04:47 PAGE 3   
 
               #define CMD_GET_PASSWORD    1
               #define CMD_SEND_USERNAME   2
@@ -190,7 +190,7 @@ line level    source
                 {
                   UartConsole_ProcessID = 0;
                 } 
-C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/18/2026 10:50:21 PAGE 4   
+C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/23/2026 16:04:47 PAGE 4   
 
                 else
                 {
@@ -254,7 +254,7 @@ line level    source
                         UARTx_PutStr(temp);         
                       }         
                     }     
-C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/18/2026 10:50:21 PAGE 5   
+C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/23/2026 16:04:47 PAGE 5   
 
                     #endif          
                     
@@ -318,7 +318,7 @@ line level    source
                     } 
                   }   
                 } /* End of if(RI0) */
-C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/18/2026 10:50:21 PAGE 6   
+C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/23/2026 16:04:47 PAGE 6   
 
               }
               
@@ -382,7 +382,7 @@ line level    source
               void UartConsole_Ack(void)
               {
                 UARTx_PutStr(">OK\n\r"); //responsed command
-C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/18/2026 10:50:21 PAGE 7   
+C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/23/2026 16:04:47 PAGE 7   
 
                 UartConsole_Prompt();
               }
@@ -446,7 +446,7 @@ line level    source
                 UARTx_PutStr(" [6].cs 0/1\n\r");
                 UARTx_PutStr("     autoscan mode control\n\r");
                 UARTx_PutStr("     0-autoscan stop\n\r"); 
-C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/18/2026 10:50:21 PAGE 8   
+C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/23/2026 16:04:47 PAGE 8   
 
                 UARTx_PutStr("     1-sutoscan start\n\r");  
                 UARTx_PutStr(" [7].ci xxx\n\r");
@@ -510,7 +510,7 @@ line level    source
                   else
                   {
                     UartConsole_Err();    
-C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/18/2026 10:50:21 PAGE 9   
+C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/23/2026 16:04:47 PAGE 9   
 
                   }     
                 }     
@@ -574,7 +574,7 @@ line level    source
                   UartConsole_Err();    
                 }   
                 else
-C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/18/2026 10:50:21 PAGE 10  
+C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/23/2026 16:04:47 PAGE 10  
 
                 {
                   pid = atoi(&UartStr[1][1]);
@@ -638,7 +638,7 @@ line level    source
               }
               
               void UartConsole_PlugJumpMode_Handle(void)
-C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/18/2026 10:50:21 PAGE 11  
+C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/23/2026 16:04:47 PAGE 11  
 
               {
                 U8_T wordcnt; 
@@ -702,7 +702,7 @@ line level    source
                     {
                       KVM_Flash.cSystemFlag1 &= ~SYSTEM_PLUGIN_JUMP_MODE;
                       flash_write=1;    
-C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/18/2026 10:50:21 PAGE 12  
+C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/23/2026 16:04:47 PAGE 12  
 
                       UARTx_PutStr("Once");       
                     }       
@@ -766,7 +766,7 @@ line level    source
                 }
                 if (flash_write)
                 {
-C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/18/2026 10:50:21 PAGE 13  
+C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/23/2026 16:04:47 PAGE 13  
 
                   STORAGE_Write(sizeof(KVM_Flash),(U8_T *)&KVM_Flash);
                   UartConsole_Ack();
@@ -830,7 +830,7 @@ line level    source
                       flash_write=1;
                       UARTx_PutStr("OFF");
                     }       
-C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/18/2026 10:50:21 PAGE 14  
+C51 COMPILER V9.60.7.0   UARTX_CONSOLE                                                     06/23/2026 16:04:47 PAGE 14  
 
                   }
                   else

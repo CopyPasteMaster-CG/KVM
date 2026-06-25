@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   SPI_FLASH                                                         06/18/2026 10:50:16 PAGE 1   
+C51 COMPILER V9.60.7.0   SPI_FLASH                                                         06/23/2026 16:04:43 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE SPI_FLASH
@@ -62,7 +62,7 @@ line level    source
               static U8_T spiflsh_ReadStatus(U8_T flashId);
               static void spiflsh_ReadData(U8_T flashId, U32_T flshStartAddr, U8_T* dmaRxPt, U16_T rxLen);
               static void spiflsh_WriteData(U8_T flashId, U32_T flshStartAddr, U8_T* dmaTxPt, U16_T txLen);
-C51 COMPILER V9.60.7.0   SPI_FLASH                                                         06/18/2026 10:50:16 PAGE 2   
+C51 COMPILER V9.60.7.0   SPI_FLASH                                                         06/23/2026 16:04:43 PAGE 2   
 
               static void spiflsh_SectorErase(U8_T flashId, U32_T flshStartAddr);
               static BOOL spiflsh_IsWriteInProcess(U8_T flashId);
@@ -126,7 +126,7 @@ line level    source
                * Note    :
                *--------------------------------------------------------------------------------
                */
-C51 COMPILER V9.60.7.0   SPI_FLASH                                                         06/18/2026 10:50:16 PAGE 3   
+C51 COMPILER V9.60.7.0   SPI_FLASH                                                         06/23/2026 16:04:43 PAGE 3   
 
               //static void spiflsh_ReadID(U16_T *vendorId, U16_T *productId)
               //{
@@ -190,7 +190,7 @@ line level    source
               }
               
               /*
-C51 COMPILER V9.60.7.0   SPI_FLASH                                                         06/18/2026 10:50:16 PAGE 4   
+C51 COMPILER V9.60.7.0   SPI_FLASH                                                         06/23/2026 16:04:43 PAGE 4   
 
                *--------------------------------------------------------------------------------
                * spiflsh_ReadData(U8_T flashId, U32_T flshStartAddr, U8_T* dmaRxPt, U16_T rxLen)
@@ -254,7 +254,7 @@ line level    source
                 spiflsh_DescTable[flashId].opTable[SPI_SE].opCode[2] = (U8_T)(flshStartAddr >> 8);
                 spiflsh_DescTable[flashId].opTable[SPI_SE].opCode[3] = (U8_T)(flshStartAddr);
                 
-C51 COMPILER V9.60.7.0   SPI_FLASH                                                         06/18/2026 10:50:16 PAGE 5   
+C51 COMPILER V9.60.7.0   SPI_FLASH                                                         06/23/2026 16:04:43 PAGE 5   
 
                 while (!SPI_IsMstSpiBusRdy()){}
               
@@ -318,7 +318,7 @@ line level    source
                */
               BOOL SPIFLSH_read_handle(U8_T flashId, U32_T flashAddr, U8_T* dmaRxPt, U8_T length)
               {
-C51 COMPILER V9.60.7.0   SPI_FLASH                                                         06/18/2026 10:50:16 PAGE 6   
+C51 COMPILER V9.60.7.0   SPI_FLASH                                                         06/23/2026 16:04:43 PAGE 6   
 
                 BOOL result;
               
@@ -382,7 +382,7 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
-C51 COMPILER V9.60.7.0   SPI_FLASH                                                         06/18/2026 10:50:16 PAGE 7   
+C51 COMPILER V9.60.7.0   SPI_FLASH                                                         06/23/2026 16:04:43 PAGE 7   
 
    BIT SIZE         =   ----    ----
    EDATA SIZE       =   ----    ----

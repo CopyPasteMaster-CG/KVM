@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBHC_REGS                                                        06/18/2026 10:50:19 PAGE 1   
+C51 COMPILER V9.60.7.0   USBHC_REGS                                                        06/23/2026 16:04:46 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBHC_REGS
@@ -62,7 +62,7 @@ line level    source
   40          {
   41   1        U8_T index;
   42   1        U8_T int2_bk;
-C51 COMPILER V9.60.7.0   USBHC_REGS                                                        06/18/2026 10:50:19 PAGE 2   
+C51 COMPILER V9.60.7.0   USBHC_REGS                                                        06/23/2026 16:04:46 PAGE 2   
 
   43   1      
   44   1        int2_bk = EINT2;
@@ -126,7 +126,7 @@ line level    source
                 printf("HC_DUMP,Reg(0x%02x)=[",(U16_T)hccir);
                 for (index=0; index < length ; index++)
                 {
-C51 COMPILER V9.60.7.0   USBHC_REGS                                                        06/18/2026 10:50:19 PAGE 3   
+C51 COMPILER V9.60.7.0   USBHC_REGS                                                        06/23/2026 16:04:46 PAGE 3   
 
                   if (index <(length-1))
                     printf("%02x ",(U16_T)content[index]);

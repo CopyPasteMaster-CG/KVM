@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 1   
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBHC_MSC_BURST
@@ -62,7 +62,7 @@ line level    source
               U8_T        USBHC_MSC_State;
               U8_T        KVM_CurrentMSC_Next;
               
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 2   
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 2   
 
               U8_T        TASK_USBHC_MSC_Idle_Check_ID;
               U8_T        TASK_USBHC_MSC_Idle_Check_Active_ID;
@@ -126,7 +126,7 @@ line level    source
               {
               #if (USB_HC_MSC_BOT_SUPPORT)
                 U8_T  inf_inx;
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 3   
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 3   
 
               
                 //Check Protcol used
@@ -190,7 +190,7 @@ line level    source
                     toggle_bit = TD_TOGGLE_DATA1;
                     USB_PDevice[devinx].MSC->Toggle_In = 0;
                   }
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 4   
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 4   
 
                   else
                   {
@@ -254,7 +254,7 @@ line level    source
                 USBHC_CORE_SetBit(TD_ATL_Skip_Map,(atl_id+USB_HC_MSC_START),0x00);
                 USBHC_Write_Regs(HC_ATL_TDSKIP_MAP_REG, TD_ATL_Skip_Map, 4);
               #endif        
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 5   
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 5   
 
               }
               
@@ -318,7 +318,7 @@ line level    source
                 }
                 else
                 {
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 6   
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 6   
 
                   USB_PDevice[devinx].MSC->Toggle_In = 0;
                 }
@@ -382,7 +382,7 @@ line level    source
                   return;
                 }
                 
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 7   
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 7   
 
                 //2.if there is any read or write happenied during in last 3 seconds, then recheck again
                 if (USBHC_MSC_Active_State & MSC_ACTIVE_BUSY)
@@ -446,7 +446,7 @@ line level    source
               void USBHC_MSC_Switch_Stage_1(void)
               {
                 //1.Get releative information.
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 8   
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 8   
 
                 
                 //2.Clean the DC register
@@ -510,7 +510,7 @@ line level    source
                 }
               
                 if (KVM_CurrentMSC != KVM_CurrentMSC_Next)
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 9   
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 9   
 
                 {
                   KVM_CurrentMSC = KVM_CurrentMSC_Next;
@@ -574,7 +574,7 @@ line level    source
                   if ((USB_PDevice[devinx].MSC->BURST_In_State & USBHC_MSC_Burst_Done[next_td])) //if next is done by HC
                   {
                     USBHC_MSC_BOT_Check_Next_In(devinx, next_td); //This statement must put in here, after assign the right
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 10  
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 10  
 
              - length of next CBW
               
@@ -638,7 +638,7 @@ line level    source
               /*******************************************************************************
               * void USBHC_MSC_EnableNextBurstTD(U8_T burst_state)
               * Description    : According to the data direction, assing next burst HC TD to DC
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 11  
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 11  
 
               * Input          :  
               * Output         : None.
@@ -702,7 +702,7 @@ line level    source
               }
               
               /*******************************************************************************
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 12  
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 12  
 
               * void USBHC_MSC_Set_DC_Burst_Length(U8_T burst_td,U16_T burstlen)
               * Description    : Set correct burst mode length into DC Buffer
@@ -766,7 +766,7 @@ line level    source
               
               /*******************************************************************************
               * void USBHC_MSC_Flush_DC_Buffer(U8_T port,U8_T devinx,U8_T endpinx)
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 13  
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 13  
 
               * Description    : Flush DC buffer
               * Input          :  
@@ -830,7 +830,7 @@ line level    source
               }
               
               /*----------------------------------------------------------------------------
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 14  
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 14  
 
                * void USBHC_MSC_GetNext_PingPongOut(void)
                * Purpose:
@@ -894,7 +894,7 @@ line level    source
               void USBHC_MSC_Set_CurrentPingPongOut_Used(U8_T devinx)
               {
                 U8_T bulk_td; 
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 15  
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 15  
 
                 
                 bulk_td = USBHC_MSC_PingPongOut_ID - USB_HC_MSC_START; //Get the BULK TD index
@@ -958,7 +958,7 @@ line level    source
  888          
  889          
 
-C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/18/2026 10:50:20 PAGE 16  
+C51 COMPILER V9.60.7.0   USBHC_MSC_BURST                                                   06/23/2026 16:04:46 PAGE 16  
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE

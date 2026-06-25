@@ -1,0 +1,47 @@
+# Keil MDK 编译输出文件
+*.lst
+*.obj
+*.omf
+*.SBR
+*.MAP
+*.build_log.htm
+*.__i
+
+# Keil 项目配置文件
+*.uvgui.*
+*.uvoptx
+*.uvprojx.user
+
+# 编译中间文件
+*.crf
+*.d
+*.o
+*.axf
+*.htm
+*.lnp
+*.dep
+*.iex
+
+# Map 文件
+*.map
+
+# 其他编译产物
+*.elf
+*.lib
+*.exe
+
+# 特定目录 - 如果有单独的 Objects/Listings 目录
+/Source/proj_KVM/*.lst
+/Source/proj_KVM/*.obj
+/Source/proj_KVM/*.omf
+/Source/proj_KVM/*.SBR
+/Source/proj_KVM/*.MAP
+/Source/proj_KVM/*.build_log.htm
+/Source/proj_KVM/*.__i
+/Source/proj_KVM/*.uvgui.*
+
+# 系统文件
+Thumbs.db
+.DS_Store
+*.tmp
+*.bak

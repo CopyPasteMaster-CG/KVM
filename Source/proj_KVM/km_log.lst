@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 1   
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KM_LOG
@@ -62,7 +62,7 @@ line level    source
               #define    HUART_38400      11
               #define    HUART_57600      12
               
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 2   
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 2   
 
               #ifndef REMOTE_HUART_BAUD
               #define REMOTE_HUART_BAUD HUART_115K
@@ -126,7 +126,7 @@ line level    source
               //  0x06,   //16M(bps)
                 0x08,   //12M(bps)
                 0x0C,   //8M(bps)
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 3   
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 3   
 
                 0x10,   //6M(bps)
                 0x18,   //4M(bps)
@@ -190,7 +190,7 @@ line level    source
               U8_T  KM_Host_Connect_State;
               U8_T  hsuart_TxFlag = 0;
               U8_T  KMLogModifier;
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 4   
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 4   
 
               U8_T  OperationMode = 0;
               U16_T AutoMode_Timer=1; //5 Seconds
@@ -254,7 +254,7 @@ line level    source
               void KMLog_Function_KB_Set(void);
               void KMLog_Function_AMS_Req(void);
               void TASK_KMLog_Send_Hotkey(void);
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 5   
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 5   
 
               void KMLog_Handle_Repeat_Key(void);
               void KMLog_Handle_Cls_Roaming_Event(void);
@@ -318,7 +318,7 @@ line level    source
               
               //#ifdef KMLOG_RS232
                 //printf("KMLog Console:@RS-232 @ %s bps\n\r", &KMLogBaudText[HUART_BAUD][0]);
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 6   
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 6   
 
                 HSUR2_Setup(baud,
                       (HSLCR_CHAR_8|HSLCR_STOP_10),
@@ -382,7 +382,7 @@ line level    source
                * Note   : None.
                *--------------------------------------------------------------------------------
                */
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 7   
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 7   
 
               BOOL HSUR2_RegRead(U8_T addr, U8_T *ptData, U8_T dataLen)
               {
@@ -446,7 +446,7 @@ line level    source
                 if (hsur2ErrCount)
                 {
                   /* Enable the Receiver FIFO STOP (RSTOP) bit to stop data characters transfer into RX FIFO.
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 8   
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 8   
 
                      And Reset Rx FIFO and TX FIFO */
                   fifoCtrl = (hsur2FifoCtrl | HSFCR_RSTOP | HSFCR_RFR | HSFCR_TFR);
@@ -510,7 +510,7 @@ line level    source
                   hsur2_ReadLsr();
                   return;
                 }
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 9   
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 9   
 
                 //else if (intrStatus == HSIIR_DMAS_INTR)
                 if (intrStatus == HSIIR_DMAS_INTR)
@@ -574,7 +574,7 @@ line level    source
                * Purpose: Start function will enable the interrupt sources that be configured
                *          in the setup function. This function should be closely called before
                *          running application tasks.
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 10  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 10  
 
                * Params : None.
                * Returns: None.
@@ -638,7 +638,7 @@ line level    source
                * S8_T HSUART_PutChar(S8_T c)
                * Purpose : HSUART output function. This function puts one byte data into the
                *           software character buffer.
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 11  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 11  
 
                * Params  : c - one byte character.
                * Returns : c - one byte character.
@@ -702,7 +702,7 @@ line level    source
                 
                 for (i=0; i < sizeof(KMLog_Format_TypeDef);i++)
                 {    
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 12  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 12  
 
                   HSUART_PutChar(*str);
                   str++;
@@ -766,7 +766,7 @@ line level    source
                           default:
                             KMLogConsoel_Nak();
                           
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 13  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 13  
 
                         }
                         /*  
@@ -830,7 +830,7 @@ line level    source
               {
                 if (KMLogTimeOut_Pause == 0)
                 {
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 14  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 14  
 
                   KMLogTimeOut_Flag=1;
                   //if (KMLog_RxCount != 0)
@@ -894,7 +894,7 @@ line level    source
                     KMLog_Handle_KbLed_Set();
                     break;    
                   case KMLOG_REQ_DEVICE_STATE: //0x04
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 15  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 15  
 
                     KMLog_Handle_Device_State();
                     break;
@@ -958,7 +958,7 @@ line level    source
               void KMLog_Handle_KbLed_State(void)
               { 
                 KMLog_TxBuf[3] = KVM_HostLed[KVM_CurrentHost];  
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 16  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 16  
 
                 KMLog_Send_System(KMLog_TxBuf,KMLOG_TYPE_SYSTEM,KMLOG_REQ_KBLED_STATE,0,0); 
               }
@@ -1022,7 +1022,7 @@ line level    source
                 buf[0] = KMLOG_HEADER0;
                 buf[1] = funcode;   
                 buf[2] = subfuncode;      
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 17  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 17  
 
                 buf[3] = payload;     
                 buf[4] = payload1;
@@ -1086,7 +1086,7 @@ line level    source
                 /*  
                 Km_Data.bHeader   = KMLOG_HEADER0;
                 Km_Data.bDataType   = KMLOG_TYPE_MS;    
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 18  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 18  
 
                 Km_Data.bPayload[0] = msdata[0];
                 Km_Data.bPayload[1] = msdata[1];
@@ -1150,7 +1150,7 @@ line level    source
                 if ((KMLog_VBus_Connect_State == Km_Data.bPayload[1]) && (KMLog_USB_Bus_State == Km_Data.bPayload[2]))
                 {
                   return;
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 19  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 19  
 
                 }   
                 KMLog_VBus_Connect_State = Km_Data.bPayload[1];
@@ -1214,7 +1214,7 @@ line level    source
                * Returns : none
                * Note    : none
                * ----------------------------------------------------------------------------*/ 
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 20  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 20  
 
               void KMLog_Function_AMS_Set(void)
               {
@@ -1278,7 +1278,7 @@ line level    source
                     key_type = HID_USAGE_PAGE_07_MAKE + (Receive_Data->bPayload[0] & 0x01); 
                     #ifdef SYNC
                     KM_SYNC_Send_VHID_Key(key_type,Receive_Data->bPayload[2]);
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 21  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 21  
 
                     #else
                     DATAST_Keyboard_Send(KVM_CurrentHost,key_type,Receive_Data->bPayload[2]);
@@ -1342,7 +1342,7 @@ line level    source
                     }       
                     
                     if (current_port == 0) //not assign all port
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 22  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 22  
 
                     {
                       if (Receive_Data->bPayload[2] & BIT_MASK[port]) 
@@ -1406,7 +1406,7 @@ line level    source
                 }
               }
               
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 23  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 23  
 
               /**----------------------------------------------------------------------------
                * void KMLog_Handle_Mouse_Mode_Set(void)
@@ -1470,7 +1470,7 @@ line level    source
                   if (Receive_Data->bPayload[2] & BIT_MASK[0])
                   {
                     //Coordinate_State = 0;
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 24  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 24  
 
                     KM_SYNC_Mouse_Jump_State_Reset();
                   }     
@@ -1534,7 +1534,7 @@ line level    source
                   return;
                 }
                 
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 25  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 25  
 
                 for (c=0; c < 5 ;c++)
                 {
@@ -1598,7 +1598,7 @@ line level    source
 1523   1        
 1524   1        Last_Keyboard_Data[0] = datatype;
 1525   1        Last_Keyboard_Data[1] = datausage;
-C51 COMPILER V9.60.7.0   KM_LOG                                                            06/18/2026 10:50:21 PAGE 26  
+C51 COMPILER V9.60.7.0   KM_LOG                                                            06/23/2026 16:04:47 PAGE 26  
 
 1526   1        Last_Keyboard_Data[2] = ((datacode & 0xff00) >> 8);
 1527   1        Last_Keyboard_Data[3] = (datacode & 0x00ff);

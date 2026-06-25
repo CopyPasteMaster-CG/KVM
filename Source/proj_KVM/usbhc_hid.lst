@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/18/2026 10:50:20 PAGE 1   
+C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/23/2026 16:04:46 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBHC_HID
@@ -62,7 +62,7 @@ line level    source
   40          static RESULT usbhc_Class_GetRptDesc(U8_T devinx,U8_T td_id,U8_T inf_id);
   41          #if defined(HID_PARSER_CORE_KB)
   42          extern void USBHC_HidParser_ReportDescription(U8_T devinx,U8_T inf_id);
-C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/18/2026 10:50:20 PAGE 2   
+C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/23/2026 16:04:46 PAGE 2   
 
   43          #else
               extern void USBHC_HidParser_ReportDescription(U8_T devinx);
@@ -126,7 +126,7 @@ line level    source
  102            * @brief  USBH_HandleControl
  103            *         Handles the USB control transfer state machine
  104            * @param  pdev: Selected device
-C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/18/2026 10:50:20 PAGE 3   
+C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/23/2026 16:04:46 PAGE 3   
 
  105            * @retval Status
  106            */
@@ -190,7 +190,7 @@ line level    source
  164   2          TASK_Active(TASK_TYPE_USB,TASK_USBHC_Process_ID,0x00,devinx,0,0); // Generate the task
  165   2          return;
  166   2        }
-C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/18/2026 10:50:20 PAGE 4   
+C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/23/2026 16:04:46 PAGE 4   
 
  167   1      
  168   1        if (Result == USB_SUCCESS)
@@ -254,7 +254,7 @@ line level    source
  224   1      }
  225          
  226          /**
-C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/18/2026 10:50:20 PAGE 5   
+C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/23/2026 16:04:46 PAGE 5   
 
  227          * @brief  USBHC_Classreq_SetReport
  228          *         Issues Set Report 
@@ -318,7 +318,7 @@ line level    source
  283          *         Issues Set Protocol command
  284          * @param  devinx: Selected device
  285          * @param  td_id    : TD id
-C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/18/2026 10:50:20 PAGE 6   
+C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/23/2026 16:04:46 PAGE 6   
 
  286          * @param  intf_id  : Interface ID
  287          * @param  mode     : Protocol mode value(Muse 0/1)
@@ -382,7 +382,7 @@ line level    source
  342   3            if (USB_PDevice[devinx].Hc.Control.State == CTRL_STALLED)
  343   3            {
  344   4              Result=USB_STALLED_WAIT;
-C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/18/2026 10:50:20 PAGE 7   
+C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/23/2026 16:04:46 PAGE 7   
 
  345   4            }
  346   3            else
@@ -446,7 +446,7 @@ line level    source
  403   3            USB_PDevice[devinx].Hc.HID_EnumState = HID_ENUM_IDLE;
  404   3            Result=USB_SUCCESS;
  405   3          }
-C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/18/2026 10:50:20 PAGE 8   
+C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/23/2026 16:04:46 PAGE 8   
 
  406   2        }
  407   1        else
@@ -510,7 +510,7 @@ line level    source
                     USB_PDevice[devinx].Hc.HID_EnumState = HID_ENUM_IDLE;
                     Result=USB_SUCCESS;
                   }
-C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/18/2026 10:50:20 PAGE 9   
+C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/23/2026 16:04:46 PAGE 9   
 
                 }
                 else
@@ -574,7 +574,7 @@ line level    source
  525   3            USB_PDevice[devinx].HID_Kb_LED_Value[0] = pageid;
  526   3          }
  527   2          else
-C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/18/2026 10:50:20 PAGE 10  
+C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/23/2026 16:04:46 PAGE 10  
 
  528   2          {
  529   3            start = 1;
@@ -638,7 +638,7 @@ line level    source
  585           * Purpose : Perform the set address operation of enumearation
  586           * Params  : none
  587           * Returns : none
-C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/18/2026 10:50:20 PAGE 11  
+C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/23/2026 16:04:46 PAGE 11  
 
  588           * Note    : none
  589           * ----------------------------------------------------------------------------*/
@@ -702,7 +702,7 @@ line level    source
  645   1      }
  646          
  647          /* End of usbhc_hid.c */
-C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/18/2026 10:50:20 PAGE 12  
+C51 COMPILER V9.60.7.0   USBHC_HID                                                         06/23/2026 16:04:46 PAGE 12  
 
  648          
  649          

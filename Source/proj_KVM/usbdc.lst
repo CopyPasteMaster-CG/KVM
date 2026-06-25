@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 1   
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBDC
@@ -62,7 +62,7 @@ line level    source
               U8_T    VDevice_Keep_Quite_Flag[USBDC_PORT_MAX];
               U8_T    DC_Keep_Quite_Flag;
               U8_T    TASK_DC_Keep_Quite_TASKID;
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 2   
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 2   
 
               U8_T    TASK_DC_Keep_Quite_Active_TaskID[USBDC_PORT_MAX];
               U8_T    TASK_VDevice_Keep_Quite_TASKID;
@@ -126,7 +126,7 @@ line level    source
  101   1      
  102   1        /*----------------------------------------------*/
  103   1        /*03.Generate Virtual Hub & HID Endpoint Buffer */
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 3   
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 3   
 
  104   1        USBDC_VIRTUAL_Init();
  105   1      
@@ -190,7 +190,7 @@ line level    source
  163   2          pId = 2;
  164   2          pIsr = DC2ISR;
  165   2          pInsr = DC2INSR;
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 4   
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 4   
 
  166   2          pEsmr = DC2ESMR;
  167   2        }
@@ -254,7 +254,7 @@ line level    source
  225   2          if (USBDC_Device[devinx].Interval_Check[pId] & BIT_MASK[endpinx]) //Still in measume period
  226   2          {
  227   3            USBDC_Device[devinx].EndpInterval0[pId][endpinx] = USBDC_Device[devinx].EndpInterval1[pId][endpinx];
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 5   
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 5   
 
  228   3            USBDC_Device[devinx].EndpInterval1[pId][endpinx] = SWTIMER_Counter;
  229   3            
@@ -318,7 +318,7 @@ line level    source
                           switch (KVM_CurrentUSBAudio)
                           {
                             case 0:
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 6   
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 6   
 
                               _USBDC_DC0DR_SFR(cir);
                               _USBDC_DC0CIR_SFR(DA_CR[devinx]);
@@ -382,7 +382,7 @@ line level    source
                           case 0:
                             _USBDC_DC0DR_SFR(cir);
                             _USBDC_DC0CIR_SFR(DA_CR[devinx]);
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 7   
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 7   
 
                             break;
                           case 1:
@@ -446,7 +446,7 @@ line level    source
  407   4              _USBDC_DC2CIR_SFR(cir);
  408   4            }
  409   3            else
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 8   
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 8   
 
  410   3            {
  411   4              _USBDC_DC3DR_SFR(dr);
@@ -510,7 +510,7 @@ line level    source
  469   1      
  470   1        /* Check if any port act did not process */
  471   1        if (port_act & UDC_PORT_ALL_ACT)
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 9   
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 9   
 
  472   1        {
  473   2          goto REDO;
@@ -574,7 +574,7 @@ line level    source
  530   2          if (USBDC_UpPortState[pid] & USBDC_ROOTHUB_RESUME_MASK)
  531   2          {             
  532   3            //printf("Port:%bu Normal_Resume\n\r",pid);
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 10  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 10  
 
  533   3            USBDC_Port_Normal(pid);
  534   3            //USBDC_UpPortState[pid] &= ~(USBDC_ROOTHUB_SUSPEND_MASK|USBDC_ROOTHUB_RESUME_MASK);
@@ -638,7 +638,7 @@ line level    source
  592   2          {
  593   3            //1-3.Check IN/OUT Transfer for other endpoint 
  594   3            if ((insr&DC_INSR_DIR_MASK) == DC_INSR_DIR_IN)
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 11  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 11  
 
  595   3            {
  596   4              if (USB_PDevice[devinx].DevClass == USB_HUB_CLASS)
@@ -702,7 +702,7 @@ line level    source
  651   7      #ifdef SYNC 
  652   7                    if ((TASK_DATAST_PS2_Generic_MS_ActiveFlag & BIT_MASK[pid])==0)
  653   7                    {
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 12  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 12  
 
  654   8                      #if (DATAST_GENERIC_MS_IN_QUEUE)    
  655   8                      if (DATAST_Generic_MS_IN_WP != DATAST_Generic_MS_IN_RP[pid]) //There is still ne
@@ -766,7 +766,7 @@ line level    source
                                 DATAST_Move_Intr_Buffer(KVM_CurrentHost,devinx,endpinx,intt_id);
                               }
                             }
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 13  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 13  
 
                           }
                           else
@@ -830,7 +830,7 @@ line level    source
                         {
                           USBHC_MSC_DC_Burst_In_Handle(devinx);
                         }
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 14  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 14  
 
               #endif //#if (SYSTEM_EXTENDER_TRANSMITTER)
                       }
@@ -894,7 +894,7 @@ line level    source
               #endif /* (SYSTEM_MSC_DEVICE_SUPPORT || SYSTEM_EXTENDER_MSC_SUPPORT) */
  831   5      
  832   5                if ((USBDC_Device[devinx].EndpType[endpinx] & USB_EP_TYPE_MASK) == USB_EP_TYPE_INTR)
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 15  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 15  
 
  833   5                {
  834   6                  if (pid == KVM_CurrentHost)
@@ -958,7 +958,7 @@ line level    source
  892   3              _USBDC_DC1CIR_SFR(DCCR);
  893   3              _USBDC_DC1DR_READ_SFR(insr);
  894   3              break;
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 16  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 16  
 
  895   3            case 2:
  896   3              _USBDC_DC2CIR_SFR(DCCR);
@@ -1022,7 +1022,7 @@ line level    source
  953   5                  break;
  954   5              }
  955   4              /* No Upstream port plugged, then reenabled the first jump function */
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 17  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 17  
 
  956   4              if (index >= KVM_MAX_PORT)
  957   4                KVM_Plug_In_Jump_Flag = 0;
@@ -1086,7 +1086,7 @@ line level    source
 1014   1        //4.Check Suspend Status
 1015   1        if (isr & DC_ISR_USUS_MASK)
 1016   1        {
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 18  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 18  
 
 1017   2          //printf("> DC_Port:%bu, Suspend\n\r",pid);
 1018   2          USBDC_Port_GoSuspend(pid);
@@ -1150,7 +1150,7 @@ line level    source
 1074   2          {
 1075   3             //printf("  * Port:%bu,AccessoryTime Reset]\n\r",pid);
 1076   3             Task_Active_Table[USBDC_Resume_Task_ActiveID[pid]-1].Task_Interval.w = 1000;
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 19  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 19  
 
 1077   3          }   
 1078   2          USBDC_VHub_Resume_HubPort_Device(pid);
@@ -1214,7 +1214,7 @@ line level    source
 1136   2        }
 1137   1      #endif  
 1138   1      }
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 20  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 20  
 
 1139          
 1140          /* ----------------------------------------------------------------------------
@@ -1278,7 +1278,7 @@ line level    source
 1197   2          USBDC_Port_Resume(pid);
 1198   2        }
 1199   1      }
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 21  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 21  
 
 1200          
 1201          /* ----------------------------------------------------------------------------
@@ -1342,7 +1342,7 @@ line level    source
 1259   1      }
 1260          
 1261          /* ----------------------------------------------------------------------------
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 22  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 22  
 
 1262           * void USBDC_Port_Reset(void)
 1263           * Purpose : USBDC Port reset operation:only clear the status
@@ -1406,7 +1406,7 @@ line level    source
 1321   1        DC2DR = (iaddr & 0x0000ff00) >> 8;
 1322   1        DC2DR = 0x00;
 1323   1        DC2CIR = INDBASR;
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 23  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 23  
 
 1324   1      
 1325   1        /*02_4. Assign Upstream Port 3 */
@@ -1470,7 +1470,7 @@ line level    source
 1383           *----------------------------------------------------------------------------*/
 1384          U8_T USBDC_VirtualDevice_Create(U8_T devinx)
 1385          {
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 24  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 24  
 
 1386   1        U8_T          roothubport, direction,index,skip;
 1387   1        U8_T          infinx, endpinx, endpnum, infnum;
@@ -1534,7 +1534,7 @@ line level    source
 1445   3            //printf(">>> KVM ERROR: VDevinx:%bx VHub = Null, skip Mount\n\r", devinx);
 1446   3            return 0;
 1447   3          }
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 25  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 25  
 
 1448   2        }
 1449   1        USBDC_Device[devinx].DevIdx |= DC_USED_MASK;
@@ -1598,7 +1598,7 @@ line level    source
 1506   1        //Check the HUB Class
 1507   1      #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
                 if (USB_PDevice[devinx].DevClass == USB_AUDIO_CLASS)
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 26  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 26  
 
                 {
                   USBHC_Audio_IN_Flag = 0;
@@ -1662,7 +1662,7 @@ line level    source
                       if ((direction & USBDC_TABLE_DIR_MASK) == USBDC_TABLE_DIR_OUT_MASK)
                         direction |= USBDC_TABLE_DOUBF_MASK;
                 #endif
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 27  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 27  
 
                     }
                   }
@@ -1726,7 +1726,7 @@ line level    source
 1626   4              {
 1627   5                USBDC_Device[devinx].VHub->PortStatus[pinx][vhub_port].wPortStatusL |= L_PortStatus_Connection;
 1628   5                USBDC_Device[devinx].VHub->PortStatus[pinx][vhub_port].wPortStatusH &= ~(H_PortStatus_HighSpeed|H_Por
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 28  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 28  
 
              -tStatus_LowSpeed);  //Force Full Speed device /*Importtant*/
 1629   5                USBDC_Device[devinx].VHub->PortStatus[pinx][vhub_port].wPortChangeL |= L_PortChange_Connection; //rep
@@ -1790,7 +1790,7 @@ line level    source
 1683   1        //3.Clear DC Hub buffer memory
 1684   1        if (USB_PDevice[devinx].DevClass == USB_HUB_CLASS)
 1685   1        {
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 29  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 29  
 
 1686   2          malloc_free(USBDC_Device[devinx].VHub);
 1687   2          USBDC_Device[devinx].VHub = 0;
@@ -1854,7 +1854,7 @@ line level    source
 1745   4            }
 1746   3          }
 1747   2        }
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 30  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 30  
 
 1748   1      
 1749   1        //5.Clear Virtual device table
@@ -1918,7 +1918,7 @@ line level    source
                     {
                       if (pinx != KVM_CurrentMSC)
                       { 
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 31  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 31  
 
                         continue;
                       }
@@ -1982,7 +1982,7 @@ line level    source
 1868          
 1869           
 1870          #if (SYSTEM_MSC_DEVICE_SUPPORT)
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 32  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 32  
 
               /**----------------------------------------------------------------------------
                * void USBDC_Maintain_MSC_PDevice(void)
@@ -2046,7 +2046,7 @@ line level    source
 1930   3              buf_cnt = 2;
 1931   3            else
 1932   3              buf_cnt = 1;
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 33  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 33  
 
 1933   3      
 1934   3            buf_cnt <<= 4;
@@ -2110,7 +2110,7 @@ line level    source
 1992   4              return 0x11;
 1993   4            }
 1994   3            else
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 34  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 34  
 
 1995   3              return 0x00;
 1996   3          }
@@ -2174,7 +2174,7 @@ line level    source
 2054   1      
 2055   1        if (port == KVM_CurrentHost)
 2056   1        {   
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 35  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 35  
 
 2057   2          USBHC_CORE_Change_IntTransfer_Interval(devinx,endpinx,interval);
 2058   2        }
@@ -2238,7 +2238,7 @@ line level    source
 2116   3          }
 2117   2        } 
 2118   1      #ifdef RESUME_DELAY 
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 36  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 36  
 
                 else
                 {
@@ -2302,7 +2302,7 @@ line level    source
 2178   3              _USBDC_DC0CIR_SFR(DCCR);
 2179   3              break;
 2180   3            case 1: 
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 37  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 37  
 
 2181   3              _USBDC_DC1DR_SFR(DC_CR_FSE0_SET);
 2182   3              _USBDC_DC1CIR_SFR(DCCR);
@@ -2366,7 +2366,7 @@ line level    source
 2240          #ifdef RESUME_DELAY 
               /*----------------------------------------------------------------------------
                * void TASK_VDevice_Keep_Quite(void)
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 38  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 38  
 
                * Purpose: Measure the endpoint interval time
                * Params : NONE
@@ -2430,7 +2430,7 @@ line level    source
 2301          {
 2302   1        TASK_Destory_Current();
 2303   1        switch(TASK_Register0)
-C51 COMPILER V9.60.7.0   USBDC                                                             06/18/2026 10:50:18 PAGE 39  
+C51 COMPILER V9.60.7.0   USBDC                                                             06/23/2026 16:04:44 PAGE 39  
 
 2304   1        {
 2305   2          case 0: 

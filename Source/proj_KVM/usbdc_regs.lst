@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/18/2026 10:50:18 PAGE 1   
+C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/23/2026 16:04:44 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBDC_REGS
@@ -62,7 +62,7 @@ line level    source
   40          };
   41          
   42          const U8_T DA_CR[USBDC_DEVICE_MAX] =
-C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/18/2026 10:50:18 PAGE 2   
+C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/23/2026 16:04:44 PAGE 2   
 
   43          {
   44            0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97
@@ -126,7 +126,7 @@ line level    source
  102          * Description    : Write Regs
  103          * Input          : None.
  104          * Output         : None.
-C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/18/2026 10:50:18 PAGE 3   
+C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/23/2026 16:04:44 PAGE 3   
 
  105          * Return         : None.
  106          *************************************************************************************************/
@@ -190,7 +190,7 @@ line level    source
  164          * Description    : Write Regs
  165          * Input          : None.
  166          * Output         : None.
-C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/18/2026 10:50:18 PAGE 4   
+C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/23/2026 16:04:44 PAGE 4   
 
  167          * Return         : None.
  168          *************************************************************************************************/
@@ -254,7 +254,7 @@ line level    source
  226          void USBDC_REGS_Address_Write(U8_T port,U8_T devinx,U8_T address)
  227          {
  228   1        U8_T reg;
-C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/18/2026 10:50:18 PAGE 5   
+C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/23/2026 16:04:44 PAGE 5   
 
  229   1        U8_T cir;
  230   1        
@@ -318,7 +318,7 @@ line level    source
  288   1        dr[1] = reg1;
  289   1        cir = DA_EP_CFGR[devinx] + (ep << 1);
  290   1        USBDC_Write_Regs(port,cir,dr,2);
-C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/18/2026 10:50:18 PAGE 6   
+C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/23/2026 16:04:44 PAGE 6   
 
  291   1        
  292   1      #if (USBDC_DEBUG_MODE)
@@ -382,7 +382,7 @@ line level    source
  350   1          reg &= ~DA_CR_STALL_SET;
  351   1      
  352   1        if (flag & DA_CR_SCLR_MASK)
-C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/18/2026 10:50:18 PAGE 7   
+C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/23/2026 16:04:44 PAGE 7   
 
  353   1          reg |= DA_CR_SCLR_MASK;
  354   1        
@@ -446,7 +446,7 @@ line level    source
  412           * ----------------------------------------------------------------------------
  413           * void USBDC_REGS_Device_Reset(U8_T port,U8_T devinx)
  414           * Purpose : 
-C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/18/2026 10:50:18 PAGE 8   
+C51 COMPILER V9.60.7.0   USBDC_REGS                                                        06/23/2026 16:04:44 PAGE 8   
 
  415           * Params  : none
  416           * Returns : none

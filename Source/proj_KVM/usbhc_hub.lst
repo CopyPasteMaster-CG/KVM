@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/18/2026 10:50:20 PAGE 1   
+C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/23/2026 16:04:46 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBHC_HUB
@@ -62,7 +62,7 @@ line level    source
   40            TASK_TYPE_EVENT, // Task ID from 0~255
   41            0, // Task ID from 0~255
   42            0, // Task Wait for Semaphore to active
-C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/18/2026 10:50:20 PAGE 2   
+C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/23/2026 16:04:46 PAGE 2   
 
   43            0, // Task Event
   44            0, // Task transfer parameter
@@ -126,7 +126,7 @@ line level    source
  100   1        switch (USB_PDevice[devinx].Hc.HUB_EnumState)
  101   1        {
  102   2          case HUB_ENUM_GET_DESC: //Start to Get device description
-C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/18/2026 10:50:20 PAGE 3   
+C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/23/2026 16:04:46 PAGE 3   
 
  103   2            Result = USBHC_Class_GetHubDesc(devinx,td_id);
  104   2            break;
@@ -190,7 +190,7 @@ line level    source
  162   1          (USB_PDevice[devinx].Hc.HUB_EnumState == HUB_ENUM_IDLE) ||
  163   1          (USB_PDevice[devinx].Hc.HUB_EnumState == HUB_ENUM_FAIL))
  164   1        {
-C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/18/2026 10:50:20 PAGE 4   
+C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/23/2026 16:04:46 PAGE 4   
 
  165   2          USBHC_CORE_Free_TD(td_id);
  166   2          USB_PDevice[devinx].Hc.HUB_EnumState = HUB_ENUM_IDLE;
@@ -254,7 +254,7 @@ line level    source
              -er
  224   3            if (USB_PDevice[devinx].Hc.Control.Buf == NULL)
  225   3            {
-C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/18/2026 10:50:20 PAGE 5   
+C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/23/2026 16:04:46 PAGE 5   
 
  226   4              USBHC_CORE_Free_TD(td_id);
  227   4              USBHC_Memory_Fail_Msg(0x04);
@@ -318,7 +318,7 @@ line level    source
  285           * Note    : none
  286           * ----------------------------------------------------------------------------*/
  287          RESULT USBHC_Class_HubFeature(U8_T devinx,U8_T td_id,U8_T usbhc_hub_port,U8_T usbhc_hub_featuretype,U16_T 
-C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/18/2026 10:50:20 PAGE 6   
+C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/23/2026 16:04:46 PAGE 6   
 
              -usbhc_hub_feature)
  288          {
@@ -382,7 +382,7 @@ line level    source
  345   3          }
  346   2        }
  347   1        return Result;
-C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/18/2026 10:50:20 PAGE 7   
+C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/23/2026 16:04:46 PAGE 7   
 
  348   1      }
  349          
@@ -446,7 +446,7 @@ line level    source
  407           * ----------------------------------------------------------------------------*/
  408          void USBHC_HUB_Remove_Downstream_Device(U8_T hubdevinx,U8_T portid,U16_T change_event,U8_T event_type)
  409          {
-C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/18/2026 10:50:20 PAGE 8   
+C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/23/2026 16:04:46 PAGE 8   
 
  410   1        U8_T downstream,address;
  411   1        
@@ -510,7 +510,7 @@ line level    source
  466   2      //    {
  467   2      //      USBDC_WakeupUpstreamHost(KVM_CurrentHost);
  468   2      //    }
-C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/18/2026 10:50:20 PAGE 9   
+C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/23/2026 16:04:46 PAGE 9   
 
  469   2          return USB_BUSY;
  470   2        }
@@ -574,7 +574,7 @@ line level    source
  526   6                  //Assign device address
  527   6                  USBHC_Enumerate_New_Addr = usbhc_HUB_GetNewAddress(); // for HUB Layer, start from 0x08~0x0f
  528   6                  //Store device speed.
-C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/18/2026 10:50:20 PAGE 10  
+C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/23/2026 16:04:46 PAGE 10  
 
  529   6                  if (portstatus & HUB_PORT_PORTSTATUS_LOWSPEED) // Low Speed
  530   6                    USB_PDevice[free_deviceid].InterfaceNum |= USBHC_DEVICE_SPEED_MASK;  // store speed type
@@ -638,7 +638,7 @@ line level    source
  586   2          usbhc_HUB_Control_Prepare(devinx,portid,CLEAR_FEATURE,C_PORT_OVER_CURRENT);
  587   2          USB_PDevice[devinx].Hc.HUB_EnumState = HUB_CLEAR_FEATURE;
  588   2          return USB_BUSY;
-C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/18/2026 10:50:20 PAGE 11  
+C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/23/2026 16:04:46 PAGE 11  
 
  589   2        }
  590   1        
@@ -702,7 +702,7 @@ line level    source
  648           * Returns : RESULT
  649           * Note    : none
  650           * ----------------------------------------------------------------------------*/
-C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/18/2026 10:50:20 PAGE 12  
+C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/23/2026 16:04:46 PAGE 12  
 
  651          void USBHC_HUB_ReleaseAddress(U8_T addr)
  652          { 
@@ -766,7 +766,7 @@ line level    source
  710   4              TASK_USBHC_HUB_RemoveDevinx_Fork(hubdevinx);
  711   4              addr = USB_PDevice[hubdevinx].Addr & USBHC_DEVICE_ADDR_MASK;
  712   4              USBHC_HUB_ReleaseAddress(addr);
-C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/18/2026 10:50:20 PAGE 13  
+C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/23/2026 16:04:46 PAGE 13  
 
  713   4            }
  714   3          }
@@ -830,7 +830,7 @@ line level    source
  771   3            USBHC_HUB_Enumerate_Occupy_Devinx = devinx;
  772   3            USBHC_HUB_Enumerate_Occupy_Flag=1; 
  773   3            USB_PDevice[devinx].Hc.HUB_EnumPort = portid;
-C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/18/2026 10:50:20 PAGE 14  
+C51 COMPILER V9.60.7.0   USBHC_HUB                                                         06/23/2026 16:04:46 PAGE 14  
 
  774   3            USB_PDevice[devinx].Hc.ResetCnt++;
  775   3            usbhc_HUB_Control_Prepare(devinx,portid,SET_FEATURE,PORT_RESET);

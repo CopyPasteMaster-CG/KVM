@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 1   
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBHC_CORE
@@ -62,7 +62,7 @@ line level    source
   40            HC_ROOTHUB1_CON_REG,
   41            HC_ROOTHUB2_CON_REG,
   42            HC_ROOTHUB3_CON_REG
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 2   
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 2   
 
   43          #endif
   44          };
@@ -126,7 +126,7 @@ line level    source
  102          
  103          /* LOCAL SUBPROGRAM BODIES */
  104          static void usbhc_core_ATL_Done_Handle(U8_T devinx, U8_T atl_id);
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 3   
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 3   
 
  105          void TASK_USBHC_CORE_BULK_Retry_Handle(void);
  106          /*
@@ -190,7 +190,7 @@ line level    source
  164   1        reg[1] = USB_HC_ISTL_BLK_SIZE_MSB;
  165   1        USBHC_Write_Regs(HC_ISTL_BLK_SIZE_REG,reg,2);
  166   1      
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 4   
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 4   
 
  167   1        //--------------------------------------------------------------
  168   1        //3-1.Assign INTL Buffer size
@@ -254,7 +254,7 @@ line level    source
  226   1        //5-4.Setting INTL TD Skip Map Register
  227   1        memset(TD_INTL_Skip_Map,0x00,sizeof(TD_INTL_Skip_Map));
  228   1        for (index=0;index < USB_HC_INTL_MAX ;index++)
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 5   
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 5   
 
  229   1        {
  230   2          USBHC_CORE_SetBit(TD_INTL_Skip_Map,index,0x01); // set skip to true
@@ -318,7 +318,7 @@ line level    source
                 EXTINT3_DISABLE;
               #endif
  289   1      
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 6   
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 6   
 
  290   1        USBHC_TD_Activity_Cnt = 0;
  291   1        
@@ -382,7 +382,7 @@ line level    source
  349   1      
  350   1        //Check SOF Interrupt
  351   1        usbhc_IntrStateFlag = (int_state & ~(HC_INT_STATE_SOF_SET | HC_INT_STATE_ISTL0_SET));
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 7   
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 7   
 
  352   1      
  353   1        //Check Operational Interrupt
@@ -446,7 +446,7 @@ line level    source
                   if (op_state_bk & USB_HC_ISTL_OUT_DONE_MASK) //Isochronous In ISTL[0]
                   {
               #if (SYSTEM_EXTENDER_RECEIVER)      
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 8   
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 8   
 
                     if (KVM_CurrentUSBAudio == REMOTE_HOST_PORT)
                     {
@@ -510,7 +510,7 @@ line level    source
                               HCTD_Table.ISTL[0].TD.Byte1 |= TD_ACTIVED_MASK;
                               TD_ISTL_Skip_Map &= ~0x01;
               
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 9   
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 9   
 
                               //Clear Done Map
                               _USBHC_HCDR_SFR(0x01);
@@ -574,7 +574,7 @@ line level    source
              -ill not over the bufer size
                           HCTD_Table.ISTL[USB_HC_ISTL_OUT_MAX].TD.Byte5 &= 0xFC;
                           HCTD_Table.ISTL[USB_HC_ISTL_OUT_MAX].TD.Byte1 |= TD_ACTIVED_MASK;
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 10  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 10  
 
                           HCTD_Table.ISTL[USB_HC_ISTL_OUT_MAX].TD.Byte7  = 0;
               
@@ -638,7 +638,7 @@ line level    source
                             }
                             else if (temp[0] & DMA_COMPLETE_STU)
                             {
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 11  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 11  
 
                               temp[1] = 1;
                               break;
@@ -702,7 +702,7 @@ line level    source
                             break;
                           case 2:
                             _USBDC_DC2DR_SFR(op_state);
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 12  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 12  
 
                             _USBDC_DC2CIR_SFR(DA_CR[USBHC_Audio_Devinx]);
                             break;
@@ -766,7 +766,7 @@ line level    source
  718           * Note    : none
  719           * -------------------------------------------------------------------------------------------
  720           */
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 13  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 13  
 
  721          U8_T USB_HAL_Alloc_Free_PDevice(U8_T *freeid, U8_T port)
  722          {
@@ -830,7 +830,7 @@ line level    source
  780   4              if (USB_PDevice[index].Hc.gState >= HOST_ENUMERATION)
  781   4              {
  782   5                return TRUE;
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 14  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 14  
 
  783   5              }
  784   4            }
@@ -894,7 +894,7 @@ line level    source
               #endif
                   return;
                 } 
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 15  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 15  
 
               #endif
  846   1        for (index = 0; index < USB_HC_INTL_MAX; index++)
@@ -958,7 +958,7 @@ line level    source
  904   2          USBHC_CORE_SetBit(TD_ATL_Skip_Map,tdid,value);
  905   2          USBHC_Write_Regs(HC_ATL_TDSKIP_MAP_REG,TD_ATL_Skip_Map,4);
  906   2        }
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 16  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 16  
 
  907   1        else
  908   1        {
@@ -1022,7 +1022,7 @@ line level    source
  966   2        }
  967   1        else
  968   1        {
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 17  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 17  
 
  969   2          USBHC_Write_Regs(HC_ISTL_TDDONE_MAP_REG,done_map,1);
  970   2        }
@@ -1086,7 +1086,7 @@ line level    source
 1028          {
 1029   1        U8_T          devinx,td_id,td_offset;
 1030   1        U8_T          direction;
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 18  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 18  
 
 1031   1        U16_T         index;
 1032   1        USBH_Status       USB_Status = USBH_IDLE;
@@ -1150,7 +1150,7 @@ line level    source
 1089   4                /* Only Status IN */
 1090   4                // Data Direction is OUT/
 1091   4                USB_PDevice[devinx].Hc.Control.State = CTRL_STATUS_IN;
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 19  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 19  
 
 1092   4                USB_PDevice[devinx].Hc.Control.NakeCnt = 0;
 1093   4                goto HC_ControlHandle_Restart;
@@ -1214,7 +1214,7 @@ line level    source
                         //Use Pdevice as the page buffer receiver
                           index = USB_PDevice[devinx].Hc.PControl.Total_Length-USB_PDevice[devinx].Hc.PControl.Current_Lengt
              -h;
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 20  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 20  
 
                         }
                         else
@@ -1278,7 +1278,7 @@ line level    source
 1206   5                }
 1207   4              }
 1208   3              else
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 21  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 21  
 
 1209   3              {
 1210   4      #if 0
@@ -1342,7 +1342,7 @@ line level    source
 1268   3              if (++USB_PDevice[devinx].Hc.Control.NakeCnt > USBHC_DATAIN_NAKE_MAX) 
 1269   3              {
 1270   4                USB_PDevice[devinx].Hc.Control.NakeCnt = 0; // reset the nake counter
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 22  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 22  
 
 1271   4                  goto USBHC_CTRL_DATAIN_STALL1;
 1272   4              }   
@@ -1406,7 +1406,7 @@ line level    source
 1330   2            {
 1331   3              index = HCTD_Channel_Table[td_id].Total_Length-HCTD_Channel_Table[td_id].Current_Length;
 1332   3            }
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 23  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 23  
 
 1333   2            USBHC_CtlSendData(devinx,td_id,index);
 1334   2            USB_PDevice[devinx].Hc.Control.State = CTRL_DATA_OUT_WAIT;
@@ -1470,7 +1470,7 @@ line level    source
 1392   2            {
 1393   3              /* device error */
 1394   3              USB_PDevice[devinx].Hc.Control.State = CTRL_ERROR;
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 24  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 24  
 
 1395   3              goto HC_ControlHandle_Restart;
 1396   3            }
@@ -1534,7 +1534,7 @@ line level    source
 1452   2            USB_PDevice[devinx].Hc.Control.State = CTRL_STATUS_OUT_WAIT;
 1453   2            break;
 1454   2          case CTRL_STATUS_OUT_WAIT:
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 25  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 25  
 
 1455   2            USB_Status = HCTD_Channel_Table[td_id].USB_State;
 1456   2            if (USB_Status == USBH_DONE)
@@ -1598,7 +1598,7 @@ line level    source
 1513   2        }
 1514   1      
 1515   1        if ((USB_PDevice[devinx].Hc.Control.State == CTRL_COMPLETE) || \
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 26  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 26  
 
 1516   1          (USB_PDevice[devinx].Hc.Control.State == CTRL_FAIL) || \
 1517   1          (USB_PDevice[devinx].Hc.Control.State == CTRL_STALLED)) 
@@ -1662,7 +1662,7 @@ line level    source
              - for next Event check       
                     }
                     else
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 27  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 27  
 
                     {
                         TASK_Active(TASK_TYPE_USB,TASK_USBHC_PassThrough_Handle_ID,0x00,devinx,0,0); //Generate the task,
@@ -1726,7 +1726,7 @@ line level    source
 1630   1        bit   exit_flag;
 1631   1        
 1632   1        //Get interrupt status from sw fifo
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 28  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 28  
 
 1633   1        int_state = USBHC_ISR_FIFO[USBHC_ISRQ_Rp].ISR_State;
 1634   1      
@@ -1790,7 +1790,7 @@ line level    source
 1691   2          USBHC_INT_DISABLE;
 1692   2          _USBHC_HCDR_SFR(TD_ATL_Done_Map[0]);
 1693   2          _USBHC_HCDR_SFR(TD_ATL_Done_Map[1]);
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 29  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 29  
 
 1694   2          _USBHC_HCDR_SFR(TD_ATL_Done_Map[2]);
 1695   2          _USBHC_HCDR_SFR(TD_ATL_Done_Map[3]);
@@ -1854,7 +1854,7 @@ line level    source
               #endif
 1754   8                    }
 1755   7        
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 30  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 30  
 
 1756   7                    if (exit_flag == 0)
 1757   7                    {
@@ -1918,7 +1918,7 @@ line level    source
 1815   3            donemap =TD_INTL_Done_Map[mapbyte];
 1816   3            if (donemap)
 1817   3            {
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 31  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 31  
 
 1818   4              for (mapbit = 0; mapbit < 8; mapbit++)
 1819   4              {
@@ -1982,7 +1982,7 @@ line level    source
 1875          void USBHC_CORE_Retrive_USB_State(U8_T td_type,U8_T atl_id,U8_T td_id)
 1876          {
 1877   1        USBHC_TD_Header_Typedef *td_header;
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 32  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 32  
 
 1878   1      
 1879   1        if (td_type == USBHC_TD_ATL)
@@ -2046,7 +2046,7 @@ line level    source
 1937   1      }
 1938          
 1939          /** ----------------------------------------------------------------------------
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 33  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 33  
 
 1940           * void usbhc_core_ATL_Done_Handle(U8_T devinx, U8_T atl_id)
 1941           * Purpose: Process ATL TD done event
@@ -2110,7 +2110,7 @@ line level    source
 1998   1      }
 1999          
 2000          /*
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 34  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 34  
 
 2001           * -------------------------------------------------------------------------------------------
 2002           * void USBHC_CORE_Clear_Device(void)
@@ -2174,7 +2174,7 @@ line level    source
                     {
                       USBHC_MSC_DismountFlag = 0; //reset dismount flag
                       //printf("DEBUG:Reset MSC DismountFlag\n\r");
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 35  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 35  
 
                     }
                     else
@@ -2238,7 +2238,7 @@ line level    source
 2121   1        printf("clar_c ");
 2122   1      #if (SYSTEM_USB_PEN_DRIVE_SUPPORT)
               USBHC_CORE_Clear_Device_HID:
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 36  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 36  
 
               #endif
 2125   1        malloc_free(USB_PDevice[devinx].HID_Kb_Buf);
@@ -2302,7 +2302,7 @@ line level    source
 2182   1      #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
                 else if (USB_PDevice[devinx].DevClass == USB_AUDIO_CLASS)
                 {
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 37  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 37  
 
                   if (USBHC_Audio_Device_Cnt)
                   {
@@ -2366,7 +2366,7 @@ line level    source
 2244   4              USBHC_CORE_Clear_TD_Register(index + USB_HC_ISTL_MAX);
 2245   4              USBHC_CORE_SetBit(TD_INTL_Reload_Map, index, 0x00); // clear the interrupt auto relaod table
 2246   4              //Check interrrupt Buffer
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 38  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 38  
 
 2247   4      
 2248   4              if (HC_IntTransfer_Table[index].PassControl.BufSize == Hc_PASSTHROUGH_BUF_SIZ) // should release the b
@@ -2430,7 +2430,7 @@ line level    source
 2303   1      #if (SYSTEM_USB_PEN_DRIVE_SUPPORT)
                 else
                 { // PEN DRIVER STILL IN USED
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 39  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 39  
 
                   USB_PDevice[devinx].Addr |= USBHC_DEVICE_USED_MASK;
                   return;
@@ -2494,7 +2494,7 @@ line level    source
 2362   5                {
 2363   6                  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 2364   6                  //1.Special handle for Gigabyte
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 40  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 40  
 
 2365   6                  if ((USB_PDevice[devinx].idVendor == 0x060b) &&(USB_PDevice[devinx].idProduct == 0x2270))
 2366   6                  {
@@ -2558,7 +2558,7 @@ line level    source
 2422   7                  }
 2423   6                  else
 2424   6                  {
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 41  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 41  
 
 2425   7      #if (SYSTEM_EXTENDER_TRANSMITTER)                           
               USBHC_HID_BUFFER_MALLOC:              
@@ -2622,7 +2622,7 @@ line level    source
 2484          
 2485          /*
 2486           * -------------------------------------------------------------------------------------------
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 42  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 42  
 
 2487           * void USBHC_CORE_Suspend(void)
 2488           * Purpose : 
@@ -2686,7 +2686,7 @@ line level    source
 2546          /*-------------------------------------------------------------------------------------------
 2547           * void USBHC_CORE_Build_ISTL_Polling(U8_T devinx)
 2548           * Purpose : build the istl tranfer table & ISTL0 relative setting
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 43  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 43  
 
 2549           * Params  :  
 2550           * Returns : none
@@ -2750,7 +2750,7 @@ line level    source
 2605           *-------------------------------------------------------------------------------------------*/
 2606          #if (SYSTEM_MSC_DEVICE_SUPPORT)
               void USBHC_CORE_BULK_Done_Handle(void)
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 44  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 44  
 
               {
                 U8_T    atl_id;
@@ -2814,7 +2814,7 @@ line level    source
                         break; 
                       }
                       else
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 45  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 45  
 
                       {
                         //printf("MSC:USBH_NAKE => Dismount MSC Device\n\r");
@@ -2878,7 +2878,7 @@ line level    source
                         goto USBHC_MSC_Bulk_Done_Handle_Restart;
                       }
                       else if (USB_PDevice[devinx].MSC->BOT_State == MSC_BOT_END)
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 46  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 46  
 
                       {
                         USB_Status = USBH_DONE;
@@ -2942,7 +2942,7 @@ line level    source
               #endif
 2791          /* End of usbhc_core.c */
 2792          
-C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/18/2026 10:50:19 PAGE 47  
+C51 COMPILER V9.60.7.0   USBHC_CORE                                                        06/23/2026 16:04:46 PAGE 47  
 
 
 

@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   CONSOLE_EDID                                                      06/18/2026 10:50:17 PAGE 1   
+C51 COMPILER V9.60.7.0   CONSOLE_EDID                                                      06/23/2026 16:04:44 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE CONSOLE_EDID
@@ -62,7 +62,7 @@ line level    source
                 // 30 , 31 , 32 , 33 , 34 , 35 , 36 , 37 , 38 , 39 , 3a , 3b , 3c , 3d ,3e , 3f
                 0x01,0x01,0x01,0x01,0x01,0x01,0x9a,0x29,0xa0,0xd0,0x51,0x84,0x22,0x30,0x50,0x98,
                 // 40 , 41 , 42 , 43 , 44 , 45 , 46 , 47 , 48 , 49 , 4a , 4b , 4c , 4d ,4e , 4f
-C51 COMPILER V9.60.7.0   CONSOLE_EDID                                                      06/18/2026 10:50:17 PAGE 2   
+C51 COMPILER V9.60.7.0   CONSOLE_EDID                                                      06/23/2026 16:04:44 PAGE 2   
 
                 0x36,0x00,0x98,0xff,0x10,0x00,0x00,0x1c,0x00,0x00,0x00,0xfd,0x00,0x38,0x4b,0x1e,
                 // 50 , 51 , 52 , 53 , 54 , 55 , 56 , 57 , 58 , 59 , 5a , 5b , 5c , 5d ,5e , 5f
@@ -126,7 +126,7 @@ line level    source
                 EDID_ctrl.EdidReloadStatus = EDID_RELOAD_BUSY;// monitor edid has not been readed
               #ifdef EDID_SAVE  
                 memcpy(ConsoleEdidTable,KVM_Flash.Edid_Table,sizeof(ConsoleEdidTable));  
-C51 COMPILER V9.60.7.0   CONSOLE_EDID                                                      06/18/2026 10:50:17 PAGE 3   
+C51 COMPILER V9.60.7.0   CONSOLE_EDID                                                      06/23/2026 16:04:44 PAGE 3   
 
               #else 
                 memcpy(ConsoleEdidTable,CONSOLE_EDID_DEFAULT,sizeof(CONSOLE_EDID_DEFAULT));  
@@ -190,7 +190,7 @@ line level    source
               
                 switch (EDID_ctrl.TaskState)
                 {
-C51 COMPILER V9.60.7.0   CONSOLE_EDID                                                      06/18/2026 10:50:17 PAGE 4   
+C51 COMPILER V9.60.7.0   CONSOLE_EDID                                                      06/23/2026 16:04:44 PAGE 4   
 
                 case CONSOLE_MONITOR_PLUG_OUT:
                 case CONSOLE_MONITOR_STATUS_CHK:
@@ -254,7 +254,7 @@ line level    source
                   {
                     if (EDID_ctrl.TaskPauseRequest)
                     {
-C51 COMPILER V9.60.7.0   CONSOLE_EDID                                                      06/18/2026 10:50:17 PAGE 5   
+C51 COMPILER V9.60.7.0   CONSOLE_EDID                                                      06/23/2026 16:04:44 PAGE 5   
 
                       EDID_ctrl.TaskState = CONSOLE_MONITOR_PLUG_PAUSED;
                         printf("EDID: EDID task has been paused!\n\r");             
@@ -318,7 +318,7 @@ line level    source
               #endif /* #ifdef HDMI_KVM */
               
               #ifdef EDID_SAVE
-C51 COMPILER V9.60.7.0   CONSOLE_EDID                                                      06/18/2026 10:50:17 PAGE 6   
+C51 COMPILER V9.60.7.0   CONSOLE_EDID                                                      06/23/2026 16:04:44 PAGE 6   
 
                     if (memcmp(ConsoleEdidTable,KVM_Flash.Edid_Table,16)) //if the edid table is different
                     {
@@ -382,7 +382,7 @@ line level    source
               
                 if (pIsr->State & I2CMISR_PSC) // plug status changed
                 {
-C51 COMPILER V9.60.7.0   CONSOLE_EDID                                                      06/18/2026 10:50:17 PAGE 7   
+C51 COMPILER V9.60.7.0   CONSOLE_EDID                                                      06/23/2026 16:04:44 PAGE 7   
 
                   /* Record the plug status */
                   EDID_ctrl.MonitorPlugStatus = (pIsr->Data & I2CMSR_DPS_ON) ? MONITOR_PLUGGED:MONITOR_UNPLUGGED;

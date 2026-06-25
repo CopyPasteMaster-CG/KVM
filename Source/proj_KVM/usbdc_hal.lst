@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/18/2026 10:50:18 PAGE 1   
+C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/23/2026 16:04:44 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBDC_HAL
@@ -62,7 +62,7 @@ line level    source
   40           * Params  : none
   41           * Returns : none
   42           * Note    : none
-C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/18/2026 10:50:18 PAGE 2   
+C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/23/2026 16:04:44 PAGE 2   
 
   43           * ----------------------------------------------------------------------------
   44           * ----------------------------------------------------------------------------
@@ -126,7 +126,7 @@ line level    source
  101   1      }
  102          
  103          /* ----------------------------------------------------------------------------
-C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/18/2026 10:50:18 PAGE 3   
+C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/23/2026 16:04:44 PAGE 3   
 
  104           * U16_T USBDC_HAL_Endp_Buf_Length_Read()
  105           * Purpose : When Endp has get a Out transaction, then get the buffer content
@@ -190,7 +190,7 @@ line level    source
  163   1      }
  164          
  165          /* ---------------------------------------------------------------------------- 
-C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/18/2026 10:50:18 PAGE 4   
+C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/23/2026 16:04:44 PAGE 4   
 
  166           * U16_T USBDC_HAL_Endp_In_Buf_Move(U8_T *buf,U8_T port,U8_T insr)
  167           * Purpose : When Endp has get a Out transaction, then get the buffer content
@@ -254,7 +254,7 @@ line level    source
  225   1        U8_T temp0,temp1;
  226   1        
  227   1        temp0 = setup[2];
-C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/18/2026 10:50:18 PAGE 5   
+C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/23/2026 16:04:44 PAGE 5   
 
  228   1        temp1 = setup[3];
  229   1        setup[2] = temp1;
@@ -318,7 +318,7 @@ line level    source
  287   1        
  288   1        return ((reg[1] & DC_FMR_LCK_MASK) ? 1 : 0);
  289   1      }
-C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/18/2026 10:50:18 PAGE 6   
+C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/23/2026 16:04:44 PAGE 6   
 
  290          
  291          #if (PROJECT_USB_GENERIC_HID_ENABLE)
@@ -382,7 +382,7 @@ line level    source
  349   1        USBDC_Device[devinx].EndpMaxSize[endpinx]     = maxpackzie;   
  350   1        USBDC_Device[devinx].EndpAddr[endpinx]        = (enpdaddr & 0x0f) | endpatri;   // Control Endpoint Buffe
              -r0
-C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/18/2026 10:50:18 PAGE 7   
+C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/23/2026 16:04:44 PAGE 7   
 
  351   1        
  352   1        //3.Fill up USBDC Index Table & Register
@@ -446,7 +446,7 @@ line level    source
                             else // OUT
                             {
                               USB_PDevice[devinx].MSC->Out_Endpinx = endpinx;
-C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/18/2026 10:50:18 PAGE 8   
+C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/23/2026 16:04:44 PAGE 8   
 
                               USB_PDevice[devinx].MSC->Out_EndpAddr = enpdaddr;
                               bf = EXTENDER_MSC_BulkOutBuf[0].bBuf;
@@ -510,7 +510,7 @@ line level    source
                           }
                         }
                       }
-C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/18/2026 10:50:18 PAGE 9   
+C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/23/2026 16:04:44 PAGE 9   
 
               #endif //#if (SYSTEM_EXTENDER_TRANSMITTER)
               #else // Non (SYSTEM_USB_HC_BURST)
@@ -574,7 +574,7 @@ line level    source
                         {
                           iaddr = bf+2;
                           USB_PDevice[devinx].MSC->In_Buf[0].lsb = iaddr & 0x00ff;
-C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/18/2026 10:50:18 PAGE 10  
+C51 COMPILER V9.60.7.0   USBDC_HAL                                                         06/23/2026 16:04:44 PAGE 10  
 
                           USB_PDevice[devinx].MSC->In_Buf[0].msb = (iaddr & 0xff00) >> 8;
                           

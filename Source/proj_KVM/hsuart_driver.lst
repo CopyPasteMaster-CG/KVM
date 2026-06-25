@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/18/2026 10:50:21 PAGE 1   
+C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/23/2026 16:04:47 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE HSUART_DRIVER
@@ -62,7 +62,7 @@ line level    source
   40          #define    HUART_1M       6
   41          #define    HUART_921K     7
   42          #define    HUART_115K     8
-C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/18/2026 10:50:21 PAGE 2   
+C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/23/2026 16:04:47 PAGE 2   
 
   43          #define    HUART_9600     9
   44          #define    HUART_19200      10
@@ -126,7 +126,7 @@ line level    source
  102            0x04,   //12M(bps)
  103            0x06,   //8M(bps)
  104            0x08,   //6M(bps)
-C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/18/2026 10:50:21 PAGE 3   
+C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/23/2026 16:04:47 PAGE 3   
 
  105            0x0C,   //4M(bps)
  106            0x10,   //3M(bps)
@@ -190,7 +190,7 @@ line level    source
  163   1        memset(hsuart_RxBuf,0x00,sizeof(hsuart_RxBuf));
  164   1          
  165   1        /* Baudrate = 12M for RS232 */
-C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/18/2026 10:50:21 PAGE 4   
+C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/23/2026 16:04:47 PAGE 4   
 
  166   1        if (CPU_SysClk == SCS_96M)
  167   1        {
@@ -254,7 +254,7 @@ line level    source
  225   2          UR2DR = *(ptData + dataLen);
  226   2        }
  227   1        UR2CIR = addr;
-C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/18/2026 10:50:21 PAGE 5   
+C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/23/2026 16:04:47 PAGE 5   
 
  228   1        EINT4 = oldEintBit;
  229   1      
@@ -318,7 +318,7 @@ line level    source
  287   1        else if (lineStatus & HSLSR_FE_ERROR)
  288   1        {
  289   2          hsur2ErrCount ++;
-C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/18/2026 10:50:21 PAGE 6   
+C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/23/2026 16:04:47 PAGE 6   
 
  290   2          // Framing Error
  291   2        }
@@ -382,7 +382,7 @@ line level    source
  349           * Note    : none
  350           * ----------------------------------------------------------------------------
  351           */
-C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/18/2026 10:50:21 PAGE 7   
+C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/23/2026 16:04:47 PAGE 7   
 
  352          void HSUR2_IntrEntryFunc(void)
  353          { 
@@ -446,7 +446,7 @@ line level    source
  411   4            }
  412   3            else
  413   3            {
-C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/18/2026 10:50:21 PAGE 8   
+C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/23/2026 16:04:47 PAGE 8   
 
  414   4              hsuart_TxFlag = 0;
  415   4            }       
@@ -510,7 +510,7 @@ line level    source
  473   1        /* Set FIFO Control Register */
  474   1        //hsur2FifoCtrl = fCtrl | HSFCR_RSTOP; // Enable the RSTOP bit to stop the data characters into RX FIFO.
  475   1        hsur2FifoCtrl = fCtrl; // Enable the RSTOP bit to stop the data characters into RX FIFO.
-C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/18/2026 10:50:21 PAGE 9   
+C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/23/2026 16:04:47 PAGE 9   
 
  476   1        hsur2FifoCtrl &= ~(HSFCR_RFR | HSFCR_TFR);
  477   1        HSUR2_RegWrite(HSFCR, &fCtrl, 1);
@@ -574,7 +574,7 @@ line level    source
  535   2              HSUART_PutChar(*str);
  536   2          str++;
  537   2          }      
-C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/18/2026 10:50:21 PAGE 10  
+C51 COMPILER V9.60.7.0   HSUART_DRIVER                                                     06/23/2026 16:04:47 PAGE 10  
 
  538   1        
  539   1        return 1;

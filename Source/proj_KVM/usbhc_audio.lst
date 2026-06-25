@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBHC_AUDIO                                                       06/18/2026 10:50:20 PAGE 1   
+C51 COMPILER V9.60.7.0   USBHC_AUDIO                                                       06/23/2026 16:04:46 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBHC_AUDIO
@@ -62,7 +62,7 @@ line level    source
               U8_T  USBHC_Audio_Out_Endpinx;
               U8_T  USBHC_Audio_In_Interface;
               U8_T  USBHC_Audio_Out_Interface;
-C51 COMPILER V9.60.7.0   USBHC_AUDIO                                                       06/18/2026 10:50:20 PAGE 2   
+C51 COMPILER V9.60.7.0   USBHC_AUDIO                                                       06/23/2026 16:04:46 PAGE 2   
 
               U8_T  USBHC_Audio_Devinx;
               U8_T    TASK_USBHC_Audio_Switch_ID;
@@ -126,7 +126,7 @@ line level    source
                 
                 reg = HC_SOF_SELECT_USPSE_SET | (up & 0x03);
                 USBHC_Write_Regs(HC_SOF_SELECT_REG,&reg,1); 
-C51 COMPILER V9.60.7.0   USBHC_AUDIO                                                       06/18/2026 10:50:20 PAGE 3   
+C51 COMPILER V9.60.7.0   USBHC_AUDIO                                                       06/23/2026 16:04:46 PAGE 3   
 
               }  
               
@@ -190,7 +190,7 @@ line level    source
                     USBHC_KVM_USB_Audio_Port_Sw(KVM_CurrentHost);
                   }
                           
-C51 COMPILER V9.60.7.0   USBHC_AUDIO                                                       06/18/2026 10:50:20 PAGE 4   
+C51 COMPILER V9.60.7.0   USBHC_AUDIO                                                       06/23/2026 16:04:46 PAGE 4   
 
                   //if (KVM_CurrentUSBAudio != KVM_CurrentHost) // changed active port id
                   if (KVM_CurrentUSBAudio != KVM_NextAudio) // changed active port id
@@ -254,7 +254,7 @@ line level    source
                   
                   //Clear Done Map
                   EXTINT2_DISABLE;
-C51 COMPILER V9.60.7.0   USBHC_AUDIO                                                       06/18/2026 10:50:20 PAGE 5   
+C51 COMPILER V9.60.7.0   USBHC_AUDIO                                                       06/23/2026 16:04:46 PAGE 5   
 
                   _USBHC_HCDR_SFR(USB_HC_ISTL_IN_DONE_MASK);
                   _USBHC_HCCIR_SFR(HC_ISTL_TDDONE_MAP_REG);
@@ -318,7 +318,7 @@ line level    source
                * Purpose : Start the Audio Service
                * Params  : none
                * Returns : none
-C51 COMPILER V9.60.7.0   USBHC_AUDIO                                                       06/18/2026 10:50:20 PAGE 6   
+C51 COMPILER V9.60.7.0   USBHC_AUDIO                                                       06/23/2026 16:04:46 PAGE 6   
 
                * Note    : none
                *---------------------------------------------------------------------------*/
@@ -382,7 +382,7 @@ line level    source
                   }
                 }
               }
-C51 COMPILER V9.60.7.0   USBHC_AUDIO                                                       06/18/2026 10:50:20 PAGE 7   
+C51 COMPILER V9.60.7.0   USBHC_AUDIO                                                       06/23/2026 16:04:46 PAGE 7   
 
               #endif /* KVM_HOTKEY_SUPPORT */
               #endif /* ENABLE_HOTKEY_FUN_USBAUDIO_REPORT && SYSTEM_AUDIO_MAX */

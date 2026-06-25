@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 1   
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE PS2_HOST
@@ -62,7 +62,7 @@ line level    source
               {
                             0xff,3,0,0,// 01-reset the device, answer 0xfa,0xaa,0x00(for mouse)
                             0xf3,1,0xc8,1,// 02-get mouse type
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 2   
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 2   
 
                             0xf3,1,0x64,1,// 03-get mouse type
                             0xf3,1,0x50,1,// 04-get mouse type
@@ -126,7 +126,7 @@ line level    source
               U8_T  PS2_Mouse_Package_Index[PS2_PORT_MAX_NUM+2]; // Store the mouse device package index
               U8_T  PS2_Mouse_Package[PS2_PORT_MAX_NUM+2][4]; // Store the mouse device package Buffer, each mouse device
              - has 4 byte buffer
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 3   
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 3   
 
               /* PS/2 Keyboard Device Handle Buffer */
               U8_T  PS2_Keyboard_Package[PS2_PORT_MAX_NUM+2][5]; // Store the keyboard device package Buffer, each mouse 
@@ -190,7 +190,7 @@ line level    source
                   PS2_Mouse_Package[index][0] = 0;
                   PS2_Mouse_Package[index][1] = 0;
                   PS2_Mouse_Package[index][2] = 0;
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 4   
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 4   
 
                   PS2_Mouse_Package[index][3] = 0;
                   PS2_KB_Balance_Cnt[index] = 0; // the receive counter
@@ -254,7 +254,7 @@ line level    source
               #endif
                     PS2_Status[TASK_Register0] |= PS2_TIME_OUT_FLAG;
                   }
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 5   
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 5   
 
                   else
                   {
@@ -318,7 +318,7 @@ line level    source
                 else
                   printf("@P:%d->Config_Para1[%d],C_T[0x%02x]\n\r",(U16_T)PS2x,(U16_T)PS2_CfgCtlTab[PS2x].Cmdindex,(U16_T)
              -PS2_Transmit_Buf[PS2x]); 
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 6   
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 6   
 
               #endif
               } /* End of PS2_Script_Assing_Cmd_Para */
@@ -382,7 +382,7 @@ line level    source
                 PS2_Script_Assing_Cmd_Para(PS2x,Script_Cmd);
                 return 1;
               } /* End of  PS2_Script_Check_Next_Cmd */
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 7   
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 7   
 
               
               
@@ -446,7 +446,7 @@ line level    source
                *           HPS2A, HPS2B=>hardeare 
                *           EPS2A, EPS2B  =>external interrupt
                *            
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 8   
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 8   
 
                * Returns : 0x00-No more command to send, script transfef is over
                *           0x01-Yes, has another command need to transfer confinully
@@ -510,7 +510,7 @@ line level    source
                *           EPS2A, EPS2B  =>external interrupt
                *            
                * Returns : 0x00-No complete
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 9   
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 9   
 
                *           0x01-Yes,complete
                * Note    : 
@@ -574,7 +574,7 @@ line level    source
                *           Script_Para1
                *           Script_Para1Rpn
                *           Script_Para2
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 10  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 10  
 
                *           Script_Para2Rpn
                * Returns : 0x00-No more parameter to send
@@ -638,7 +638,7 @@ line level    source
                 PS2_CfgCtlTab[PS2x].ScriptCnt = sizeof(PS2_CfgScriptTypeCheck)/sizeof(struct _PS2_CfgScriptStruct);
                 PS2_CfgCtlTab[PS2x].Script = TYPE_CHECK_SCRIPT; // need to check the type first
                 PS2_CfgCtlTab[PS2x].ResendCnt = 0; // reset the resend counter
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 11  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 11  
 
                 PS2_CfgCtlTab[PS2x].Receive_Error = 0; // reset receive error condition
                 PS2_Script_Cfg_Start(PS2x,&PS2_CfgCtlTab[PS2x]);
@@ -702,7 +702,7 @@ line level    source
                *            
                * Returns :  
                * Note    :  
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 12  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 12  
 
                * ----------------------------------------------------------------------------
                */
@@ -766,7 +766,7 @@ line level    source
                     PS2_Status[ps2index] &= ~(PS2_TIME_OUT_FLAG|PS2_ACT);
                     PS2_Clock_Cnt[ps2index] = 0; // reset clock counter
                     if ((PS2_Status[ps2index] & PS2_DEVICE_BAT_RECEIVED) || (PS2_Control[ps2index]==PS2_NONE)) // clear BAT
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 13  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 13  
 
              - code status
                     {
@@ -830,7 +830,7 @@ line level    source
                       {
                         if (PS2_Script_Cmd_Handle(ps2index))  // continue to process
                         {
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 14  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 14  
 
                           if (PS2_Script_Check_Next_Operation(ps2index,Script_CmdRpn|Script_Para1|Script_Para1Rpn)==0)
                           {
@@ -894,7 +894,7 @@ line level    source
               #if (PS2_DEBUG_MODE==1)
                                   printf("@P:%d->Config_Script[%d] Complete\n\r",(U16_T)ps2index,(U16_T)PS2_CfgCtlTab[ps2index].Sc
              -ript);
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 15  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 15  
 
               #endif
                                   PS2_Script_Status_Complete_Handle(ps2index); // continue to process
@@ -958,7 +958,7 @@ line level    source
               #if (PS2_DEBUG_MODE==1)
                           printf("@P:%d->Config_Script[%d] Timeout,Stage=PS2_SCP_PARA1\n\r",(U16_T)ps2index,(U16_T)PS2_CfgCtlT
              -ab[ps2index].Script);
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 16  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 16  
 
               #endif
                           PS2_Script_Check_TimeOut(ps2index);
@@ -1022,7 +1022,7 @@ line level    source
                 }
               } /* End of TASK_Event_PS2_Handle */
               
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 17  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 17  
 
               /*
                * ----------------------------------------------------------------------------
@@ -1086,7 +1086,7 @@ line level    source
                * Returns : 
                * Note    : 
                * ----------------------------------------------------------------------------
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 18  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 18  
 
                */
               void PS2_Script_Cfg_Start(PS2Port_TypeDef PS2x,PS2_CfgCtlStruct *ctrlp)
@@ -1150,7 +1150,7 @@ line level    source
                * Returns : the counter of bit value is 1
                * Note    : 
                * ----------------------------------------------------------------------------
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 19  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 19  
 
                */
               //U8_T PS2_ParitySub(U8_T inputdata)
@@ -1214,7 +1214,7 @@ line level    source
               #endif
                       PS2_CfgCtlTab[PS2x].ScriptPtr = (U8_T *)PS2_CfgScriptKB;
                       PS2_CfgCtlTab[PS2x].ScriptCnt = sizeof(PS2_CfgScriptKB)/sizeof(struct _PS2_CfgScriptStruct);
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 20  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 20  
 
                       PS2_CfgCtlTab[PS2x].Script = CONFIG_SCRIPT_KB; // need to check the type first
                     }
@@ -1278,7 +1278,7 @@ line level    source
                *           EPS2A, EPS2B  =>external interrupt
                * 
                *           @flowcontrol: can onley be 
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 21  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 21  
 
                *            PS2_SCP_CMD_RPN
                *            PS2_SCP_PARA1_RPN
@@ -1342,7 +1342,7 @@ line level    source
               {
                 if ((PS2_CfgCtlTab[PS2x].Script == CONFIG_SCRIPT_KB) || (PS2_CfgCtlTab[PS2x].Script == CONFIG_SCRIPT_MS))
                 {
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 22  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 22  
 
                   if (PS2_CfgCtlTab[PS2x].FlowControl == PS2_SCP_CMD_RPN)
                   {
@@ -1406,7 +1406,7 @@ line level    source
                * Purpose : during config script, it time out happened, then return the 
                *           PS2_Control[PS2x] to  PS2_NONE
                
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 23  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 23  
 
                * Params  : @PS2x: Select the PS/2 peripheral. 
                *           this parameter can be one of the following values:
@@ -1470,7 +1470,7 @@ line level    source
                   }
                 }
                 if ((PS2_Status[PS2x] & PS2_TRANSMIT_RESEND_FLAG) && ((indata == 0xfa) || (indata == 0xfe)))
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 24  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 24  
 
                 {
                   PS2_Script_F4_Enable(PS2x);
@@ -1534,7 +1534,7 @@ line level    source
                       // type 3 
                       PS2_Mouse_Package[PS2x][3] = indata & 0x0f;
                     }
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 25  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 25  
 
                     else
                     {
@@ -1598,7 +1598,7 @@ line level    source
                 }
               
                 if (buftype == KB_TYPE_BREAK_E1) 
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 26  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 26  
 
                 {
                   return 1;
@@ -1662,7 +1662,7 @@ line level    source
                 //---------------------------------------------------------------------------------------------------
                 PS2_KB_Balance_CountDown[PS2x] = 0;
                 if ((PS2_KB_Balance_CountDownTask & PS2_PORT_BIT[PS2x]) == 0x00 )
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 27  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 27  
 
                 {
                   PS2_KB_Balance_CountDownTask |= PS2_PORT_BIT[PS2x]; // task already in processing
@@ -1726,7 +1726,7 @@ line level    source
                     {
                       PS2_Process_Keyboard_AddKB_Buf(PS2x,indata);
                     }
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 28  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 28  
 
                     break;
                   case 1 : // have one byte in
@@ -1790,7 +1790,7 @@ line level    source
                           PS2_Process_Keyboard_AddKB_Buf(PS2x,indata);
                       }
                     }
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 29  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 29  
 
                     break;
                   default :
@@ -1854,7 +1854,7 @@ line level    source
                   TASK_Destory_Current();
                 }
               }
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 30  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 30  
 
               
               /*
@@ -1918,7 +1918,7 @@ line level    source
               //}
               
               /*
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 31  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 31  
 
                * ----------------------------------------------------------------------------
                * void      TASK_PS2_Balance_Maintain
@@ -1982,7 +1982,7 @@ line level    source
               /*
                *--------------------------------------------------------------------------------
                * void PS2H_Read_Regs(U8_T regIndex, U8_T *pRegData, U8_T regLen)
-C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/18/2026 10:50:17 PAGE 32  
+C51 COMPILER V9.60.7.0   PS2_HOST                                                          06/23/2026 16:04:43 PAGE 32  
 
                * Purpose: Read data bytes from a register with interrupt locked.
                * Params : regIndex:An index address to interface register.

@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   LOGITECH                                                          06/18/2026 10:50:20 PAGE 1   
+C51 COMPILER V9.60.7.0   LOGITECH                                                          06/23/2026 16:04:47 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LOGITECH
@@ -62,7 +62,7 @@ line level    source
   38          
   39          /*************************************************************************************
   40            * @brief  USBDC_Unifying_Set_Report_Check()
-C51 COMPILER V9.60.7.0   LOGITECH                                                          06/18/2026 10:50:20 PAGE 2   
+C51 COMPILER V9.60.7.0   LOGITECH                                                          06/23/2026 16:04:47 PAGE 2   
 
   41            *         Check the set report command
   42            *         0x21 0x09 0x02 0xyy ......
@@ -126,7 +126,7 @@ line level    source
  100   2          if ((DataBuffer[4] & 0x0f) == 0x09) //=>HIDPP mode
  101   2          {
  102   3            USBDC_Device[devinx].DevAttr[port] |= UNIFYING_RPT_SIZE_MASK; //HIDPP Mode
-C51 COMPILER V9.60.7.0   LOGITECH                                                          06/18/2026 10:50:20 PAGE 3   
+C51 COMPILER V9.60.7.0   LOGITECH                                                          06/23/2026 16:04:47 PAGE 3   
 
  103   3            DJ_mode = UNIFYING_RPT_SIZE_MASK;
  104   3          }
@@ -190,7 +190,7 @@ line level    source
  161          U8_T USBHC_Unifying_Interrupt_In_Check(U8_T port,U8_T devinx,U8_T intt_id,U8_T *DJ_Buf,U8_T len,U8_T devic
              -eid)
  162          {
-C51 COMPILER V9.60.7.0   LOGITECH                                                          06/18/2026 10:50:20 PAGE 4   
+C51 COMPILER V9.60.7.0   LOGITECH                                                          06/23/2026 16:04:47 PAGE 4   
 
  163   1        if (HCTD_Table.INTL[intt_id].Buf[0] == 0x20) 
  164   1        {
@@ -254,7 +254,7 @@ line level    source
  221   5                USBHC_Set_Dev_Logitech_Unifying_Mode(devinx,UNIFYING_RPT_MODE_MASK);
  222   5              }
  223   4            }
-C51 COMPILER V9.60.7.0   LOGITECH                                                          06/18/2026 10:50:20 PAGE 5   
+C51 COMPILER V9.60.7.0   LOGITECH                                                          06/23/2026 16:04:47 PAGE 5   
 
  224   3            else if (USB_PDevice[devinx].DevAttr & UNIFYING_RPT_SIZE_MASK)
  225   3            {

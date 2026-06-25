@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 1   
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KVM_HOTKEY
@@ -62,7 +62,7 @@ line level    source
   40            HOTKEY_MAKE       ,CHAR_SCROLL_LOCK,
   41            HOTKEY_BREAK      ,CHAR_SCROLL_LOCK,
   42          //#if (SYSTEM_STANDARD_HOTKEY)
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 2   
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 2   
 
   43          //  HOTKEY_BREAK      ,CHAR_GUI,
   44          //#endif    
@@ -126,7 +126,7 @@ line level    source
  102            HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,  // OP Code
  103            CHAR_F4,      // Minimum 
  104            HOTKEY_OP_SHORT_VALUE+HOTKEY_LEN_2,   // OP Code
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 3   
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 3   
 
  105            0x00, // Minimum 
  106            0x01, // Maximum
@@ -190,7 +190,7 @@ line level    source
                 CHAR_A,CHAR_A,              // 'AA'
                 HOTKEY_OP_SHORT_VALUE|HOTKEY_LEN_2,   // Control Value
                 0x00, // Minimum 
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 4   
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 4   
 
                 0x01, // Maximum   
                 #endif  /* #if (ENABLE_HOTKEY_FUN_AUDIO_SW) || (ENABLE_HOTKEY_FUN_USBAUDIO_SW) */
@@ -254,7 +254,7 @@ line level    source
  226            KVM_HOTKEY_DEFAULT_BUZZER,        // 'B'
  227            HOTKEY_OP_SHORT_VALUE|HOTKEY_LEN_2,   // OP Code
  228            0x00, // Minimum
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 5   
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 5   
 
  229            0x01, // Maximum
  230            #endif /* #if (ENABLE_HOTKEY_FUN_BUZZER_CONTROL) */
@@ -318,7 +318,7 @@ line level    source
                 HOTKEY_OP_SHORT_VALUE|HOTKEY_LEN_2,   // OP Code
                 0x01, // Minimum
                 KVM_MAX_PORT, // Maximum
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 6   
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 6   
 
                 #endif
  292            
@@ -382,7 +382,7 @@ line level    source
                 #endif
  351            //-----------------------------------
  352            // USB PEN Drive Switch
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 7   
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 7   
 
  353            //-----------------------------------
  354            #if (ENABLE_HOTKEY_FUN_PEN_SW)
@@ -446,7 +446,7 @@ line level    source
                 //-----------------------------------
                 // ISL59920 G+ Delay
                 //-----------------------------------
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 8   
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 8   
 
                 4,    //Function Length
                 HOTKEY_FUN_G_DELAY_PLUS,        // Function Code
@@ -510,7 +510,7 @@ line level    source
                 CHAR_B,CHAR_PAD_4_LEFT,
                           
               #endif /* #if (EXTENDER_ISL59920_SUPPORT) */ 
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 9   
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 9   
 
  477            //-----------------------------------
  478            // Function Ternimate
@@ -574,7 +574,7 @@ line level    source
  536          
  537          /* LOCAL SUBPROGRAM BODIES */
  538          /*
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 10  
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 10  
 
  539           *--------------------------------------------------------------------------------
  540           * void HOTKEY_Init(void)
@@ -638,7 +638,7 @@ line level    source
  595   1        memcpy((void *)KVM_Flash.Hotkey_Active_Descriptor,(void *)HOTKEY_FORK_DEFAULT,sizeof(HOTKEY_FORK_DEFAULT)
              -);
  596   1        /*2-Copy default Hotkey Descriptor table */
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 11  
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 11  
 
  597   1        memcpy((void *)KVM_Flash.HotKey_Descriptor,(void *)HOTKEY_DESCRIPTOR_DEFAULT,sizeof(HOTKEY_DESCRIPTOR_DE
              -FAULT));
@@ -702,7 +702,7 @@ line level    source
  655   1        {
  656   2          if (keycode < CHAR_PAD_0_INSERT)
  657   2          {
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 12  
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 12  
 
  658   3            keyvalue = (keycode - CHAR_PAD_1_END) + 1;
  659   3          }
@@ -766,7 +766,7 @@ line level    source
  717   1        //printf("t=%bx,c=%bx\n\r",keytype,keycode);
  718   1      
  719   1        printf("HK in: type=%bx code=%bx idx=%bx status=%bx cMod=%bx table=%bx/%bx\n\r",
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 13  
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 13  
 
  720   1          keytype,
  721   1          keycode,
@@ -830,7 +830,7 @@ line level    source
  777   4              if (HOTKEY_Function_Hotkey_Table[HOTKEY_Fork_Table_Index].Keytype == keytype) /* Keytype also match */
  778   4              {
  779   5                if (HOTKEY_Fork_Table_Index==0) // in the first begining
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 14  
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 14  
 
  780   5                {
  781   6                  HOTKEY_Function_Modifiers = 0;
@@ -894,7 +894,7 @@ line level    source
  836   7                    #endif
  837   7      
  838   7                    TASK_KVM_LED_Indicate_ActiveID = TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_HOTKEY_LED_INDICATE_ID,0,0,
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 15  
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 15  
 
              -HOTKEY_LED_INDICATE_TIME,HOTKEY_LED_INDICATE_TIME);
  839   7                  }
@@ -958,7 +958,7 @@ line level    source
  897   2            if (hotkey_KeyCodeMatch(keycode, KVM_Flash.HotKey_Descriptor[HOTKEY_Descritpr_Index+HOTKEY_Op_Content_I
              -ndex]))
  898   2            {
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 16  
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 16  
 
  899   3              HOTKEY_Op_Content_Index++;
  900   3              if (HOTKEY_Op_Content_Index < HOTKEY_Operation_Len)
@@ -1022,7 +1022,7 @@ line level    source
  957   2        
  958   2            if (HOTKEY_Check_Numeric_Key(keycode,&HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex]))
  959   2            {
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 17  
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 17  
 
  960   3              if (HOTKEY_OP_Maxmmum_Value <= 10 ) // if the max digit is only one digit, then terminate it
  961   3                HOTKEY_OP_Content_Ternimate_Flag = 1; // skip for next op or funciton
@@ -1086,7 +1086,7 @@ line level    source
 1017   1      #if  (KVM_HOTKEY_TIMEOUT_CHECK)
 1018   1        HOTKEY_Active_Valid_Cnt = 0;
 1019   1      #endif
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 18  
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 18  
 
 1020   1      
 1021   1      HOTKEY_Function_Parser_Resset:
@@ -1150,7 +1150,7 @@ line level    source
 1077   4                HOTKEY_Descritpr_Index++; // opcode content
 1078   4                HOTKEY_Parser_State = HOTKEY_PARSER_OP_CONTENT_STAGE;
 1079   4                HOTKEY_Operation_Continue_Flag = 0;
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 19  
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 19  
 
 1080   4      
 1081   4              case HOTKEY_PARSER_OP_CONTENT_STAGE:
@@ -1214,7 +1214,7 @@ line level    source
 1137   9                        } 
 1138   8      
 1139   8                        goto HOTKEY_Function_Parser_Restart;
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 20  
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 20  
 
 1140   8                      }
 1141   7                      else  
@@ -1278,7 +1278,7 @@ line level    source
 1197   4                break;
 1198   4              default:
 1199   4                break;
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 21  
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 21  
 
 1200   4            }
 1201   3          }
@@ -1342,7 +1342,7 @@ line level    source
 1259           * Note    : None.
 1260           *--------------------------------------------------------------------------------*/
 1261          void HOTKEY_Deactive(void)
-C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/18/2026 14:01:43 PAGE 22  
+C51 COMPILER V9.60.7.0   KVM_HOTKEY                                                        06/23/2026 16:04:44 PAGE 22  
 
 1262          {
 1263   1        HOTKEY_Control_Status = KVM_HOTKEY_IDLE;

@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   UART                                                              06/18/2026 10:50:16 PAGE 1   
+C51 COMPILER V9.60.7.0   UART                                                              06/23/2026 16:04:43 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE UART
@@ -62,7 +62,7 @@ line level    source
   40          U16_T uart0_RxTail = 0;
   41          U16_T uart0_RxCount = 0;
   42          
-C51 COMPILER V9.60.7.0   UART                                                              06/18/2026 10:50:16 PAGE 2   
+C51 COMPILER V9.60.7.0   UART                                                              06/23/2026 16:04:43 PAGE 2   
 
   43          /* LOCAL SUBPROGRAM DECLARATIONS */
   44          static void   uart0_ISR(void);
@@ -126,7 +126,7 @@ line level    source
  102           * Note    : none
  103           * ----------------------------------------------------------------------------
  104           */
-C51 COMPILER V9.60.7.0   UART                                                              06/18/2026 10:50:16 PAGE 3   
+C51 COMPILER V9.60.7.0   UART                                                              06/23/2026 16:04:43 PAGE 3   
 
  105          static void uart0_Init(void)
  106          {
@@ -190,7 +190,7 @@ line level    source
  164           * Params  : c - one byte character.
  165           * Returns : c - one byte character.
  166           * Note    : none
-C51 COMPILER V9.60.7.0   UART                                                              06/18/2026 10:50:16 PAGE 4   
+C51 COMPILER V9.60.7.0   UART                                                              06/23/2026 16:04:43 PAGE 4   
 
  167           * ----------------------------------------------------------------------------
  168           */
@@ -254,7 +254,7 @@ line level    source
  226          void UART_Init(void)
  227          {
  228   1        uart0_Init();
-C51 COMPILER V9.60.7.0   UART                                                              06/18/2026 10:50:16 PAGE 5   
+C51 COMPILER V9.60.7.0   UART                                                              06/23/2026 16:04:43 PAGE 5   
 
  229   1      }
  230          

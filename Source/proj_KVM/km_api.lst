@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 1   
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KM_API
@@ -62,7 +62,7 @@ line level    source
   40          void  API_Roaming_1_3_Call(void);
   41          void  API_Roaming_1_2_Call(void);
   42          
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 2   
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 2   
 
   43          
   44          
@@ -126,7 +126,7 @@ line level    source
  102              //=============================         
  103              3,1, //Port 3 Left  
  104              2,1, //Port 3 Right
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 3   
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 3   
 
  105              3,1, //Port 3 Up  
  106              3,1, //Port 3 Down
@@ -190,7 +190,7 @@ line level    source
  164              3,1, //Port 3 Right
  165              3,1, //Port 3 Up  
  166              2,1, //Port 3 Down
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 4   
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 4   
 
  167              API_Roaming_1_2_Call, //call back function    
  168          };
@@ -254,7 +254,7 @@ line level    source
  226              2,1, //Port 2 Up  
  227              2,1, //Port 2 Down
  228              API_Roaming_1_3_Call, //call back function
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 5   
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 5   
 
  229              //=============================         
  230              2,1, //Port 3 Left  
@@ -318,7 +318,7 @@ line level    source
  288              1,1, //Port 2 Down
  289              API_Roaming_1_3_Call, //call back function
  290              //=============================         
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 6   
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 6   
 
  291              0,1, //Port 3 Left  
  292              3,1, //Port 3 Right
@@ -382,7 +382,7 @@ line level    source
  350            //--------------------------------       
  351            3,1, //Port 0 Left  
  352            1,1, //Port 0 Right     
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 7   
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 7   
 
  353            0,1, //Port 0 Up  
  354            0,1, //Port 0 Down  
@@ -446,7 +446,7 @@ line level    source
  412              1,1,
  413              API_Roaming_Quad_Call,
  414                
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 8   
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 8   
 
  415          #endif /* #ifdef CROSS_JUMP_MAP0 */ 
  416          
@@ -510,7 +510,7 @@ line level    source
  474              API_Roaming_Quad_Call,
  475          
  476              // Port 3
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 9   
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 9   
 
  477              3,1,
  478              2,1,
@@ -574,7 +574,7 @@ line level    source
  536          void API_Set_Absolute_Mouse_Data(U8_T *Msbuf,U8_T Msbuf_len);
  537          void API_Set_Keyboard_Data(U8_T *Kbbuf,U8_T Kbbuf_len);
  538          void API_Port_Connect(U8_T Portmask,U8_T Connectmask);
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 10  
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 10  
 
  539          void API_Port_Jump(U8_T Targetport);
  540          void API_Call_Back_Control(U8_T Mask,U8_T Mode);
@@ -638,7 +638,7 @@ line level    source
                 API_Set_Roaming_Mode(API_ROAMING_DISABLE);
                 
                 //7.Set mouse sync mode
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 11  
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 11  
 
                 API_Set_Sync_Mode(API_SYNC_DISABLE);
               #endif /* #ifdef SYNC */
@@ -702,7 +702,7 @@ line level    source
  659   1        {
  660   2          KM_SYNC_Mouse_Absolute_Mode();
  661   2        }   
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 12  
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 12  
 
  662   1        else
  663   1        {
@@ -766,7 +766,7 @@ line level    source
  720          {
  721   1        if (Mapid < API_ROAMING_TABLE_MAX)
  722   1        { 
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 13  
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 13  
 
  723   2          Roaming[Mapid]=Roaming_Table;
  724   2        } 
@@ -830,7 +830,7 @@ line level    source
  781           * Purpose:
  782           * Params:
  783           * Returns:
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 14  
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 14  
 
  784           * Note:
  785           * ----------------------------------------------------------------------------*/
@@ -894,7 +894,7 @@ line level    source
  843           * Returns:
  844           * Note:
  845           * ----------------------------------------------------------------------------*/
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 15  
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 15  
 
  846          #ifdef SYNC
  847          void API_Set_Absolute_Mouse_Data(U8_T *Msbuf,U8_T Msbuf_len)
@@ -958,7 +958,7 @@ line level    source
  904           * Function Name: API_Port_Connect(U8_T Portmask,U8_T Connectmask)
  905           * Purpose:
  906           * Params:
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 16  
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 16  
 
  907           * Returns:
  908           * Note:
@@ -1022,7 +1022,7 @@ line level    source
  966          /** ---------------------------------------------------------------------------- 
  967           * Function Name: API_Relative_Mouse_Data_Call_Back(U8_T *Msbuf,U8_T *Msbuf_len)
  968           * Purpose:
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 17  
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 17  
 
  969           * Params:  Msbuf[0]: Mouse button value
  970           *      Msbuf[1]: X coordinate value(-127~+127)
@@ -1086,7 +1086,7 @@ line level    source
 1028   1      //-----------------------------------------------   
 1029   1      }
 1030          /** ---------------------------------------------------------------------------- 
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 18  
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 18  
 
 1031           * Function Name: API_Roaming_Quad_Call(void)
 1032           * Purpose:
@@ -1150,7 +1150,7 @@ line level    source
 1090   2          {
 1091   3            if (Roaming[Current_Roaming_Table]->Sequence[i] == KVM_CurrentHost)
 1092   3            {
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 19  
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 19  
 
 1093   4              if (i == 1)
 1094   4              {
@@ -1214,7 +1214,7 @@ line level    source
 1152   3          }
 1153   2        }
 1154   1        else if ((KVM_CurrentHost != API_Current_Main_SCREEN) &&
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 20  
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 20  
 
 1155   1             (Current_Roaming_Direction == ROAMING_LEFT))
 1156   1        {
@@ -1278,7 +1278,7 @@ line level    source
 1212   1               sizeof(API_Roaming_Mapping_Def));
 1213   1        printf("one_3\r\n");
 1214   1        API_Set_Sync_Mode(API_SYNC_DISABLE);
-C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 10:02:49 PAGE 21  
+C51 COMPILER V9.60.7.0   KM_API                                                            06/23/2026 16:04:48 PAGE 21  
 
 1215   1        API_Set_Roaming_Mode(API_ROAMING_ENABLE);     
 1216   1        API_Active_Roaming_Mapping(ONE_3_SCREEN_MODE);

@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/18/2026 10:50:18 PAGE 1   
+C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/23/2026 16:04:45 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE USBDC_VHID_DESC
@@ -62,7 +62,7 @@ line level    source
   40            0x00,             /*bDeviceSubClass*/
   41            0x00,             /*bDeviceProtocol*/
   42            0x08,             /*bMaxPacketSize40*/
-C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/18/2026 10:50:18 PAGE 2   
+C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/23/2026 16:04:45 PAGE 2   
 
   43            0x95, 0x0b,           /*idVendor (0x0b95)*/
   44            0x06, 0x68,           /*idProduct = 0x6801*/ 
@@ -126,7 +126,7 @@ line level    source
  102            //  Descriptor of Custom HID interface 2 
  103            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  104            0x09,             /* bLength: Interface Descriptor size */
-C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/18/2026 10:50:18 PAGE 3   
+C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/23/2026 16:04:45 PAGE 3   
 
  105            USB_INTERFACE_DESCRIPTOR_TYPE,  /* bDescriptorType: Interface descriptor type */
  106            0x01,             /* bInterfaceNumber: Number of Interface */
@@ -190,7 +190,7 @@ line level    source
               /*   All Descriptors (Configuration, Interface, Endpoint, Class, Vendor */
               U8_T VHID_ConfigDescriptor[VHID_SIZ_CONFIG_DESC] =
               {
-C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/18/2026 10:50:18 PAGE 4   
+C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/23/2026 16:04:45 PAGE 4   
 
                 0x09,               /* bLength: Configuration Descriptor size */
                 USB_CONFIGURATION_DESCRIPTOR_TYPE,  /* bDescriptorType: Configuration */
@@ -254,7 +254,7 @@ line level    source
                 0x22,             /* bDescriptorType */
                 VHID_SIZ_REPORT2_DESC, 0x00,  /* wItemLength: Total length of Report descriptor */
                 
-C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/18/2026 10:50:18 PAGE 5   
+C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/23/2026 16:04:45 PAGE 5   
 
                 /******************** Descriptor of Custom HID endpoints ******************/
                 0x07,             /* bLength: Endpoint Descriptor size */
@@ -318,7 +318,7 @@ line level    source
                 //  Descriptor of Custom HID interface 2 
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     
                 0x09,             /* bLength: Interface Descriptor size */
-C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/18/2026 10:50:18 PAGE 6   
+C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/23/2026 16:04:45 PAGE 6   
 
                 USB_INTERFACE_DESCRIPTOR_TYPE,  /* bDescriptorType: Interface descriptor type */
                 0x00,             /* bInterfaceNumber: Number of Interface */
@@ -382,7 +382,7 @@ line level    source
  350            0x75, 0x08,     //; report size (8)
  351            0x15, 0x00,     //; logical minimum (0)
  352            0x25, 0x68,     //; logical maximum (101)
-C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/18/2026 10:50:18 PAGE 7   
+C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/23/2026 16:04:45 PAGE 7   
 
  353            0x05, 0x07,     //; usage page (key codes)
  354            0x19, 0x00,     //; usage minimum (0)
@@ -446,7 +446,7 @@ line level    source
  412            0xa1, 0x01,     /*collection (application) */
  413            0x85, 0x03,     /* ???  Interface#2 ????*/
  414            0x19, 0x00,     /*Usage minimum (0x00) */
-C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/18/2026 10:50:18 PAGE 8   
+C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/23/2026 16:04:45 PAGE 8   
 
  415            0x2a, 0x3c, 0x02, /*Usage minimum (0x023c) */
  416            0x15, 0x00,     /*logical minimum (0) */
@@ -510,7 +510,7 @@ line level    source
  474            0x81, 0x02,        //     Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
  475            0xC0, 0xC0,        //     End Collection
  476            
-C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/18/2026 10:50:18 PAGE 9   
+C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/23/2026 16:04:45 PAGE 9   
 
  477            /*
  478            //Top level collection for use in Single-Touch Digitizer device mode.
@@ -574,7 +574,7 @@ line level    source
  525          
  526          /* USB String Descriptors (optional) */
  527          U8_T VHID_StringLangID[VHID_SIZ_STRING_LANGID] =
-C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/18/2026 10:50:18 PAGE 10  
+C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/23/2026 16:04:45 PAGE 10  
 
  528          {
  529            VHID_SIZ_STRING_LANGID,
@@ -638,7 +638,7 @@ line level    source
  587            USB_STRING_DESCRIPTOR_TYPE,      /* bDescriptorType */
  588            'A', 0, 'S', 0, 'I', 0, 'X', 0,
  589            0, 0, 0, 0, 0, 0, 0, 0,
-C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/18/2026 10:50:18 PAGE 11  
+C51 COMPILER V9.60.7.0   USBDC_VHID_DESC                                                   06/23/2026 16:04:45 PAGE 11  
 
  590            0, 0, 0, 0, 0, 0, 0, 0,
  591            0, 0, 0, 0, 0, 0

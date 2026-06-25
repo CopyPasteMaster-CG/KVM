@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   CPU                                                               06/18/2026 10:50:16 PAGE 1   
+C51 COMPILER V9.60.7.0   CPU                                                               06/23/2026 16:04:42 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE CPU
@@ -62,7 +62,7 @@ line level    source
   40          static U16_T    cpu_GpioWakeupStatus;
   41          static U8_T     PS2_WakeupStatus;
   42          U8_T  cpu_Gpio0IntrStatus;
-C51 COMPILER V9.60.7.0   CPU                                                               06/18/2026 10:50:16 PAGE 2   
+C51 COMPILER V9.60.7.0   CPU                                                               06/23/2026 16:04:42 PAGE 2   
 
   43          U8_T  cpu_Gpio2IntrStatus;
   44          
@@ -126,7 +126,7 @@ line level    source
  102   2            MDR = 0x00;
  103   2            MDR = 0xBB;
  104   2            MDR = 0x00;
-C51 COMPILER V9.60.7.0   CPU                                                               06/18/2026 10:50:16 PAGE 3   
+C51 COMPILER V9.60.7.0   CPU                                                               06/23/2026 16:04:42 PAGE 3   
 
  105   2            MCIR = MISC_C12MSTBR;
  106   2            break;
@@ -190,7 +190,7 @@ line level    source
  164   1      }
  165          
  166          #if (SYSTEM_POWER_SAVING_MODE_SUPPORT)
-C51 COMPILER V9.60.7.0   CPU                                                               06/18/2026 10:50:16 PAGE 4   
+C51 COMPILER V9.60.7.0   CPU                                                               06/23/2026 16:04:42 PAGE 4   
 
               /*
                *--------------------------------------------------------------------------------
@@ -254,7 +254,7 @@ line level    source
  226          #if (SYSTEM_POWER_SAVING_MODE_SUPPORT)
               /*
                *--------------------------------------------------------------------------------
-C51 COMPILER V9.60.7.0   CPU                                                               06/18/2026 10:50:16 PAGE 5   
+C51 COMPILER V9.60.7.0   CPU                                                               06/23/2026 16:04:42 PAGE 5   
 
                * void CPU_GpioWkupEntryFunc(void)
                * Purpose :

@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   CONSOLES_EDID                                                     06/18/2026 10:50:17 PAGE 1   
+C51 COMPILER V9.60.7.0   CONSOLES_EDID                                                     06/23/2026 16:04:44 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE CONSOLES_EDID
@@ -62,7 +62,7 @@ line level    source
                 0x01,0x01,0x01,0x01,0x01,0x01,0x9a,0x29,0xa0,0xd0,0x51,0x84,0x22,0x30,0x50,0x98,
                 // 40 , 41 , 42 , 43 , 44 , 45 , 46 , 47 , 48 , 49 , 4a , 4b , 4c , 4d ,4e , 4f
                 0x36,0x00,0x98,0xff,0x10,0x00,0x00,0x1c,0x00,0x00,0x00,0xfd,0x00,0x38,0x4b,0x1e,
-C51 COMPILER V9.60.7.0   CONSOLES_EDID                                                     06/18/2026 10:50:17 PAGE 2   
+C51 COMPILER V9.60.7.0   CONSOLES_EDID                                                     06/23/2026 16:04:44 PAGE 2   
 
                 // 50 , 51 , 52 , 53 , 54 , 55 , 56 , 57 , 58 , 59 , 5a , 5b , 5c , 5d ,5e , 5f
                 0x53,0x0e,0x00,0x0a,0x20,0x20,0x20,0x20,0x20,0x20,0x00,0x00,0x00,0xff,0x00,0x55,
@@ -126,7 +126,7 @@ line level    source
                *--------------------------------------------------------------------------------
                * void  TASK_EDID_Console_Plug_Check(void)
                * Purpose : read the EDID table, if fail then stand for the monitor not plug in
-C51 COMPILER V9.60.7.0   CONSOLES_EDID                                                     06/18/2026 10:50:17 PAGE 3   
+C51 COMPILER V9.60.7.0   CONSOLES_EDID                                                     06/23/2026 16:04:44 PAGE 3   
 
                *           this function shall be performed every 10ms
                * Params  : None.
@@ -190,7 +190,7 @@ line level    source
                     {       
                       EDID_ctrl.TaskState = CONSOLE_MONITOR_PLUG_OUT; // not monitor plug in
                     } 
-C51 COMPILER V9.60.7.0   CONSOLES_EDID                                                     06/18/2026 10:50:17 PAGE 4   
+C51 COMPILER V9.60.7.0   CONSOLES_EDID                                                     06/23/2026 16:04:44 PAGE 4   
 
                         
                   } 
@@ -254,7 +254,7 @@ line level    source
                         //Do nothing, because the monitor still in        
                         EDID_ctrl.TaskState = CONSOLE_MONITOR_STATUS_CHK; 
                       }   
-C51 COMPILER V9.60.7.0   CONSOLES_EDID                                                     06/18/2026 10:50:17 PAGE 5   
+C51 COMPILER V9.60.7.0   CONSOLES_EDID                                                     06/23/2026 16:04:44 PAGE 5   
 
                     } 
                   } 
@@ -318,7 +318,7 @@ line level    source
                *----------------------------------------------------------------------------
                */
               void Console_EDID_PlugIn(void)
-C51 COMPILER V9.60.7.0   CONSOLES_EDID                                                     06/18/2026 10:50:17 PAGE 6   
+C51 COMPILER V9.60.7.0   CONSOLES_EDID                                                     06/23/2026 16:04:44 PAGE 6   
 
               { 
                 //Cascade_EDID_Control();

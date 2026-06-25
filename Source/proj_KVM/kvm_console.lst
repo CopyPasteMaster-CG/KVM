@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 1   
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KVM_CONSOLE
@@ -62,7 +62,7 @@ line level    source
                 GPIO_Pin_0,
                 GPIO_Pin_1,
                 GPIO_Pin_2,
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 2   
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 2   
 
                 GPIO_Pin_3,
                 GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3
@@ -126,7 +126,7 @@ line level    source
                 #endif
  103            GPIO_Pin_7, 
  104          };
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 3   
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 3   
 
  105          #endif /* 
  106          /* STATIC VARIABLE DECLARATIONS */
@@ -190,7 +190,7 @@ line level    source
  164            KVM_SW_INTERVAL_TIME, // Task Interval Reload
  165          };
  166          
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 4   
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 4   
 
  167          #if (KVM_BUTTON_SUPPORT) && (KVM_BUTTON_RELEASE_DELAY_INTERVAL) 
               TASK_ActiveTable_TypeDef TASK_KVM_Button_Release_Delay_Task = 
@@ -254,7 +254,7 @@ line level    source
                 /* Control relative */
                 KVM_Flash.cSystemFlag0 = SYSTEM_BEEPER_MASK; // 3 System Flag
                 KVM_Flash.cSystemFlag1 = 0; // 4 System Flag2
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 5   
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 5   
 
                 KVM_Flash.PowerSavingMode = SYSTEM_POWER_STOP_MODE;   // Stop Mode
               #endif //#if (SYSTEM_STORAGE_DEVICE_SUPPORT)
@@ -318,7 +318,7 @@ line level    source
  288   1        TASK_HOTKEY_LED_INDICATE_ID = TASK_Create(TASK_HOTKEY_Active_Led_Indicate);
  289   1        TASK_KVM_HotkeyFork_Timeout_ID = TASK_Create(TASK_KVM_HotkeyFork_Timeout);
  290   1      #endif /* #if (KVM_HOTKEY_SUPPORT) */
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 6   
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 6   
 
  291   1        TASK_KVM_EVENT_CONTROL_ID = TASK_Create(TASK_KVM_Event_Control);
  292   1        TASK_KVM_Switch_Event_Control_Task.Task_ID = TASK_Create(TASK_KVM_Switch_Event_Control);
@@ -382,7 +382,7 @@ line level    source
                       break;
                     case 0x12 : // left shift
                       cmodifier = 0x02;
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 7   
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 7   
 
                       break;
                     case 0x14 : // left ctrl cModifiers == 0x02
@@ -446,7 +446,7 @@ line level    source
                 
                 if (kvm_led & KVM_LED_SCROLL_LOCK)
                 {
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 8   
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 8   
 
                   led |= KVM_LED_PS2_SCROLL_LOCK;
                 }
@@ -510,7 +510,7 @@ line level    source
  474   2        }
  475   1      }
  476          #endif /* KVM_HOTKEY_SUPPORT */
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 9   
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 9   
 
  477          /*
  478           *--------------------------------------------------------------------------------
@@ -574,7 +574,7 @@ line level    source
  536   1        for (index = (currenthost+1); index < KVM_MAX_PORT; index++)
  537   1        {
  538   2          if (USBDC_UpPortState[index] & USBDC_ROOTHUB_ATTACHED_MASK)
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 10  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 10  
 
  539   2          {
  540   3            *nexthost = index;
@@ -638,7 +638,7 @@ line level    source
  598           *--------------------------------------------------------------------------------
  599           */
  600          void TASK_KVM_Autoscan_Event_Control(void)
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 11  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 11  
 
  601          {
  602   1        if (KVM_Control_Status & KVM_AUTOSCAN_MASK)
@@ -702,7 +702,7 @@ line level    source
  660   1        
  661   1        intt_id = USB_PDevice[devIndex].EndpType[infIndex][endpIndex] & 0x1f;
  662   1          
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 12  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 12  
 
  663   1        return ((HC_IntTransfer_Table[intt_id].EndpIdx & USBDC_DEV_ENDPINX_MASK ) >> 4);
  664   1      }
@@ -766,7 +766,7 @@ line level    source
  719   7                    DATAST_Send_Kb_Break(KVM_CurrentHost,dev_index, endpidx, 0, 8);
  720   7                  }
  721   6                }
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 13  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 13  
 
  722   5                else
  723   5                {
@@ -830,7 +830,7 @@ line level    source
  778   1        KVM_Control_Status &= ~KVM_PORT_SW_MASK;
  779   1        KVM_Select_Led_Control(KVM_CurrentHost,LED_OFF);
  780   1        
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 14  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 14  
 
  781   1      #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT) && (SYSTEM_SWITCH_AUDIO_DELAY)
                 if (KVM_Flash.cSystemFlag1 & SYSTEM_AUDIOCOMBO_MASK)
@@ -894,7 +894,7 @@ line level    source
  839   1      }
  840          
  841          /*--------------------------------------------------------------------------------
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 15  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 15  
 
  842           * void TASK_KVM_Accessory(void)
  843           * Purpose : Check the system ready(for button) or SOF from upper system
@@ -958,7 +958,7 @@ line level    source
  900   2          if ((KVM_Control_Status & KVM_AUTOSCAN_MASK) == 0x00)
  901   2            return;
  902   2          
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 16  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 16  
 
  903   2          KVM_Control_Status &= ~KVM_AUTOSCAN_MASK; // clear the autoscan flag
  904   2          Task_Active_Table[TASK_KVM_AUTOSCAN_ACTIVE_ID].Task_Interval.w = 1; //wait for 1 ms
@@ -1022,7 +1022,7 @@ line level    source
  962   3              else
  963   3              {
  964   4                KVM_Flash.cSystemFlag0 &= ~SYSTEM_HOTKEY_ALTERNATE_MASK;
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 17  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 17  
 
  965   4              }
  966   3              break;
@@ -1086,7 +1086,7 @@ line level    source
               #if (SYSTEM_USBAUDIO_DEVICE_SUPPORT)
               #if (ENABLE_HOTKEY_FUN_USBAUDIO_REPORT)
                     case HOTKEY_FUN_USBAUDIO_REPORT_CONTROL: //USB Audio device report rule control
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 18  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 18  
 
                       if (HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex] == 0) 
                       {
@@ -1150,7 +1150,7 @@ line level    source
 1086   3          //-----------------------------------------------------------------------
 1087   3            case HOTKEY_FUN_AUTOSCAN_CONTROL:
 1088   3              printf("HK exec: autoscan start\n\r");
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 19  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 19  
 
 1089   3              KVM_Autoscan_Mode_Contorl(1);   
 1090   3              //KVM_Control_Status |= KVM_AUTOSCAN_MASK;
@@ -1214,7 +1214,7 @@ line level    source
 1147   3              else
 1148   3              {
 1149   4                KVM_Flash.cSystemFlag1 &= ~SYSTEM_PLUGIN_JUMP_MASK;
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 20  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 20  
 
 1150   4              }
 1151   3              system_config_changed = 1;
@@ -1278,7 +1278,7 @@ line level    source
                         USBHC_MSC_Port_Switch(USBHC_MSC_Devinx, result);
                       }       
                       break;
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 21  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 21  
 
               #endif //#if (ENABLE_HOTKEY_FUN_MSC_SW)
 1212   3      
@@ -1342,7 +1342,7 @@ line level    source
                           USBDC_VMSC_Start();
                         }
                       }
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 22  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 22  
 
               #endif // #if (SYSTEM_USB_PEN_DRIVE_SUPPORT)
                       break;
@@ -1406,7 +1406,7 @@ line level    source
               #endif /* #if (SYSTEM_EXTENDER_RECEIVER) */
               
               #if (ENABLE_HOTKEY_T_AUDIO_AUTO_SW)
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 23  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 23  
 
                     case HOTKEY_FUN_T_USBAUDIO_AUTOSW:
                       ExtenderR_Transmitter_AudioComboSw_Control((U8_T)HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformV
@@ -1470,7 +1470,7 @@ line level    source
 1387   3            case HOTKEY_FUN_MS_SYNC:
 1388   3              // system_config_changed = KM_SYNC_Setting(HOTKEY_Funciton_Code,HOTKEY_Funciton_PerformValue[HOTKEY_Fu
              -nciton_PerformValueIndex]);               
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 24  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 24  
 
 1389   3              break;          
 1390   3      #endif
@@ -1534,7 +1534,7 @@ line level    source
 1448   1        return 0;
 1449   1      }
 1450          
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 25  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 25  
 
 1451          /*
 1452           *--------------------------------------------------------------------------------
@@ -1598,7 +1598,7 @@ line level    source
 1510   1            //2.Enable the target VGA port
 1511   1            if (vga_control == VGA_ON)
 1512   1            {
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 26  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 26  
 
 1513   2              TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_KVM_VGA_Switch_ID,0,port,50,15);  //switch vga port to on after
              - 50 ms
@@ -1662,7 +1662,7 @@ line level    source
                     TASK_KVM_CONSOLE_PS2_KBLed_Control_Flag=1;
                     PS2_Keyboad_LED_Script(ps2inx,led);
                     TASK_Destory_Current();
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 27  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 27  
 
                   }
                 }
@@ -1726,7 +1726,7 @@ line level    source
                 {
                   GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_4, 0);
                   GPIO_SetOneBit(VGA_CONTROL_PORT[TASK_Register0], GPIO_Pin_5, 1);
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 28  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 28  
 
                 }
                 else
@@ -1790,7 +1790,7 @@ line level    source
 1694   2          
 1695   2      #if (PROJECT_USB_GENERIC_HID_ENABLE)
 1696   2          #ifndef SYNC
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 29  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 29  
 
                   DATAST_Generic_KB_IN_WP = DATAST_Generic_KB_IN_RP = 0;
                   #endif
@@ -1854,7 +1854,7 @@ line level    source
 1756           * Params  : NONE
 1757           * Returns : None.
 1758           * Note    : None.
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 30  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 30  
 
 1759           *-------------------------------------------------------------------------------*/
 1760          void KVM_Jump_Next_Power_Port(U8_T pid)
@@ -1918,7 +1918,7 @@ line level    source
 1818   4              }           
 1819   3              return port_attached;
 1820   3            } 
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 31  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 31  
 
 1821   2          return 0;
 1822   2        }
@@ -1982,7 +1982,7 @@ line level    source
                *-------------------------------------------------------------------------------*/
               void KVM_AnalogAudioControl(U8_T newport)
               {
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 32  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 32  
 
                 /* Need Add code here */
                 
@@ -2046,7 +2046,7 @@ line level    source
              -DIO_CNT,SWITCH_PORT_DELAY_AUDIO_CNT);                 
                   //printf("NEW\n\r");    
                 }
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 33  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 33  
 
                 else
                 {
@@ -2110,7 +2110,7 @@ line level    source
 2002           *           
 2003           * Returns : None.
 2004           * Note    : None.
-C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/18/2026 13:48:03 PAGE 34  
+C51 COMPILER V9.60.7.0   KVM_CONSOLE                                                       06/23/2026 16:04:44 PAGE 34  
 
 2005           *--------------------------------------------------------------------------------*/
 2006          void KVM_CONSOLE_IAP_Mode(void)

@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   A4_TECH                                                           06/18/2026 10:50:20 PAGE 1   
+C51 COMPILER V9.60.7.0   A4_TECH                                                           06/23/2026 16:04:47 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE A4_TECH
@@ -62,7 +62,7 @@ line level    source
   40           * Description : Check the special handler, for A4 Tech G800V keyboard, can not change
   41           *               into report mode from boot mode, so need to reset it on the HC.
   42           *
-C51 COMPILER V9.60.7.0   A4_TECH                                                           06/18/2026 10:50:20 PAGE 2   
+C51 COMPILER V9.60.7.0   A4_TECH                                                           06/23/2026 16:04:47 PAGE 2   
 
   43           * 
   44           *************************************************************************************/

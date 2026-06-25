@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   STORAGE                                                           06/18/2026 10:50:16 PAGE 1   
+C51 COMPILER V9.60.7.0   STORAGE                                                           06/23/2026 16:04:43 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE STORAGE
@@ -62,7 +62,7 @@ line level    source
   40           * Note    : None.
   41           *--------------------------------------------------------------------------------
   42           */
-C51 COMPILER V9.60.7.0   STORAGE                                                           06/18/2026 10:50:16 PAGE 2   
+C51 COMPILER V9.60.7.0   STORAGE                                                           06/23/2026 16:04:43 PAGE 2   
 
   43          void  STORAGE_Init(void) 
   44          {
@@ -126,7 +126,7 @@ line level    source
  102           *--------------------------------------------------------------------------------
  103           */
  104          void STORAGE_Default_Initial(void) 
-C51 COMPILER V9.60.7.0   STORAGE                                                           06/18/2026 10:50:16 PAGE 3   
+C51 COMPILER V9.60.7.0   STORAGE                                                           06/23/2026 16:04:43 PAGE 3   
 
  105          {
  106   1        /* Autoscan interval time */ 
@@ -190,7 +190,7 @@ line level    source
                 #if (VHID_DEFAULT==KB)  
                   KVM_Flash.cSystemFlag3 |= SYSTEM_VHID_KB_MASK;  
                 #endif
-C51 COMPILER V9.60.7.0   STORAGE                                                           06/18/2026 10:50:16 PAGE 4   
+C51 COMPILER V9.60.7.0   STORAGE                                                           06/23/2026 16:04:43 PAGE 4   
 
               
                 #if (VHID_DEFAULT==MS)  
@@ -254,7 +254,7 @@ line level    source
  225   2            return;
  226   2        }
  227   1      
-C51 COMPILER V9.60.7.0   STORAGE                                                           06/18/2026 10:50:16 PAGE 5   
+C51 COMPILER V9.60.7.0   STORAGE                                                           06/23/2026 16:04:43 PAGE 5   
 
  228   1        for (index = 0 ; index < readlen ; index++)
  229   1        {
@@ -318,7 +318,7 @@ line level    source
  287   2          pFlash = &KVM_Flash;
  288   2        }
  289   1        
-C51 COMPILER V9.60.7.0   STORAGE                                                           06/18/2026 10:50:16 PAGE 6   
+C51 COMPILER V9.60.7.0   STORAGE                                                           06/23/2026 16:04:43 PAGE 6   
 
  290   1        for (partition = 0; partition < 4; partition++)
  291   1        {
@@ -382,7 +382,7 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    HDATA SIZE       =   ----    ----
    XDATA CONST SIZE =   ----    ----
    FAR CONST SIZE   =     26    ----
-C51 COMPILER V9.60.7.0   STORAGE                                                           06/18/2026 10:50:16 PAGE 7   
+C51 COMPILER V9.60.7.0   STORAGE                                                           06/23/2026 16:04:43 PAGE 7   
 
 END OF MODULE INFORMATION.
 

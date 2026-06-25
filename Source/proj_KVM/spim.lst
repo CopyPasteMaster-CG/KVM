@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   SPIM                                                              06/18/2026 10:50:16 PAGE 1   
+C51 COMPILER V9.60.7.0   SPIM                                                              06/23/2026 16:04:43 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE SPIM
@@ -62,7 +62,7 @@ line level    source
                * Purpose : Write data bytes into a register with interrupt locked.
                * Params  : addr - An index address to SPI register.
                *           ptData - A pointer to indicate the register data.
-C51 COMPILER V9.60.7.0   SPIM                                                              06/18/2026 10:50:16 PAGE 2   
+C51 COMPILER V9.60.7.0   SPIM                                                              06/23/2026 16:04:43 PAGE 2   
 
                *           dataLen - A number of bytes to indicate how many bytes will be written.
                * Returns : None.
@@ -126,7 +126,7 @@ line level    source
                * Returns : None.
                * Note    : None.
                *--------------------------------------------------------------------------------
-C51 COMPILER V9.60.7.0   SPIM                                                              06/18/2026 10:50:16 PAGE 3   
+C51 COMPILER V9.60.7.0   SPIM                                                              06/23/2026 16:04:43 PAGE 3   
 
                */
               BOOL SPI_MstFlagChk(U8_T flag)
@@ -190,7 +190,7 @@ line level    source
               {
                 U16_T reg16b = 0;
                 
-C51 COMPILER V9.60.7.0   SPIM                                                              06/18/2026 10:50:16 PAGE 4   
+C51 COMPILER V9.60.7.0   SPIM                                                              06/23/2026 16:04:43 PAGE 4   
 
                 SPI_MstFlagEnb(SPI_DMA_TXRX_CPL);
                 txByteCnt--;
@@ -254,7 +254,7 @@ line level    source
                 U8_T  opReverse[8] = {0};
                 U8_T  i;
               
-C51 COMPILER V9.60.7.0   SPIM                                                              06/18/2026 10:50:16 PAGE 5   
+C51 COMPILER V9.60.7.0   SPIM                                                              06/23/2026 16:04:43 PAGE 5   
 
                 for(i = 0; i < opLen; i++)
                   opReverse[8 - i - 1] = opCode[i];
@@ -318,7 +318,7 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    BIT SIZE         =   ----    ----
    EDATA SIZE       =   ----    ----
    HDATA SIZE       =   ----    ----
-C51 COMPILER V9.60.7.0   SPIM                                                              06/18/2026 10:50:16 PAGE 6   
+C51 COMPILER V9.60.7.0   SPIM                                                              06/23/2026 16:04:43 PAGE 6   
 
    XDATA CONST SIZE =   ----    ----
    FAR CONST SIZE   =   ----    ----
