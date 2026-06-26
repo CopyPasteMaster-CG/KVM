@@ -85,7 +85,7 @@ void HW_PS2_Init(void)
 	TASK_HW_PS2_Clear_Disable_ID = TASK_Create(TASK_HW_PS2_Clear_Disable);
 	
 #if (SYSTEM_TASK_DUMP_SUPPORT)
-	printf("TASK_HW_PS2_Clear_Disable_ID=%bu\n\r",TASK_HW_PS2_Clear_Disable_ID);
+	//printf("TASK_HW_PS2_Clear_Disable_ID=%bu\n\r",TASK_HW_PS2_Clear_Disable_ID);
 #endif	
 } /* End of HW_PS2_Init */
 

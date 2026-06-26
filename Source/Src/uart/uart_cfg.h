@@ -26,7 +26,7 @@
 
 /* NAMING CONSTANT DECLARATIONS */
 #define	UART0_ENABLE		1	// 1:enable UART0 ; 0:disable UART0
-#define	UART1_ENABLE		0	// 1:enable UART1 ; 0:disable UART1
+#define	UART1_ENABLE		1	// 1:enable UART1 ; 0:disable UART1
 #define	UART0_PMM_ENABLE	0	// 1:use UART in PMM mode ; 0:disable
 
 

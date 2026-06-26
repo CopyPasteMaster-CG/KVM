@@ -27,43 +27,43 @@
 /* GLOBAL DEFINATION DECLARATIONS */
 
 
-/* GLOBAL CONTANT DECLARATIONS */
-code PS2_CfgScriptStruct	PS2_CfgScriptTypeCheck[1] = {0xf2,3,0,0};
-code PS2_CfgScriptStruct	PS2_CfgScriptKB[4] = 
-{
-							0xff,2,0,0,// 01-reset the device, answer 0xfa,0xaa
-							0xf5,1,0,0,// 02-disable device first
-							0xf6,1,0,0,// 03-default keyboard setting 
-							0xf4,1,0,0 // 04-enable device
-};
+// /* GLOBAL CONTANT DECLARATIONS */
+// code PS2_CfgScriptStruct	PS2_CfgScriptTypeCheck[1] = {0xf2,3,0,0};
+// code PS2_CfgScriptStruct	PS2_CfgScriptKB[4] = 
+// {
+// 							0xff,2,0,0,// 01-reset the device, answer 0xfa,0xaa
+// 							0xf5,1,0,0,// 02-disable device first
+// 							0xf6,1,0,0,// 03-default keyboard setting 
+// 							0xf4,1,0,0 // 04-enable device
+// };
 
-code PS2_CfgScriptStruct	PS2_CfgScriptMS[13] = 
-{
-							0xff,3,0,0,// 01-reset the device, answer 0xfa,0xaa,0x00(for mouse)
-							0xf3,1,0xc8,1,// 02-get mouse type
-							0xf3,1,0x64,1,// 03-get mouse type
-							0xf3,1,0x50,1,// 04-get mouse type
-							0xf3,1,0xc8,1,// 05-get mouse type
-							0xf3,1,0xc8,1,// 06-get mouse type
-							0xf3,1,0x50,1,// 07-get mouse type
-							0xf2,2,0,0,// 08-ask mouse type
-							0xe8,1,0x03,1,// 09-set resolution
-							0xe6,1,0,0,// 10-set scale
-							0xf3,1,0x64,1,// 11-set data rate to 100
-							0xf4,1,0,0,// 12-enable device
-							0xf2,2,0,0// 13-ask mouse type again for keeping
-};
+// code PS2_CfgScriptStruct	PS2_CfgScriptMS[13] = 
+// {
+// 							0xff,3,0,0,// 01-reset the device, answer 0xfa,0xaa,0x00(for mouse)
+// 							0xf3,1,0xc8,1,// 02-get mouse type
+// 							0xf3,1,0x64,1,// 03-get mouse type
+// 							0xf3,1,0x50,1,// 04-get mouse type
+// 							0xf3,1,0xc8,1,// 05-get mouse type
+// 							0xf3,1,0xc8,1,// 06-get mouse type
+// 							0xf3,1,0x50,1,// 07-get mouse type
+// 							0xf2,2,0,0,// 08-ask mouse type
+// 							0xe8,1,0x03,1,// 09-set resolution
+// 							0xe6,1,0,0,// 10-set scale
+// 							0xf3,1,0x64,1,// 11-set data rate to 100
+// 							0xf4,1,0,0,// 12-enable device
+// 							0xf2,2,0,0// 13-ask mouse type again for keeping
+// };
 
-PS2_CfgScriptStruct			PS2_cfgScriptKB_F3[1] = {0xf3,1,0,1}; // 01-set F3
-PS2_CfgScriptStruct			PS2_cfgScriptKB_Led[3] = 
-{
-							0xf5,1,0,0, // 01-set Led
-							0xed,1,0,1, // 01-set Led
-							0xf4,1,0,0 // 01-set Led
-};
-PS2_CfgScriptStruct			PS2_cfgScriptResend[1] = {0xfe,1,0,0}; // 01-Send out FE
-PS2_CfgScriptStruct			PS2_cfgScriptEnable[1] = {0xf4,1,0,0}; // 01-Send out F4
-PS2_CfgScriptStruct			PS2_cfgScriptDisable[1] = {0xf5,1,0,0}; // 01-Send out F5
+// PS2_CfgScriptStruct			PS2_cfgScriptKB_F3[1] = {0xf3,1,0,1}; // 01-set F3
+// PS2_CfgScriptStruct			PS2_cfgScriptKB_Led[3] = 
+// {
+// 							0xf5,1,0,0, // 01-set Led
+// 							0xed,1,0,1, // 01-set Led
+// 							0xf4,1,0,0 // 01-set Led
+// };
+// PS2_CfgScriptStruct			PS2_cfgScriptResend[1] = {0xfe,1,0,0}; // 01-Send out FE
+// PS2_CfgScriptStruct			PS2_cfgScriptEnable[1] = {0xf4,1,0,0}; // 01-Send out F4
+// PS2_CfgScriptStruct			PS2_cfgScriptDisable[1] = {0xf5,1,0,0}; // 01-Send out F5
 
 
 /* GLOBAL VARIABLES DECLARATIONS */ 
@@ -1554,7 +1554,7 @@ void PS2_Process_Keyboard_Package(PS2Port_TypeDef PS2x,U8_T indata)
 	}
 	switch (PS2_Keyboard_Package_Index[PS2x])
 	{
-		case 0 : // 第一個 byte, the buf is empty
+		case 0 : // 第?@?? byte, the buf is empty
 			if ((indata != 0xf0) && (indata != 0xe0) && (indata != 0xe1)) // Check keycode type
 			{
 #if PROJECT_KVM_CONSOLE_ENABLE

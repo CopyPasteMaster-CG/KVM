@@ -35,6 +35,8 @@ extern U8_T		hsuart_RxBuf[];
 extern U16_T	hsuart_RxHead;
 extern U16_T	hsuart_RxTail;
 extern U16_T	hsuart_RxCount;
+extern U8_T		hsuart_DebugIntrStatus;
+extern U8_T		hsuart_DebugLineStatus;
 /* EXPORTED SUBPROGRAM SPECIFICATIONS */
 S8_T HSUART_PutChar(S8_T c);
 #endif /* End of __HSUART_DRIVER_H__ */

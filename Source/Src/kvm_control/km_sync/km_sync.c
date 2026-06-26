@@ -2293,7 +2293,7 @@ void KM_SYNC_Port_Add(U8_T port)
 {
 	if (KM_SYNC_PortSetting & BIT_MASK[port])
 	{
-		printf("Sync Port Add:%bu\n\r",port);
+		//printf("Sync Port Add:%bu\n\r",port);
 		KM_SYNC_PortSetting &= ~BIT_MASK[port];
 		KM_SYNC_KM_SyncModeLed(LED_ON);
 	}	
@@ -2310,7 +2310,7 @@ void KM_SYNC_Port_Clear(U8_T port)
 {
 	if ((KM_SYNC_PortSetting & BIT_MASK[port]) == 0)
 	{			
-		printf("Sync Port Clear:%bu\n\r",port);
+		//printf("Sync Port Clear:%bu\n\r",port);
 		KM_SYNC_PortSetting |= BIT_MASK[port];		
 		KM_SYNC_KM_SyncModeLed(LED_ON);
 	}			
@@ -2447,7 +2447,7 @@ void KM_Sync_VPid_Change_Handle(U8_T port_mask)
  *------------------------------------------------------------------------------------------------------*/
 void KM_SYNC_Manufacturer_Default(void)
 {		
-	printf("Manufacturer Default\n\r");
+	//printf("Manufacturer Default\n\r");
 	API_Active_Roaming_Mapping(SINGLE_SCREEN_MODE);	
 	API_Set_Mouse_Mode(API_ABSOLUTE_MODE);
 	API_Set_Sync_Mode(API_SYNC_ENABLE);		
@@ -2461,7 +2461,7 @@ void KM_SYNC_Manufacturer_Default(void)
 
 void KM_SYNC_Stop_KB_Report(void)
 {
-	printf("Stop Sync Repeat Status\n\r");
+	//printf("Stop Sync Repeat Status\n\r");
 	memset(KM_SYNC_Sync_KB_RepeatActive,0x00,sizeof(KM_SYNC_Sync_KB_RepeatActive));
 	memset(KM_SYNC_Sync_KB_HID_RepeatTableMake,0x00,sizeof(KM_SYNC_Sync_KB_HID_RepeatTableMake));
 }

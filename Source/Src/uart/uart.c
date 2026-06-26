@@ -39,10 +39,16 @@ U8_T	uart0_RxBuf[MAX_RX_UART0_BUF_SIZE];
 U16_T	uart0_RxHead = 0;
 U16_T	uart0_RxTail = 0;
 U16_T	uart0_RxCount = 0;
+U8_T	uart1_RxBuf[MAX_RX_UART1_BUF_SIZE];
+U16_T	uart1_RxHead = 0;
+U16_T	uart1_RxTail = 0;
+U16_T	uart1_RxCount = 0;
 
 /* LOCAL SUBPROGRAM DECLARATIONS */
 static void		uart0_ISR(void);
+static void		uart1_ISR(void);
 static void		uart0_Init(void);
+static void		uart1_Init(void);
 
 /* LOCAL SUBPROGRAM BODIES */
 /*
@@ -91,6 +97,28 @@ static void uart0_ISR(void) interrupt UR0_VECTOR
 
 		TI0 = 0;
 	} /* End of if(TI0) */
+}
+
+static void uart1_ISR(void) interrupt UR1_VECTOR
+{
+	if (RI1)
+	{
+		uart1_RxBuf[uart1_RxTail] = SBUF1;
+		uart1_RxTail++;
+		uart1_RxTail &= MAX_RX_UART1_MASK;
+		ISR_FIFO[ISR_FIFO_Wp].ISR_Type = ISR_UART1;
+		ISR_FIFO[ISR_FIFO_Wp].Data = uart1_RxBuf[(uart1_RxTail - 1) & MAX_RX_UART1_MASK];
+		if (++ISR_FIFO_Wp >= ISR_FIFO_DEPTH)
+		{
+			ISR_FIFO_Wp = 0;
+		}
+		RI1 = 0;
+	}
+
+	if (TI1)
+	{
+		TI1 = 0;
+	}
 }
 
 /*
@@ -155,6 +183,60 @@ static void uart0_Init(void)
 	TI0 = 0;
 
 } /* End of uart0_Init */
+
+static void uart1_Init(void)
+{
+	U8_T hwcfg[8];
+
+	ES1 = 0;
+	ET2 = 0;
+	TR2 = 0;
+	T2CON = 0;
+	T2IF = 0;
+
+	uart1_RxHead = 0;
+	uart1_RxTail = 0;
+	uart1_RxCount = 0;
+	memset(uart1_RxBuf, 0x00, sizeof(uart1_RxBuf));
+
+	P0_0 = 1;
+	P0_1 = 1;
+	SCON1 = 0x50;
+
+	RCLK = 1;
+	TCLK = 1;
+	CKCON |= T2M_;
+
+	if ((CSREPR & SCS_96M) == SCS_96M)
+	{
+		RLDH = 0xFF;
+		RLDL = 0xE6;
+	}
+	else
+	{
+		RLDH = 0xFF;
+		RLDL = 0xF3;
+	}
+
+	TH2 = RLDH;
+	TL2 = RLDL;
+	RI1 = 0;
+	TI1 = 0;
+	ES1 = 0;
+	TR2 = 1;
+
+	if (FLASH_InfoWordRead8Byte(0x00000000, hwcfg))
+	{
+		printf("HWCFG[001]=%02bx MP0_10_PSEL=%bu\r\n",
+			hwcfg[1],
+			(U8_T)(hwcfg[1] & BIT0));
+		if ((hwcfg[1] & BIT0) == 0)
+		{
+			printf("WARN: P00/P01 still GPIO, set HWCFG[001].bit0=1 for RXD1/TXD1\r\n");
+		}
+	}
+	printf("UART1 RXD1 polling init 115200 RLD=%02bx%02bx\r\n", RLDH, RLDL);
+}
 
 /*
  * ----------------------------------------------------------------------------
@@ -226,6 +308,22 @@ S8_T putchar(S8_T c)
 void UART_Init(void)
 {
 	uart0_Init();
+	uart1_Init();
+}
+
+void UART1_Polling_Receive_Handle(void)
+{
+	if (RI1)
+	{
+		uart1_RxBuf[uart1_RxTail] = SBUF1;
+		printf("DBG: UART1_POLL data=%02bx head=%u tail=%u\r\n",
+			uart1_RxBuf[uart1_RxTail],
+			uart1_RxHead,
+			uart1_RxTail);
+		uart1_RxTail++;
+		uart1_RxTail &= MAX_RX_UART1_MASK;
+		RI1 = 0;
+	}
 }
 
 /* End of uart.c */

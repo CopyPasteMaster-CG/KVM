@@ -171,110 +171,110 @@ void main(void)
 
 //read btn state, set modes, ///zbb
 {
-		U8_T 	btn_state = 0;	//zbb
-		
-		if (GPIO_GetPinValue(PORT0, GPIO_Pin_0))
-		{
-			btn_state |= 0x01;
-		}
+//		U8_T 	btn_state = 0;	//zbb
+//		
+//		if (GPIO_GetPinValue(PORT0, GPIO_Pin_0))
+//		{
+//			btn_state |= 0x01;
+//		}
 
-		if (GPIO_GetPinValue(PORT0, GPIO_Pin_1))
-		{
-			btn_state |= 0x02;
-		}
+//		if (GPIO_GetPinValue(PORT0, GPIO_Pin_1))
+//		{
+//			btn_state |= 0x02;
+//		}
 
-		if (GPIO_GetPinValue(PORT0, GPIO_Pin_2))
-		{
-			btn_state |= 0x04;
-		}
+//		if (GPIO_GetPinValue(PORT0, GPIO_Pin_2))
+//		{
+//			btn_state |= 0x04;
+//		}
 
-		if (GPIO_GetPinValue(PORT0, GPIO_Pin_3))
-		{
-			btn_state |= 0x08;
-		}
+//		if (GPIO_GetPinValue(PORT0, GPIO_Pin_3))
+//		{
+//			btn_state |= 0x08;
+//		}
 
-		//check the btn_state
-		printf("---- btn_state:%bx ----\n\r", btn_state);
-		switch(btn_state)
-		{
-						case PORT0_ACTIVE:
-				API_Set_Roaming_Mode(API_ROAMING_DISABLE);
-				API_Set_Sync_Mode(API_SYNC_DISABLE);
-				KVM_Console_Port_Jump(3);
-				break;
-			case PORT1_ACTIVE:
-				API_Set_Roaming_Mode(API_ROAMING_DISABLE);
-				API_Set_Sync_Mode(API_SYNC_DISABLE);
-				KVM_Console_Port_Jump(2);
-				break;
-			case PORT2_ACTIVE:
-				API_Set_Roaming_Mode(API_ROAMING_DISABLE);
-				API_Set_Sync_Mode(API_SYNC_DISABLE);
-				KVM_Console_Port_Jump(1);
-				break;
-			case PORT3_ACTIVE:
-				API_Set_Roaming_Mode(API_ROAMING_DISABLE);
-				API_Set_Sync_Mode(API_SYNC_DISABLE);
-				KVM_Console_Port_Jump(0);
-				break;
-			case PORT12_ACTIVE:
-				API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
-				API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
-				KVM_Console_Port_Jump(3);
-				break;
-			case PORT34_ACTIVE:
-				API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
-				API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
-				KVM_Console_Port_Jump(1);
-				break;
-			case PORT_ALL_ACTIVE:
-				API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
-				API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
-				KVM_Console_Port_Jump(3);
-				break;
-			case PORT_ALL_SYNC:
-				API_Set_Roaming_Mode(API_ROAMING_DISABLE);					
-				API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
-				API_Set_Sync_Mode(API_SYNC_ENABLE);
-				break;
-			case PORT_ONE_2_MAIN1_ACTIVE:
-				API_SET_ONE_2_SCREEN_MODE(1);
-				API_Current_Main_SCREEN = 3;
-				KVM_Console_Port_Jump(3);
-				break;
-			case PORT_ONE_2_MAIN2_ACTIVE:
-				API_SET_ONE_2_SCREEN_MODE(2);
-				API_Current_Main_SCREEN = 2;
-				KVM_Console_Port_Jump(2);
-				break;
-			case PORT_ONE_2_MAIN3_ACTIVE:
-				API_SET_ONE_2_SCREEN_MODE(3);
-				API_Current_Main_SCREEN = 1;
-				KVM_Console_Port_Jump(1);
-				break;
-			case PORT_ONE_3_MAIN0_ACTIVE:
-				API_SET_ONE_3_SCREEN_MODE(0);
-				API_Current_Main_SCREEN = 3;
-				KVM_Console_Port_Jump(3);
-				break;
-			case PORT_ONE_3_MAIN1_ACTIVE:
-				API_SET_ONE_3_SCREEN_MODE(1);
-				API_Current_Main_SCREEN = 2;
-				KVM_Console_Port_Jump(2);
-				break;
-			case PORT_ONE_3_MAIN2_ACTIVE:
-				API_SET_ONE_3_SCREEN_MODE(2);
-				API_Current_Main_SCREEN = 1;
-				KVM_Console_Port_Jump(1);
-				break;
-			case PORT_ONE_3_MAIN3_ACTIVE:
-				API_SET_ONE_3_SCREEN_MODE(3);
-				API_Current_Main_SCREEN = 0;
-				KVM_Console_Port_Jump(0);
-				break;
-			default:
-				break;
-		}
+//		//check the btn_state
+//		printf("---- btn_state:%bx ----\n\r", btn_state);
+//		switch(btn_state)
+//		{
+//				case PORT0_ACTIVE:
+//				API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+//				API_Set_Sync_Mode(API_SYNC_DISABLE);
+//				KVM_Console_Port_Jump(3);
+//				break;
+//			case PORT1_ACTIVE:
+//				API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+//				API_Set_Sync_Mode(API_SYNC_DISABLE);
+//				KVM_Console_Port_Jump(2);
+//				break;
+//			case PORT2_ACTIVE:
+//				API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+//				API_Set_Sync_Mode(API_SYNC_DISABLE);
+//				KVM_Console_Port_Jump(1);
+//				break;
+//			case PORT3_ACTIVE:
+//				API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+//				API_Set_Sync_Mode(API_SYNC_DISABLE);
+//				KVM_Console_Port_Jump(0);
+//				break;
+//			case PORT12_ACTIVE:
+//				API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
+//				API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
+//				KVM_Console_Port_Jump(3);
+//				break;
+//			case PORT34_ACTIVE:
+//				API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
+//				API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
+//				KVM_Console_Port_Jump(1);
+//				break;
+//			case PORT_ALL_ACTIVE:
+//				API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
+//				API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
+//				KVM_Console_Port_Jump(3);
+//				break;
+//			case PORT_ALL_SYNC:
+//				API_Set_Roaming_Mode(API_ROAMING_DISABLE);					
+//				API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
+//				API_Set_Sync_Mode(API_SYNC_ENABLE);
+//				break;
+//			case PORT_ONE_2_MAIN1_ACTIVE:
+//				API_SET_ONE_2_SCREEN_MODE(1);
+//				API_Current_Main_SCREEN = 3;
+//				KVM_Console_Port_Jump(3);
+//				break;
+//			case PORT_ONE_2_MAIN2_ACTIVE:
+//				API_SET_ONE_2_SCREEN_MODE(2);
+//				API_Current_Main_SCREEN = 2;
+//				KVM_Console_Port_Jump(2);
+//				break;
+//			case PORT_ONE_2_MAIN3_ACTIVE:
+//				API_SET_ONE_2_SCREEN_MODE(3);
+//				API_Current_Main_SCREEN = 1;
+//				KVM_Console_Port_Jump(1);
+//				break;
+//			case PORT_ONE_3_MAIN0_ACTIVE:
+//				API_SET_ONE_3_SCREEN_MODE(0);
+//				API_Current_Main_SCREEN = 3;
+//				KVM_Console_Port_Jump(3);
+//				break;
+//			case PORT_ONE_3_MAIN1_ACTIVE:
+//				API_SET_ONE_3_SCREEN_MODE(1);
+//				API_Current_Main_SCREEN = 2;
+//				KVM_Console_Port_Jump(2);
+//				break;
+//			case PORT_ONE_3_MAIN2_ACTIVE:
+//				API_SET_ONE_3_SCREEN_MODE(2);
+//				API_Current_Main_SCREEN = 1;
+//				KVM_Console_Port_Jump(1);
+//				break;
+//			case PORT_ONE_3_MAIN3_ACTIVE:
+//				API_SET_ONE_3_SCREEN_MODE(3);
+//				API_Current_Main_SCREEN = 0;
+//				KVM_Console_Port_Jump(0);
+//				break;
+//			default:
+//				break;
+	//	}
 }
 	/* KVM Project Define Display */
 	DisplayProjectVersionInformation();
@@ -287,6 +287,11 @@ void main_loop(void)
 #ifdef VPID_CHANGER
 		VPID_Changer_Seed++;
 #endif		
+
+#ifdef MULTIVIEW
+		UART1_Polling_Receive_Handle();
+		MULTIVIEW_Receive_Handle();
+#endif
 		
 		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 		// ISR Event Handle
@@ -297,7 +302,8 @@ void main_loop(void)
 				switch (ISR_FIFO[ISR_FIFO_Rp].ISR_Type)
 				{
 #if (KVM_BUTTON_SUPPORT) & (KVM_BUTTON_HARDWARE)
-					case ISR_BTN:								
+					case ISR_BTN:	
+					printf("DBG: ISR_BTN data=%02bx\r\n", ISR_FIFO[ISR_FIFO_Rp].Data);							
 	#ifdef BTN_RESET						
 						TASK_Active(TASK_TYPE_EVENT,TASK_BTN_Polling_ID,ISR_FIFO[ISR_FIFO_Rp].State & 0x0f,ISR_FIFO[ISR_FIFO_Rp].Data,0,0);  // Generate the task TASK_BTN_Polling_ID
 	#else
@@ -356,8 +362,12 @@ void main_loop(void)
 					    break;		
 #endif						
 
-#ifdef HSUART
+#if 0
 					case ISR_UART1:										
+						printf("DBG: UART1_RX data=%02bx head=%u tail=%u\r\n",
+							ISR_FIFO[ISR_FIFO_Rp].Data,
+							uart1_RxHead,
+							uart1_RxTail);
 						MULTIVIEW_Receive_Handle();
 					    break;		
 #endif												

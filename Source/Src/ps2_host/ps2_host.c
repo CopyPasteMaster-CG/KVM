@@ -190,11 +190,11 @@ void PS2_Init(void)
 	TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_PS2_HOST_START_INITLIAL_ID,0,0,500,500); // start to init PS2 device
 
 #if (SYSTEM_TASK_DUMP_SUPPORT)
-	printf("TASK_PS2_HOST_START_INITLIAL_ID=%bu\n\r",TASK_PS2_HOST_START_INITLIAL_ID);
-	printf("TASK_EVENT_PS2_HANDLE_ID=%bu\n\r",TASK_EVENT_PS2_HANDLE_ID);
-	printf("TASK_PS2_Balance_Maintain_ID=%bu\n\r",TASK_PS2_Balance_Maintain_ID);
-	printf("TASK_PS2_Device_Resend_ID=%bu\n\r",TASK_PS2_Device_Resend_ID);
-	printf("TASK_PS2_TIMEOUT_CHECK_ID=%bu\n\r",TASK_PS2_TIMEOUT_CHECK_ID);
+//	printf("TASK_PS2_HOST_START_INITLIAL_ID=%bu\n\r",TASK_PS2_HOST_START_INITLIAL_ID);
+//	printf("TASK_EVENT_PS2_HANDLE_ID=%bu\n\r",TASK_EVENT_PS2_HANDLE_ID);
+//	printf("TASK_PS2_Balance_Maintain_ID=%bu\n\r",TASK_PS2_Balance_Maintain_ID);
+//	printf("TASK_PS2_Device_Resend_ID=%bu\n\r",TASK_PS2_Device_Resend_ID);
+//	printf("TASK_PS2_TIMEOUT_CHECK_ID=%bu\n\r",TASK_PS2_TIMEOUT_CHECK_ID);
 #endif	
 } /* End of PS2_Init */
 
@@ -892,17 +892,17 @@ PS2_SCRIPT_RESTART:
 				{
 					if (rece_status == PS2_RESEND_CODE) // parity error
 					{	
-						printf("(%d)CMD_RPN_CmdIndex=%d,Resend\n\r",(U16_T)ps2index,(U16_T)PS2_CfgCtlTab[ps2index].Cmdindex);
+						//printf("(%d)CMD_RPN_CmdIndex=%d,Resend\n\r",(U16_T)ps2index,(U16_T)PS2_CfgCtlTab[ps2index].Cmdindex);
 						/* Stage-Parameter1 Responsed => Check the device ask for resend command, by received a 0xfe command */
 						if (PS2_Script_Cmd_Resend_Handle(ps2index,PS2_SCP_PARA1_RPN,((PS2_CfgScriptStructP)(PS2_CfgCtlTab[ps2index].ScriptPtr))->Para1_RpnByteCnt,Script_Para1) == 0 )
 						{
-							printf("Resend Fail\n\r");
+							//printf("Resend Fail\n\r");
 							/*how to continue process? */
 						}
 					}
 					else
 					{
-						printf("Parrity1 error\n\r");
+						//printf("Parrity1 error\n\r");
 						TASK_Active(TASK_TYPE_INTERVAL_MS,TASK_PS2_Device_Resend_ID,0,ps2index,5,5); // start to resend
 					}
 					break;

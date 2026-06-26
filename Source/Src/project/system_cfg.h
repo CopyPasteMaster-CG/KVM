@@ -72,6 +72,14 @@ void 04_SYSTEM_USBDC_USBHC_INTERRUPT_CONTROL_NAMEING(void){}
 
 #define KVM_INFORMATION_DISPLAY      0
 
+#ifndef HSUART
+#define HSUART
+#endif
+
+#ifndef MULTIVIEW
+#define MULTIVIEW
+#endif
+
 /*---------------------------------------------
 $ Define the Extender Environmnent 
 void 05_SYSTEM_EXTENDER_Envionment_Define(void){}
@@ -244,6 +252,8 @@ void KVM_01_SYSTEM_CONFIGURATION(void){}
 /*******************************************
 void KVM_02_BUTTON_CONFIGURATION(void){}
 */
+#define NO_BTN
+
 #ifdef NO_BTN
 	#define KVM_BUTTON_SUPPORT			0
 #else

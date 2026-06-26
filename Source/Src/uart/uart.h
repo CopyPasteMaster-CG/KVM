@@ -33,6 +33,9 @@
 #endif
 #define MAX_RX_UART0_MASK		(MAX_RX_UART0_BUF_SIZE - 1)
 
+#define MAX_RX_UART1_BUF_SIZE	256
+#define MAX_RX_UART1_MASK		(MAX_RX_UART1_BUF_SIZE - 1)
+
 /* GLOBAL VARIABLES */
 extern U8_T	uart0_TxBuf[MAX_TX_UART0_BUF_SIZE];
 extern U16_T	uart0_TxHead;
@@ -43,8 +46,13 @@ extern U8_T		uart0_RxBuf[MAX_RX_UART0_BUF_SIZE];
 extern U16_T	uart0_RxHead;
 extern U16_T	uart0_RxTail;
 extern U16_T	uart0_RxCount;
+extern U8_T		uart1_RxBuf[MAX_RX_UART1_BUF_SIZE];
+extern U16_T	uart1_RxHead;
+extern U16_T	uart1_RxTail;
+extern U16_T	uart1_RxCount;
 /* EXPORTED SUBPROGRAM SPECIFICATIONS */
 void	UART_Init(void);
+void	UART1_Polling_Receive_Handle(void);
 S8_T	putchar(S8_T);
 S8_T	UART0_PutChar(S8_T c);
 S8_T	UART0_NoBlockGetkey (void);

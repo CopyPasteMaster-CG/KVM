@@ -128,6 +128,8 @@ U8_T	hsuart_RxBuf[MAX_RX_HSUART_BUF_SIZE];
 U16_T	hsuart_RxHead = 0;
 U16_T	hsuart_RxTail = 0;
 U16_T	hsuart_RxCount = 0;
+U8_T	hsuart_DebugIntrStatus = 0;
+U8_T	hsuart_DebugLineStatus = 0;
 
 static const U8_T	Console_BaudText[15][6] = {"12M", "8M", "6M", "4M", "3M", "2M", "1M", "921K", "115K", "9600", "19200", "38400", "57600"};
 
@@ -273,6 +275,7 @@ static void hsur2_ReadLsr(void)
 	
 	UR2CIR = HSLSR;
 	lineStatus = UR2DR;
+	hsuart_DebugLineStatus = lineStatus;
 
 	if (lineStatus & HSLSR_OE_OVER)
 	{
@@ -359,10 +362,18 @@ void HSUR2_IntrEntryFunc(void)
 	UR2CIR = HSIIR;
 	intrStatus = UR2DR;	
 	intrStatus &= 0x1F;	
+	hsuart_DebugIntrStatus = intrStatus;
 	
 	if ((intrStatus & HSIIR_RLS_INTR) == HSIIR_RLS_INTR)
 	{
 		hsur2_ReadLsr();
+		ISR_FIFO[ISR_FIFO_Wp].ISR_Type = ISR_UART1;
+		ISR_FIFO[ISR_FIFO_Wp].Data = intrStatus;
+		ISR_FIFO[ISR_FIFO_Wp].State = hsuart_DebugLineStatus;
+		if (++ISR_FIFO_Wp >= ISR_FIFO_DEPTH)
+		{
+			ISR_FIFO_Wp = 0;
+		}
 		return;
 	}
 	//else if (intrStatus == HSIIR_DMAS_INTR)
@@ -381,7 +392,7 @@ void HSUR2_IntrEntryFunc(void)
 		return;
 	}	
 	//else if ((intrStatus == HSIIR_RD_TI_INTR) || (intrStatus == HSIIR_RD_TRIG_INTR))	
-	if ((intrStatus & HSIIR_RD_TI_INTR) == HSIIR_RD_TRIG_INTR)	
+	if ((intrStatus == HSIIR_RD_TI_INTR) || (intrStatus == HSIIR_RD_TRIG_INTR))	
 	{ /* Receiver Timeout */		
 		// Assing to ISR handle 		
 		UR2CIR = HSRBR;								
@@ -390,7 +401,8 @@ void HSUR2_IntrEntryFunc(void)
 		hsuart_RxTail++;
 		hsuart_RxTail &= MAX_RX_HSUART_MASK;
 		ISR_FIFO[ISR_FIFO_Wp].ISR_Type = ISR_UART1;
-		//ISR_FIFO[ISR_FIFO_Wp].Data = intrStatus;
+		ISR_FIFO[ISR_FIFO_Wp].Data = intrStatus;
+		ISR_FIFO[ISR_FIFO_Wp].State = 0;
 		if (++ISR_FIFO_Wp >= ISR_FIFO_DEPTH)
 		{
 			ISR_FIFO_Wp = 0;

@@ -603,28 +603,28 @@ void API_Init(void)
 
 static void API_Debug_Print_Roaming_Map(U8_T main_port, API_Roaming_Mapping_Def *map)
 {
-	U8_T i;
-	
-	printf("CG:API_Roaming[%bu]\n\r", main_port);
-	printf("CG:Sequence=%bu,%bu,%bu,%bu\n\r",
-	       map->Sequence[0],
-	       map->Sequence[1],
-	       map->Sequence[2],
-	       map->Sequence[3]);
-	
-	for (i = 0; i < KVM_MAX_PORT; i++)
-	{
-		printf("CG:Port%bu L=%bu/%bu R=%bu/%bu U=%bu/%bu D=%bu/%bu\n\r",
-		       i,
-		       map->Edge.Item[i].Left.Portid,
-		       map->Edge.Item[i].Left.Latency,
-		       map->Edge.Item[i].Right.Portid,
-		       map->Edge.Item[i].Right.Latency,
-		       map->Edge.Item[i].Up.Portid,
-		       map->Edge.Item[i].Up.Latency,
-		       map->Edge.Item[i].Down.Portid,
-		       map->Edge.Item[i].Down.Latency);
-	}
+//	U8_T i;
+//	
+////	printf("CG:API_Roaming[%bu]\n\r", main_port);
+//	printf("CG:Sequence=%bu,%bu,%bu,%bu\n\r",
+//	       map->Sequence[0],
+//	       map->Sequence[1],
+//	       map->Sequence[2],
+//	       map->Sequence[3]);
+//	
+////	for (i = 0; i < KVM_MAX_PORT; i++)
+////	{
+////		printf("CG:Port%bu L=%bu/%bu R=%bu/%bu U=%bu/%bu D=%bu/%bu\n\r",
+////		       i,
+////		       map->Edge.Item[i].Left.Portid,
+////		       map->Edge.Item[i].Left.Latency,
+////		       map->Edge.Item[i].Right.Portid,
+////		       map->Edge.Item[i].Right.Latency,
+////		       map->Edge.Item[i].Up.Portid,
+////		       map->Edge.Item[i].Up.Latency,
+////		       map->Edge.Item[i].Down.Portid,
+////		       map->Edge.Item[i].Down.Latency);
+////	}
 }
 
 /** ----------------------------------------------------------------------------

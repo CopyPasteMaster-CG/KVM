@@ -231,7 +231,7 @@ void TASK_BTN_Polling(void)
 				btn_state |= BIT_MASK[index];	//zbb
 			}
 		}
-		#endif
+	
 		if (GPIO_GetPinValue(PORT0, GPIO_Pin_0))
 		{
 			btn_state |= 0x01;
@@ -253,7 +253,7 @@ void TASK_BTN_Polling(void)
 		}
 
 		//check the btn_state
-		printf("---- btn_state:%bx ----\n\r", btn_state);
+		//printf("---- btn_state:%bx ----\n\r", btn_state);
 		switch(btn_state)
 		{
 
@@ -337,6 +337,7 @@ void TASK_BTN_Polling(void)
 		}
 
 		return;
+		#endif
 	}
 
 	
