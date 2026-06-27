@@ -91,6 +91,8 @@ typedef struct
 
 /* GLOBAL VARIABLES */
 /* EXPORTED SUBPROGRAM SPECIFICATIONS */
+
+void KVM_SET_mode(U8_T mode);
 void MULTIVIEW_Init(void);
 void MULTIVIEW_Receive_Handle(void);
 #endif /* End of __MULTIVIEW_H */

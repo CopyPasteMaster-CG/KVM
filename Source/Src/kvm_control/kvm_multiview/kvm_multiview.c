@@ -48,7 +48,7 @@ U16_T  MULTIVIEW_RxCount = 0;
 U16_T  MULTIVIEW_RxTail_Hold=0;
 
 static KVM_RX_DATA kvm_rx;
-#define MULTIVIEW_UART_DEBUG 1
+#define MULTIVIEW_UART_DEBUG 0
 
 U8_T MULTIVIEW_Cmd[7][8] =
 {
@@ -117,6 +117,114 @@ U8_T KVM_CRC8_Calculate(const U8_T *crcdata, U8_T length)
     return crc;
 }
 
+#define KVM_MODE_PORT1_ONLY              0x01
+#define KVM_MODE_PORT2_ONLY              0x02
+#define KVM_MODE_PORT3_ONLY              0x03
+#define KVM_MODE_PORT4_ONLY              0x04
+
+#define KVM_MODE_TWO_SMALL_MAIN_PORT1    0x05
+#define KVM_MODE_TWO_SMALL_MAIN_PORT2    0x06
+#define KVM_MODE_TWO_SMALL_MAIN_PORT3    0x07
+
+#define KVM_MODE_PORT12_ONLY             0x08
+#define KVM_MODE_PORT34_ONLY             0x09
+#define KVM_MODE_PORT_ALL                0x0A
+#define KVM_MODE_PORT_ALL_SYNC           0x0B
+
+#define KVM_MODE_THREE_SMALL_MAIN_PORT4  0x0C
+#define KVM_MODE_THREE_SMALL_MAIN_PORT3  0x0D
+#define KVM_MODE_THREE_SMALL_MAIN_PORT2  0x0E
+#define KVM_MODE_THREE_SMALL_MAIN_PORT1  0x0F
+
+void KVM_SET_mode(U8_T mode){
+
+    switch (mode)
+    {
+    case KVM_MODE_PORT1_ONLY:
+        API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+        API_Set_Sync_Mode(API_SYNC_DISABLE);
+        KVM_Console_Port_Jump(3);
+        break;
+    case KVM_MODE_PORT2_ONLY:
+        API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+        API_Set_Sync_Mode(API_SYNC_DISABLE);
+        KVM_Console_Port_Jump(2);
+       
+        break;
+    case KVM_MODE_PORT3_ONLY:
+        API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+        API_Set_Sync_Mode(API_SYNC_DISABLE);
+        KVM_Console_Port_Jump(1);
+        break;
+    case KVM_MODE_PORT4_ONLY:
+        API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+        API_Set_Sync_Mode(API_SYNC_DISABLE);
+        KVM_Console_Port_Jump(0);
+            break;
+    case KVM_MODE_TWO_SMALL_MAIN_PORT1:
+        API_SET_ONE_2_SCREEN_MODE(1);
+        API_Current_Main_SCREEN = 3;
+        KVM_Console_Port_Jump(3);
+            break;
+    case KVM_MODE_TWO_SMALL_MAIN_PORT2:
+        API_SET_ONE_2_SCREEN_MODE(2);
+        API_Current_Main_SCREEN = 2;
+        KVM_Console_Port_Jump(2);
+            break;
+    case KVM_MODE_TWO_SMALL_MAIN_PORT3:
+        API_SET_ONE_2_SCREEN_MODE(3);
+        API_Current_Main_SCREEN = 1;
+        KVM_Console_Port_Jump(1);
+            break;
+    case KVM_MODE_PORT12_ONLY:
+        API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
+        API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
+        KVM_Console_Port_Jump(3);
+            break;
+    case KVM_MODE_PORT34_ONLY:
+        API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
+        API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
+        KVM_Console_Port_Jump(1);
+            break;
+    case KVM_MODE_PORT_ALL:
+        API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
+        API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
+        KVM_Console_Port_Jump(3);
+            break;
+    case KVM_MODE_PORT_ALL_SYNC:
+        API_Set_Roaming_Mode(API_ROAMING_DISABLE);					
+        API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
+        API_Set_Sync_Mode(API_SYNC_ENABLE);
+            break;
+    case KVM_MODE_THREE_SMALL_MAIN_PORT1:
+        API_SET_ONE_3_SCREEN_MODE(0);
+        API_Current_Main_SCREEN = 3;
+        KVM_Console_Port_Jump(3);
+            break;
+    case KVM_MODE_THREE_SMALL_MAIN_PORT2:
+        API_SET_ONE_3_SCREEN_MODE(1);
+        API_Current_Main_SCREEN = 2;
+        KVM_Console_Port_Jump(2);
+            break;
+    case KVM_MODE_THREE_SMALL_MAIN_PORT3:
+        API_SET_ONE_3_SCREEN_MODE(2);
+        API_Current_Main_SCREEN = 1;
+        KVM_Console_Port_Jump(1);
+            break;
+    case KVM_MODE_THREE_SMALL_MAIN_PORT4:
+        API_SET_ONE_3_SCREEN_MODE(3);
+        API_Current_Main_SCREEN = 0;
+        KVM_Console_Port_Jump(0);        
+            break;
+
+    default:
+        break;
+    }
+}
+
+
+
+
 void KVM_UART_HandleFrame(U8_T cmd, U8_T mode)
 {
     switch (cmd)
@@ -125,10 +233,9 @@ void KVM_UART_HandleFrame(U8_T cmd, U8_T mode)
         {
             if ((mode >= 0x01) && (mode <= 0x0F))
             {
-
                 //接收并设置模式
-                /* 返回实际设置成功的模式 */
-				printf("CG*****\r\n");		
+                KVM_SET_mode(mode);
+				printf("RX_mode\r\n");		
                
             }
             break;
@@ -136,7 +243,6 @@ void KVM_UART_HandleFrame(U8_T cmd, U8_T mode)
 
         case KVM_CMD_GET_MODE:
         {
-           
             break;
         }
 

@@ -44,11 +44,16 @@ U16_T	uart1_RxHead = 0;
 U16_T	uart1_RxTail = 0;
 U16_T	uart1_RxCount = 0;
 
+#define HSUR1_CIR				UR2CIR
+#define HSUR1_DR				UR2DR
+
 /* LOCAL SUBPROGRAM DECLARATIONS */
 static void		uart0_ISR(void);
 static void		uart1_ISR(void);
 static void		uart0_Init(void);
 static void		uart1_Init(void);
+static void		hsur1_Write(U8_T addr, U8_T *ptData, U8_T dataLen);
+static void		hsur1_Init(void);
 
 /* LOCAL SUBPROGRAM BODIES */
 /*
@@ -119,6 +124,48 @@ static void uart1_ISR(void) interrupt UR1_VECTOR
 	{
 		TI1 = 0;
 	}
+}
+
+static void hsur1_Write(U8_T addr, U8_T *ptData, U8_T dataLen)
+{
+	while (dataLen--)
+	{
+		HSUR1_DR = *(ptData + dataLen);
+	}
+	HSUR1_CIR = addr;
+}
+
+static void hsur1_Init(void)
+{
+	U8_T reg8b;
+	U16_T baud;
+	U8_T dll;
+	U8_T dlh;
+
+	reg8b = 0;
+	hsur1_Write(HSIER, &reg8b, 1);
+
+	reg8b = 0x1A;
+	hsur1_Write(HSDPR, &reg8b, 1);
+
+	baud = 0x0020;
+	reg8b = HSLCR_DLAB_ENB;
+	hsur1_Write(HSLCR, &reg8b, 1);
+	dll = (U8_T)(baud & 0x00FF);
+	dlh = (U8_T)(baud >> 8);
+	hsur1_Write(HSDLLR, &dll, 1);
+	hsur1_Write(HSDLHR, &dlh, 1);
+
+	reg8b = (HSLCR_CHAR_8 | HSLCR_STOP_10);
+	hsur1_Write(HSLCR, &reg8b, 1);
+
+	reg8b = 0;
+	hsur1_Write(HSMCR, &reg8b, 1);
+	hsur1_Write(HSDCR, &reg8b, 1);
+
+	reg8b = (HSFCR_HSUART_ENB | HSFCR_FIFOE | HSFCR_RFR | HSFCR_TFR | HSFCR_TRIG_01);
+	hsur1_Write(HSFCR, &reg8b, 1);
+
 }
 
 /*
@@ -235,7 +282,7 @@ static void uart1_Init(void)
 			printf("WARN: P00/P01 still GPIO, set HWCFG[001].bit0=1 for RXD1/TXD1\r\n");
 		}
 	}
-	printf("UART1 RXD1 polling init 115200 RLD=%02bx%02bx\r\n", RLDH, RLDL);
+	hsur1_Init();
 }
 
 /*
@@ -313,16 +360,30 @@ void UART_Init(void)
 
 void UART1_Polling_Receive_Handle(void)
 {
+	U8_T lineStatus;
+	U8_T rxData;
+
 	if (RI1)
 	{
 		uart1_RxBuf[uart1_RxTail] = SBUF1;
-		printf("DBG: UART1_POLL data=%02bx head=%u tail=%u\r\n",
-			uart1_RxBuf[uart1_RxTail],
-			uart1_RxHead,
-			uart1_RxTail);
 		uart1_RxTail++;
 		uart1_RxTail &= MAX_RX_UART1_MASK;
 		RI1 = 0;
+	}
+
+	HSUR1_CIR = HSLSR;
+	lineStatus = HSUR1_DR;
+
+	while (lineStatus & HSLSR_DR_DATA)
+	{
+		HSUR1_CIR = HSRBR;
+		rxData = HSUR1_DR;
+		uart1_RxBuf[uart1_RxTail] = rxData;
+		uart1_RxTail++;
+		uart1_RxTail &= MAX_RX_UART1_MASK;
+
+		HSUR1_CIR = HSLSR;
+		lineStatus = HSUR1_DR;
 	}
 }
 
