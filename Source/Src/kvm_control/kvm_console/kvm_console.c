@@ -117,10 +117,23 @@ bit		KVM_PS2_HotkeySwitch_Flag;
 #define VS4210_1_Mode		1	//Single Monitor Mode
 #define VS4210_4_Mode0		2	//4 equal Monitor Mode
 
+#define KVM_PIP_MODE_COUNT    4
+#define KVM_ONE_2_MODE_COUNT  3
+#define KVM_PBP_MODE_COUNT    2
+#define KVM_4WIN_MODE_COUNT   2
+#define KVM_ONE_3_MODE_COUNT  4
+
 U8_T	KVM_VS4210_Mode=VS4210_1_Mode;
 U8_T	cModifiers;
 U8_T	KVM_HostLed[KVM_MAX_PORT];
 U8_T	KVM_CurrentHost,KVM_CurrentAudio,KVM_CurrentMSC;
+
+U8_T KVM_Cycle_PIP_Mode=0;
+U8_T KVM_Cycle_ONE_2_Mode=0;
+U8_T KVM_Cycle_PBP_Mode=0;
+U8_T KVM_Cycle_4WIN_Mode=0;
+U8_T KVM_Cycle_ONE_3_Mode=0;
+
 U8_T	KVM_CurrentUSBAudio;
 U8_T	KVM_NextHost,KVM_NextAudio,KVM_NextAnalogAudio;
 //U8_T	KVM_Mouse_Disable_Flag;
@@ -935,9 +948,150 @@ void TASK_KVM_Event_Control(void)
 		{
 			#ifdef SYNC
 			case  HOTKEY_FUN_MS_ROAMING_MODE:
-				printf("HK exec: roaming=%d\n\r", HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex]);
-				KM_SYNC_ModeAccross_Control(HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex]);
+				printf("HK exec: single screen cycle mode=%bu\n\r", KVM_Cycle_PIP_Mode);
+				switch (KVM_Cycle_PIP_Mode)
+				{
+					case 0:
+						KVM_SET_mode(KVM_MODE_PORT1_ONLY);
+						break;
+
+					case 1:
+						KVM_SET_mode(KVM_MODE_PORT2_ONLY);
+						break;
+
+					case 2:
+						KVM_SET_mode(KVM_MODE_PORT3_ONLY);
+						break;
+
+					case 3:
+						KVM_SET_mode(KVM_MODE_PORT4_ONLY);
+						break;
+
+					default:
+						KVM_Cycle_PIP_Mode = 0;
+						KVM_SET_mode(KVM_MODE_PORT1_ONLY);
+						break;
+				}
+
+				KVM_Cycle_PIP_Mode++;
+				if (KVM_Cycle_PIP_Mode >= KVM_PIP_MODE_COUNT)
+				{
+					KVM_Cycle_PIP_Mode = 0;
+				}
 				break;
+
+			case HOTKEY_FUN_KVM_ONE_2_MODE:
+				printf("HK exec: one-two cycle mode=%bu\n\r", KVM_Cycle_ONE_2_Mode);
+				switch (KVM_Cycle_ONE_2_Mode)
+				{
+					case 0:
+						KVM_SET_mode(KVM_MODE_TWO_SMALL_MAIN_PORT1);
+						break;
+
+					case 1:
+						KVM_SET_mode(KVM_MODE_TWO_SMALL_MAIN_PORT2);
+						break;
+
+					case 2:
+						KVM_SET_mode(KVM_MODE_TWO_SMALL_MAIN_PORT3);
+						break;
+
+					default:
+						KVM_Cycle_ONE_2_Mode = 0;
+						KVM_SET_mode(KVM_MODE_TWO_SMALL_MAIN_PORT1);
+						break;
+				}
+
+				KVM_Cycle_ONE_2_Mode++;
+				if (KVM_Cycle_ONE_2_Mode >= KVM_ONE_2_MODE_COUNT)
+				{
+					KVM_Cycle_ONE_2_Mode = 0;
+				}
+				break;
+
+			case HOTKEY_FUN_KVM_PBP_MODE:
+				printf("HK exec: pbp cycle mode=%bu\n\r", KVM_Cycle_PBP_Mode);
+				switch (KVM_Cycle_PBP_Mode)
+				{
+					case 0:
+						KVM_SET_mode(KVM_MODE_PORT12_ONLY);
+						break;
+
+					case 1:
+						KVM_SET_mode(KVM_MODE_PORT34_ONLY);
+						break;
+
+					default:
+						KVM_Cycle_PBP_Mode = 0;
+						KVM_SET_mode(KVM_MODE_PORT12_ONLY);
+						break;
+				}
+
+				KVM_Cycle_PBP_Mode++;
+				if (KVM_Cycle_PBP_Mode >= KVM_PBP_MODE_COUNT)
+				{
+					KVM_Cycle_PBP_Mode = 0;
+				}
+				break;
+
+			case HOTKEY_FUN_KVM_4WIN_MODE:
+				printf("HK exec: four-win cycle mode=%bu\n\r", KVM_Cycle_4WIN_Mode);
+				switch (KVM_Cycle_4WIN_Mode)
+				{
+					case 0:
+						KVM_SET_mode(KVM_MODE_PORT_ALL);
+						break;
+
+					case 1:
+						KVM_SET_mode(KVM_MODE_PORT_ALL_SYNC);
+						break;
+
+					default:
+						KVM_Cycle_4WIN_Mode = 0;
+						KVM_SET_mode(KVM_MODE_PORT_ALL);
+						break;
+				}
+
+				KVM_Cycle_4WIN_Mode++;
+				if (KVM_Cycle_4WIN_Mode >= KVM_4WIN_MODE_COUNT)
+				{
+					KVM_Cycle_4WIN_Mode = 0;
+				}
+				break;
+
+			case HOTKEY_FUN_KVM_ONE_3_MODE:
+				printf("HK exec: one-three cycle mode=%bu\n\r", KVM_Cycle_ONE_3_Mode);
+				switch (KVM_Cycle_ONE_3_Mode)
+				{
+					case 0:
+						KVM_SET_mode(KVM_MODE_THREE_SMALL_MAIN_PORT1);
+						break;
+
+					case 1:
+						KVM_SET_mode(KVM_MODE_THREE_SMALL_MAIN_PORT2);
+						break;
+
+					case 2:
+						KVM_SET_mode(KVM_MODE_THREE_SMALL_MAIN_PORT3);
+						break;
+
+					case 3:
+						KVM_SET_mode(KVM_MODE_THREE_SMALL_MAIN_PORT4);
+						break;
+
+					default:
+						KVM_Cycle_ONE_3_Mode = 0;
+						KVM_SET_mode(KVM_MODE_THREE_SMALL_MAIN_PORT1);
+						break;
+				}
+
+				KVM_Cycle_ONE_3_Mode++;
+				if (KVM_Cycle_ONE_3_Mode >= KVM_ONE_3_MODE_COUNT)
+				{
+					KVM_Cycle_ONE_3_Mode = 0;
+				}
+				break;
+
 			case  HOTKEY_FUN_MS_SYNC_MODE:
 				printf("HK exec: sync=%d\n\r", HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex]);
 				KM_SYNC_ModeSync_Control(HOTKEY_Funciton_PerformValue[HOTKEY_Funciton_PerformValueIndex]);								

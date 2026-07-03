@@ -122,6 +122,10 @@ typedef struct
 #define HOTKEY_FUN_MS_SYNC_MODE						0x28
 #define HOTKEY_FUN_MS_RELATIVE_MODE					0x29
 #define HOTKEY_FUN_MS_ABSOLUTE_MODE					0x30
+#define HOTKEY_FUN_KVM_ONE_2_MODE					0x31
+#define HOTKEY_FUN_KVM_PBP_MODE						0x32
+#define HOTKEY_FUN_KVM_4WIN_MODE					0x33
+#define HOTKEY_FUN_KVM_ONE_3_MODE					0x34
 
 #define HOTKEY_FUN_ALL_SYNC							0x2D
 #define HOTKEY_FUN_KB_SYNC							0x2E
@@ -141,19 +145,19 @@ typedef struct
 #define HOTKEY_LEN_7								0xE0
 
 /* Define the Operation ID */
-#define HOTKEY_OP_FUNCTION0_CODE					0x00 // code is and
+#define HOTKEY_OP_FUNCTION0_CODE					0x00 // code is and//键值顺序匹配
 #define HOTKEY_OP_FUNCTION1_CODE					0x01 // code is and
 #define HOTKEY_OP_FUNCTION2_CODE					0x02 // code is and
 #define HOTKEY_OP_FUNCTION3_CODE					0x03 // code is and
 #define HOTKEY_OP_FUNCTION4_CODE					0x04 // code is and
 
-#define HOTKEY_OP_SHORT_VALUE						0x05
-#define HOTKEY_OP_LONG_VALUE						0x06
-#define HOTKEY_OP_KEY_TO_VALUE						0x07
+#define HOTKEY_OP_SHORT_VALUE						0x05 //接收数字参数，有两个字节，一个最大值和最小的范围
+#define HOTKEY_OP_LONG_VALUE						0x06 //接收数字参数，有四个字节，一个最大值和最小的范围
+#define HOTKEY_OP_KEY_TO_VALUE						0x07 //按键直接转换为规定参数值。
 
 #define HOTKEY_OP_FUNCTION5_CODE					0x08 // code is or
 
-#define HOTKEY_OP_TERNIMATE							0x1e
+#define HOTKEY_OP_TERNIMATE							0x1e //表示结束键集合
 #define HOTKEY_FUN_TERNIMATE						0x1f
 
 //--------------------------------------------------------

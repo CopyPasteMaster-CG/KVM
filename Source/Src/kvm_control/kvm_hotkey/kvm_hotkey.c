@@ -85,63 +85,78 @@ CONST	U8_T HOTKEY_DESCRIPTOR_DEFAULT[]=
 	KVM_MAX_PORT,	// Maximum
 	
 	//-----------------------------------
-	// 1. Roaming Mode
+	// 1. Single Screen Mode
 	//-----------------------------------
-	6,		//Function Length
+	3,		//Function Length
 	HOTKEY_FUN_MS_ROAMING_MODE,				// Function Code
 	HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
 	CHAR_F1,	// Minimum
-	HOTKEY_OP_SHORT_VALUE+HOTKEY_LEN_2,		// OP Code
-	0x00,	// Minimum 
-	0x01,	// Maximum	
-	//-----------------------------------	
-	//  2. Sync Mode
 	//-----------------------------------
-	6,		//Function Length
-	HOTKEY_FUN_MS_SYNC_MODE,				// Function Code
-	HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,	// OP Code
-	CHAR_F4,			// Minimum 
-	HOTKEY_OP_SHORT_VALUE+HOTKEY_LEN_2,		// OP Code
-	0x00,	// Minimum 
-	0x01,	// Maximum
+	// 2. One Big Two Small Mode
+	//-----------------------------------
+	3,		//Function Length
+	HOTKEY_FUN_KVM_ONE_2_MODE,				// Function Code
+	HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
+	CHAR_F2,	// Minimum
+	//-----------------------------------
+	// 3. Dual Screen Mode
+	//-----------------------------------
+	3,		//Function Length
+	HOTKEY_FUN_KVM_PBP_MODE,				// Function Code
+	HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
+	CHAR_F3,	// Minimum
+	//-----------------------------------
+	// 4. Four Screen Mode
+	//-----------------------------------
+	3,		//Function Length
+	HOTKEY_FUN_KVM_4WIN_MODE,				// Function Code
+	HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
+	CHAR_F4,	// Minimum
+	//-----------------------------------
+	// 5. One Big Three Small Mode
+	//-----------------------------------
+	3,		//Function Length
+	HOTKEY_FUN_KVM_ONE_3_MODE,				// Function Code
+	HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
+	CHAR_F5,	// Minimum
 	//-----------------------------------	
 	//  3.Mouse Relative Coordinates Mode
 	//-----------------------------------
-	3,		//Function Length
-	HOTKEY_FUN_MS_RELATIVE_MODE,			// Function Code
-	HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
-	CHAR_F9,			// Minimum 	
-	//-----------------------------------	
-	//  4.Mouse Absolute Coordinates Mode
-	//-----------------------------------
-	3,		//Function Length
-	HOTKEY_FUN_MS_ABSOLUTE_MODE,			// Function Code
-	HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
-	CHAR_F10,			// Minimum 	
+	// 3,		//Function Length
+	// HOTKEY_FUN_MS_RELATIVE_MODE,			// Function Code
+	// HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
+	// CHAR_F9,			// Minimum 	
+	// //-----------------------------------	
+	// //  4.Mouse Absolute Coordinates Mode
+	// //-----------------------------------
+	// 3,		//Function Length
+	// HOTKEY_FUN_MS_ABSOLUTE_MODE,			// Function Code
+	// HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
+	// CHAR_F10,			// Minimum 	
 	//-----------------------------------
 	// Port Jump by Power Control
 	//-----------------------------------
-	#if (ENABLE_HOTKEY_FUN_POWER_JUMP_SW)
-	7,		//Function Length
-	HOTKEY_FUN_PORT_JUMP_POWER_CONTROL,			// Function Code
-	HOTKEY_OP_FUNCTION0_CODE|HOTKEY_LEN_2,	// OP Code
-	CHAR_P,CHAR_W,
-	HOTKEY_OP_SHORT_VALUE+HOTKEY_LEN_2,		// OP Code
-	0x00,	// Minimum 
-	0x01,	// Maximum
-	#endif //#if (ENABLE_HOTKEY_FUN_POWER_JUMP_SW)
+	// #if (ENABLE_HOTKEY_FUN_POWER_JUMP_SW)
+	// 7,		//Function Length
+	// HOTKEY_FUN_PORT_JUMP_POWER_CONTROL,			// Function Code
+	// HOTKEY_OP_FUNCTION0_CODE|HOTKEY_LEN_2,	// OP Code
+	// CHAR_P,CHAR_W,
+	// HOTKEY_OP_SHORT_VALUE+HOTKEY_LEN_2,		// OP Code
+	// 0x00,	// Minimum 
+	// 0x01,	// Maximum
+	// #endif //#if (ENABLE_HOTKEY_FUN_POWER_JUMP_SW)
 	//-----------------------------------
 	// Port Plugin jump Control
 	//-----------------------------------
-	#if (ENABLE_HOTKEY_FUN_PLUGIN_JUMP_SW)
-	9,		//Function Length
-	HOTKEY_FUN_PLUGIN_JUMP_CONTROL,			// Function Code
-	HOTKEY_OP_FUNCTION0_CODE|HOTKEY_LEN_4,	// OP Code
-	CHAR_P,CHAR_L,CHAR_U,CHAR_G,
-	HOTKEY_OP_SHORT_VALUE+HOTKEY_LEN_2,		// OP Code
-	0x00,	// Minimum 
-	0x01,	// Maximum
-	#endif //#if (ENABLE_HOTKEY_FUN_PLUGIN_JUMP_SW)
+	// #if (ENABLE_HOTKEY_FUN_PLUGIN_JUMP_SW)
+	// 9,		//Function Length
+	// HOTKEY_FUN_PLUGIN_JUMP_CONTROL,			// Function Code
+	// HOTKEY_OP_FUNCTION0_CODE|HOTKEY_LEN_4,	// OP Code
+	// CHAR_P,CHAR_L,CHAR_U,CHAR_G,
+	// HOTKEY_OP_SHORT_VALUE+HOTKEY_LEN_2,		// OP Code
+	// 0x00,	// Minimum 
+	// 0x01,	// Maximum
+	// #endif //#if (ENABLE_HOTKEY_FUN_PLUGIN_JUMP_SW)
 	//-----------------------------------
 	// Port Plugin jump Control
 	//-----------------------------------
@@ -219,39 +234,39 @@ CONST	U8_T HOTKEY_DESCRIPTOR_DEFAULT[]=
 	//-----------------------------------
 	// Buzzer Control(Toggle)
 	//-----------------------------------	 
-	#if (ENABLE_HOTKEY_FUN_BUZZER_CONTROL)	
-	6,		//Function Length
-	HOTKEY_FUN_BUZZER_CONTROL_TOGGLE,		// Function Code
-	HOTKEY_OP_FUNCTION0_CODE|HOTKEY_LEN_1,	// OP Code+Length
-	KVM_HOTKEY_DEFAULT_BUZZER,				// 'B'
-	HOTKEY_OP_SHORT_VALUE|HOTKEY_LEN_2,		// OP Code
-	0x00,	// Minimum
-	0x01,	// Maximum
-	#endif /* #if (ENABLE_HOTKEY_FUN_BUZZER_CONTROL) */
-	//-----------------------------------
-	// AutoScan Control
-	//-----------------------------------
-	#if (ENABLE_HOTKEY_FUN_AUTOSCAN_CONTROL)
-	3,		//Function Length
-	HOTKEY_FUN_AUTOSCAN_CONTROL,			// Function Code
-	HOTKEY_OP_FUNCTION0_CODE|HOTKEY_LEN_1,	// OP Code+Length. Start
-	KVM_HOTKEY_DEFAULT_AUTOSCAN,			// 'S'
-	#endif //#if (ENABLE_HOTKEY_FUN_AUTOSCAN_CONTROL)
-	//-----------------------------------
-	// AutoScan Interval Control
-	//-----------------------------------
-	#if (ENABLE_HOTKEY_FUN_AUTOSCAN_INTERVAL)
-	11,		//Function Length
-	HOTKEY_FUN_AUTOSCAN_INTERVAL,			// Function Code
-	HOTKEY_OP_FUNCTION0_CODE|HOTKEY_LEN_1,	// OP Code+Length  Interval
-	CHAR_I,									// 'I'
-	HOTKEY_OP_LONG_VALUE|HOTKEY_LEN_4,		// OP Code+Length  Interval
-	0x05,0x00,								// Minimum-5
-	0xE7,0x03,								// Maximum-999
-	HOTKEY_OP_TERNIMATE|HOTKEY_LEN_2,		// OP Code+Length  Interval
-	CHAR_RETURN,							//
-	CHAR_PAD_ENTER,							//
-	#endif //#if (ENABLE_HOTKEY_FUN_AUTOSCAN_INTERVAL)
+	// #if (ENABLE_HOTKEY_FUN_BUZZER_CONTROL)	
+	// 6,		//Function Length
+	// HOTKEY_FUN_BUZZER_CONTROL_TOGGLE,		// Function Code
+	// HOTKEY_OP_FUNCTION0_CODE|HOTKEY_LEN_1,	// OP Code+Length
+	// KVM_HOTKEY_DEFAULT_BUZZER,				// 'B'
+	// HOTKEY_OP_SHORT_VALUE|HOTKEY_LEN_2,		// OP Code
+	// 0x00,	// Minimum
+	// 0x01,	// Maximum
+	// #endif /* #if (ENABLE_HOTKEY_FUN_BUZZER_CONTROL) */
+	// //-----------------------------------
+	// // AutoScan Control
+	// //-----------------------------------
+	// #if (ENABLE_HOTKEY_FUN_AUTOSCAN_CONTROL)
+	// 3,		//Function Length
+	// HOTKEY_FUN_AUTOSCAN_CONTROL,			// Function Code
+	// HOTKEY_OP_FUNCTION0_CODE|HOTKEY_LEN_1,	// OP Code+Length. Start
+	// KVM_HOTKEY_DEFAULT_AUTOSCAN,			// 'S'
+	// #endif //#if (ENABLE_HOTKEY_FUN_AUTOSCAN_CONTROL)
+	// //-----------------------------------
+	// // AutoScan Interval Control
+	// //-----------------------------------
+	// #if (ENABLE_HOTKEY_FUN_AUTOSCAN_INTERVAL)
+	// 11,		//Function Length
+	// HOTKEY_FUN_AUTOSCAN_INTERVAL,			// Function Code
+	// HOTKEY_OP_FUNCTION0_CODE|HOTKEY_LEN_1,	// OP Code+Length  Interval
+	// CHAR_I,									// 'I'
+	// HOTKEY_OP_LONG_VALUE|HOTKEY_LEN_4,		// OP Code+Length  Interval
+	// 0x05,0x00,								// Minimum-5
+	// 0xE7,0x03,								// Maximum-999
+	// HOTKEY_OP_TERNIMATE|HOTKEY_LEN_2,		// OP Code+Length  Interval
+	// CHAR_RETURN,							//
+	// CHAR_PAD_ENTER,							//
+	// #endif //#if (ENABLE_HOTKEY_FUN_AUTOSCAN_INTERVAL)
 	//-----------------------------------
 	// Port Reset
 	//-----------------------------------
@@ -280,28 +295,28 @@ CONST	U8_T HOTKEY_DESCRIPTOR_DEFAULT[]=
 	//-----------------------------------
 	// MSC Switch
 	//-----------------------------------
-	#if (ENABLE_HOTKEY_FUN_MSC_SW)
-	6,		//Function Length
-	HOTKEY_FUN_MSC_SW,						// Function Code
-	HOTKEY_OP_FUNCTION0_CODE|HOTKEY_LEN_1,	// OP Code-Start
-	CHAR_M,									// 'M'
-	HOTKEY_OP_SHORT_VALUE|HOTKEY_LEN_2,		// OP Code
-	0x01,	// Minimum
-	KVM_MAX_PORT,	// Maximum
-	#endif
+	// #if (ENABLE_HOTKEY_FUN_MSC_SW)
+	// 6,		//Function Length
+	// HOTKEY_FUN_MSC_SW,						// Function Code
+	// HOTKEY_OP_FUNCTION0_CODE|HOTKEY_LEN_1,	// OP Code-Start
+	// CHAR_M,									// 'M'
+	// HOTKEY_OP_SHORT_VALUE|HOTKEY_LEN_2,		// OP Code
+	// 0x01,	// Minimum
+	// KVM_MAX_PORT,	// Maximum
+	// #endif
 	
-	//-----------------------------------
-	// Transmitter MSC Switch
-	//-----------------------------------
-	#if (ENABLE_HOTKEY_T_MSC_SW)
-	7,		//Function Length
-	HOTKEY_FUN_T_MSC_SW,						// Function Code
-	HOTKEY_OP_FUNCTION0_CODE|HOTKEY_LEN_2,	// OP Code-Start
-	CHAR_T,CHAR_M,									// 'TM'
-	HOTKEY_OP_SHORT_VALUE|HOTKEY_LEN_2,		// OP Code
-	0x01,	// Minimum
-	KVM_MAX_PORT,	// Maximum
-	#endif
+	// //-----------------------------------
+	// // Transmitter MSC Switch
+	// //-----------------------------------
+	// #if (ENABLE_HOTKEY_T_MSC_SW)
+	// 7,		//Function Length
+	// HOTKEY_FUN_T_MSC_SW,						// Function Code
+	// HOTKEY_OP_FUNCTION0_CODE|HOTKEY_LEN_2,	// OP Code-Start
+	// CHAR_T,CHAR_M,									// 'TM'
+	// HOTKEY_OP_SHORT_VALUE|HOTKEY_LEN_2,		// OP Code
+	// 0x01,	// Minimum
+	// KVM_MAX_PORT,	// Maximum
+	// #endif
 	//-----------------------------------
 	// Flash with Default Value
 	//-----------------------------------
@@ -763,11 +778,11 @@ HOTKEY_LEADING_KEY_START:
 			}
 			else
 			{				
-				HOTKEY_Function_Hotkey_Table = HOTKEY_FORK_CTRLD;
+				HOTKEY_Function_Hotkey_Table = HOTKEY_FORK_CTRLD;//选择热键启动的序列表
 			}	
 			/* start from normal condition */
 			//Change the modifiers keyfirst */			
-			if ((keycode >= 0xe4) && (keycode <= 0xe7))
+			if ((keycode >= 0xe4) && (keycode <= 0xe7))//修饰键统一处理，快捷键时不需要分别支持左右 Ctrl。
 			{				
 				keycode = keycode - 0x04;
 			}

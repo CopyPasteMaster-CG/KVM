@@ -1966,7 +1966,7 @@ void USBDC_VIRTUAL_Setup_Process(U8_T devinx,U8_T port)
 			//if (USB_PDevice[devinx].Hc.gState == HOST_PASSTHROUGH)
 			if (USBDC_Device[devinx].PassThroughState[port] != PASSTHROUGH_IDLE)
 			{
-				printf("\n\r P:%bu,DC_Force_Clear Passthrough \n\r",port);			
+				//printf("\n\r P:%bu,DC_Force_Clear Passthrough \n\r",port);			
 				USB_PDevice[devinx].Hc.Control.State = CTRL_IDLE;
 				USBDC_Device[devinx].PassThroughState[port] = PASSTHROUGH_IDLE;
 				USB_PDevice[devinx].Hc.PassThrough_State = PASSTHROUGH_IDLE;

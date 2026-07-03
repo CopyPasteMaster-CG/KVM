@@ -43,6 +43,7 @@
 
 #define KVM_MODE_PORT12_ONLY             0x08
 #define KVM_MODE_PORT34_ONLY             0x09
+
 #define KVM_MODE_PORT_ALL                0x0A
 #define KVM_MODE_PORT_ALL_SYNC           0x0B
 

@@ -817,9 +817,9 @@ void DEBUG_CONFIGURATION(void)
 #define KVM_CONSOLE_DEBUG_MODE		0
 #define HOTKEY_DEBUG_MODE			0
 #define POWER_SAVING_DEBUG_MODE		0
-#define POWER_SAVING_DEBUG_MODE2	1
+#define POWER_SAVING_DEBUG_MODE2	0
 
-#define EDID_DEBUG_SW				1
+#define EDID_DEBUG_SW				0
 /*-------------------------------------------------------------------------
 $ Debug Support Define
 ---------------------------------------------------------------------------*/
@@ -838,7 +838,7 @@ $ Debug Support Define
 #define USBHC_PARSER_DEBUG_MODE			0
 #define USBHC_INIT_DEBUG_MODE			0
 #define USBHC_DEBUG_MODE				0
-#define USBHC_ROOTHUB_DEBUG_MODE		1
+#define USBHC_ROOTHUB_DEBUG_MODE		0
 #define USB_PASSTHROUGH_DEBUG_MODE		0
 
 #define USB_MSC_CLASS_DEBUG_MODE		0

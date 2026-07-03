@@ -48,7 +48,7 @@ U16_T  MULTIVIEW_RxCount = 0;
 U16_T  MULTIVIEW_RxTail_Hold=0;
 
 static KVM_RX_DATA kvm_rx;
-#define MULTIVIEW_UART_DEBUG 1
+#define MULTIVIEW_UART_DEBUG 0
 
 U8_T MULTIVIEW_Cmd[7][8] =
 {

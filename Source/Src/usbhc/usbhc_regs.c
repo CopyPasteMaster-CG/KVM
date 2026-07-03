@@ -99,7 +99,7 @@ void USBHC_Reg_Dump(U8_T hccir,U8_T length)
 	U8_T	content[16],index;
 
 	USBHC_Read_Regs(hccir,content,length);
-	printf("HC_DUMP,Reg(0x%02x)=[",(U16_T)hccir);
+	//printf("HC_DUMP,Reg(0x%02x)=[",(U16_T)hccir);
 	for (index=0; index < length ; index++)
 	{
 		if (index <(length-1))
