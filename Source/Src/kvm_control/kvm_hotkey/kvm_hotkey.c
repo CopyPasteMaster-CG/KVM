@@ -97,14 +97,14 @@ CONST	U8_T HOTKEY_DESCRIPTOR_DEFAULT[]=
 	3,		//Function Length
 	HOTKEY_FUN_KVM_ONE_2_MODE,				// Function Code
 	HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
-	CHAR_F2,	// Minimum
+	CHAR_F3,	// Minimum
 	//-----------------------------------
 	// 3. Dual Screen Mode
 	//-----------------------------------
 	3,		//Function Length
 	HOTKEY_FUN_KVM_PBP_MODE,				// Function Code
 	HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
-	CHAR_F3,	// Minimum
+	CHAR_F2,	// Minimum
 	//-----------------------------------
 	// 4. Four Screen Mode
 	//-----------------------------------

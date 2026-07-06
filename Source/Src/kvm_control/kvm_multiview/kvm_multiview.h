@@ -57,6 +57,8 @@
 #define KVM_CMD_REPORT_MODE  0x82  /* 返回当前模式 */
 #define KVM_CMD_ACK          0x80  /* 设置结果应答 */
 
+#define KVM_FRAME_HEAD1  0x55
+#define KVM_FRAME_HEAD2  0xAA
 
 typedef enum
 {
@@ -96,6 +98,7 @@ typedef struct
 void KVM_SET_mode(U8_T mode);
 void MULTIVIEW_Init(void);
 void MULTIVIEW_Receive_Handle(void);
+void KVM_UART_SendFrame(U8_T cmd, U8_T mode);
 #endif /* End of __MULTIVIEW_H */
 
 

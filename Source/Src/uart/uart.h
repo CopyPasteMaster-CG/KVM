@@ -55,6 +55,9 @@ void	UART_Init(void);
 void	UART1_Polling_Receive_Handle(void);
 S8_T	putchar(S8_T);
 S8_T	UART0_PutChar(S8_T c);
+S8_T	HSUART1_PutChar(S8_T c);
+S8_T	HSUART_PutChar(S8_T c);
+BOOL	HSUART_PutData(U8_T *buf, U8_T len);
 S8_T	UART0_NoBlockGetkey (void);
 
 #endif /* End of __UART_H__ */

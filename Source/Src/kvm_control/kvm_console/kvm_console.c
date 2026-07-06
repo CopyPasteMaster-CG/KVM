@@ -953,23 +953,28 @@ void TASK_KVM_Event_Control(void)
 				{
 					case 0:
 						KVM_SET_mode(KVM_MODE_PORT1_ONLY);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_PORT1_ONLY);
 						break;
 
 					case 1:
 						KVM_SET_mode(KVM_MODE_PORT2_ONLY);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_PORT2_ONLY);
 						break;
 
 					case 2:
 						KVM_SET_mode(KVM_MODE_PORT3_ONLY);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_PORT3_ONLY);
 						break;
 
 					case 3:
 						KVM_SET_mode(KVM_MODE_PORT4_ONLY);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_PORT4_ONLY);
 						break;
 
 					default:
 						KVM_Cycle_PIP_Mode = 0;
 						KVM_SET_mode(KVM_MODE_PORT1_ONLY);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_PORT1_ONLY);
 						break;
 				}
 
@@ -986,19 +991,23 @@ void TASK_KVM_Event_Control(void)
 				{
 					case 0:
 						KVM_SET_mode(KVM_MODE_TWO_SMALL_MAIN_PORT1);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_TWO_SMALL_MAIN_PORT1);
 						break;
 
 					case 1:
 						KVM_SET_mode(KVM_MODE_TWO_SMALL_MAIN_PORT2);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_TWO_SMALL_MAIN_PORT2);
 						break;
 
 					case 2:
 						KVM_SET_mode(KVM_MODE_TWO_SMALL_MAIN_PORT3);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_TWO_SMALL_MAIN_PORT3);
 						break;
 
 					default:
 						KVM_Cycle_ONE_2_Mode = 0;
 						KVM_SET_mode(KVM_MODE_TWO_SMALL_MAIN_PORT1);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_TWO_SMALL_MAIN_PORT1);
 						break;
 				}
 
@@ -1015,15 +1024,18 @@ void TASK_KVM_Event_Control(void)
 				{
 					case 0:
 						KVM_SET_mode(KVM_MODE_PORT12_ONLY);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_PORT12_ONLY);
 						break;
 
 					case 1:
 						KVM_SET_mode(KVM_MODE_PORT34_ONLY);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_PORT34_ONLY);
 						break;
 
 					default:
 						KVM_Cycle_PBP_Mode = 0;
 						KVM_SET_mode(KVM_MODE_PORT12_ONLY);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_PORT12_ONLY);
 						break;
 				}
 
@@ -1040,15 +1052,18 @@ void TASK_KVM_Event_Control(void)
 				{
 					case 0:
 						KVM_SET_mode(KVM_MODE_PORT_ALL);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_PORT_ALL);
 						break;
 
 					case 1:
 						KVM_SET_mode(KVM_MODE_PORT_ALL_SYNC);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_PORT_ALL_SYNC);
 						break;
 
 					default:
 						KVM_Cycle_4WIN_Mode = 0;
 						KVM_SET_mode(KVM_MODE_PORT_ALL);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_PORT_ALL);
 						break;
 				}
 
@@ -1065,23 +1080,28 @@ void TASK_KVM_Event_Control(void)
 				{
 					case 0:
 						KVM_SET_mode(KVM_MODE_THREE_SMALL_MAIN_PORT1);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_THREE_SMALL_MAIN_PORT1);
 						break;
 
 					case 1:
 						KVM_SET_mode(KVM_MODE_THREE_SMALL_MAIN_PORT2);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_THREE_SMALL_MAIN_PORT2);
 						break;
 
 					case 2:
 						KVM_SET_mode(KVM_MODE_THREE_SMALL_MAIN_PORT3);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_THREE_SMALL_MAIN_PORT3);
 						break;
 
 					case 3:
 						KVM_SET_mode(KVM_MODE_THREE_SMALL_MAIN_PORT4);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_THREE_SMALL_MAIN_PORT4);
 						break;
 
 					default:
 						KVM_Cycle_ONE_3_Mode = 0;
 						KVM_SET_mode(KVM_MODE_THREE_SMALL_MAIN_PORT1);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_THREE_SMALL_MAIN_PORT1);
 						break;
 				}
 

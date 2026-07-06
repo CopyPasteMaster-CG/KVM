@@ -272,16 +272,16 @@ static void uart1_Init(void)
 	ES1 = 0;
 	TR2 = 1;
 
-	if (FLASH_InfoWordRead8Byte(0x00000000, hwcfg))
-	{
-		printf("HWCFG[001]=%02bx MP0_10_PSEL=%bu\r\n",
-			hwcfg[1],
-			(U8_T)(hwcfg[1] & BIT0));
-		if ((hwcfg[1] & BIT0) == 0)
-		{
-			printf("WARN: P00/P01 still GPIO, set HWCFG[001].bit0=1 for RXD1/TXD1\r\n");
-		}
-	}
+	// if (FLASH_InfoWordRead8Byte(0x00000000, hwcfg))
+	// {
+	// 	printf("HWCFG[001]=%02bx MP0_10_PSEL=%bu\r\n",
+	// 		hwcfg[1],
+	// 		(U8_T)(hwcfg[1] & BIT0));
+	// 	if ((hwcfg[1] & BIT0) == 0)
+	// 	{
+	// 		printf("WARN: P00/P01 still GPIO, set HWCFG[001].bit0=1 for RXD1/TXD1\r\n");
+	// 	}
+	// }
 	hsur1_Init();
 }
 
@@ -319,6 +319,61 @@ S8_T UART0_PutChar(S8_T c)
 	}
 
 	return c;
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * S8_T HSUART1_PutChar(S8_T c)
+ * Purpose : HSUART1 output function. This function sends one byte data by
+ *           polling the transmitter FIFO status.
+ * Params  : c - one byte character.
+ * Returns : c - one byte character.
+ * Note    : none
+ * ----------------------------------------------------------------------------
+ */
+S8_T HSUART1_PutChar(S8_T c)
+{
+	U8_T lineStatus;
+
+	do
+	{
+		HSUR1_CIR = HSLSR;
+		lineStatus = HSUR1_DR;
+	} while ((lineStatus & HSLSR_TFIFO_EMPTY) == 0);
+
+	HSUR1_DR = (U8_T)c;
+	HSUR1_CIR = HSTHR;
+
+	return c;
+}
+
+#ifndef HSUART
+S8_T HSUART_PutChar(S8_T c)
+{
+	return HSUART1_PutChar(c);
+}
+#endif
+
+/*
+ * ----------------------------------------------------------------------------
+ * BOOL HSUART_PutData(U8_T *buf, U8_T len)
+ * Purpose : HSUART1 output function. This function sends a data buffer.
+ * Params  : buf - data buffer pointer.
+ *           len - data length.
+ * Returns : TRUE.
+ * Note    : none
+ * ----------------------------------------------------------------------------
+ */
+BOOL HSUART_PutData(U8_T *buf, U8_T len)
+{
+	U8_T i;
+
+	for (i = 0; i < len; i++)
+	{
+		HSUART1_PutChar(buf[i]);
+	}
+
+	return TRUE;
 }
 
 /* EXPORTED SUBPROGRAM BODIES */

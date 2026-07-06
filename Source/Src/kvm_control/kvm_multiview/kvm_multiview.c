@@ -357,7 +357,22 @@ void MULTIVIEW_Receive_Handle(void)
 }
 
 
+void KVM_UART_SendFrame(U8_T cmd, U8_T mode)
+{
+    U8_T crc_data[2];
+    U8_T frame[5];
 
+    crc_data[0] = cmd;
+    crc_data[1] = mode;
+
+    frame[0] = KVM_FRAME_HEAD1;
+    frame[1] = KVM_FRAME_HEAD2;
+    frame[2] = cmd;
+    frame[3] = mode;
+    frame[4] = KVM_CRC8_Calculate(crc_data, 2);
+
+    HSUART_PutData(frame, sizeof(frame));
+}
 
 
 
@@ -413,12 +428,7 @@ void TASK_MULTIVIEW_Receive_TimeOut(void)
  * ----------------------------------------------------------------------------*/
 void MULTIVIEW_Send_Command(U8_T *buf, U8_T len)
 {
-	U8_T i;
-			
-	for (i=0 ; i < len;i++)
-	{		
-		HSUART_PutChar(buf[i]);
-	}		
+	HSUART_PutData(buf, len);
 }	
 #endif /*  #ifdef MULTIVIEW  */
 
