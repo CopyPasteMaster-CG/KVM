@@ -1979,27 +1979,27 @@ void KM_SYNC_Abs_Mouse_Coordinate_Convert(U8_T *datacode)
 					if (Coordinate_Cnt[1] >= Roaming[Current_Roaming_Table]->Edge.Item[KVM_CurrentHost].Right.Latency)
 					{				
 						//printf("Right Trigger\n\r");	
-						printf(
-							"Before Jump: Host=%bu Dir=%bu X=%u Y=%u State=%02bX\r\n",
-							KVM_CurrentHost,
-							ROAMING_RIGHT,
-							MouseX,
-							MouseY,
-							Coordinate_State
-						);						 
+						// printf(
+						// 	"Before Jump: Host=%bu Dir=%bu X=%u Y=%u State=%02bX\r\n",
+						// 	KVM_CurrentHost,
+						// 	ROAMING_RIGHT,
+						// 	MouseX,
+						// 	MouseY,
+						// 	Coordinate_State
+						// );						 
 						if (KM_SYNC_Port_Jump_Power(KVM_CurrentHost,ROAMING_RIGHT,1))
 						{
 							//KMLog_Send_Roaming_Report(KVM_CurrentHost,ROAMING_RIGHT);
 							Coordinate_State |= ACROSS_RIGHT_MASK;
 							MouseX = X_RIGHT_EDGE;
 							//MouseX = X_LEFT_EDGE;
-							printf(
-								"Right Jump Success: Host=%bu X=%u Y=%u State=%02bX\r\n",
-								KVM_CurrentHost,
-								MouseX,
-								MouseY,
-								Coordinate_State
-							);
+							// printf(
+							// 	"Right Jump Success: Host=%bu X=%u Y=%u State=%02bX\r\n",
+							// 	KVM_CurrentHost,
+							// 	MouseX,
+							// 	MouseY,
+							// 	Coordinate_State
+							// );
 						}								 				
 					}		
 				}	

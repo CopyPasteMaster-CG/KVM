@@ -122,17 +122,17 @@ CONST	U8_T HOTKEY_DESCRIPTOR_DEFAULT[]=
 	//-----------------------------------	
 	//  3.Mouse Relative Coordinates Mode
 	//-----------------------------------
-	// 3,		//Function Length
-	// HOTKEY_FUN_MS_RELATIVE_MODE,			// Function Code
-	// HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
-	// CHAR_F9,			// Minimum 	
-	// //-----------------------------------	
-	// //  4.Mouse Absolute Coordinates Mode
-	// //-----------------------------------
-	// 3,		//Function Length
-	// HOTKEY_FUN_MS_ABSOLUTE_MODE,			// Function Code
-	// HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
-	// CHAR_F10,			// Minimum 	
+	3,		//Function Length
+	HOTKEY_FUN_MS_RELATIVE_MODE,			// Function Code
+	HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
+	CHAR_F9,			// Minimum 	
+	//-----------------------------------	
+	//  4.Mouse Absolute Coordinates Mode
+	//-----------------------------------
+	3,		//Function Length
+	HOTKEY_FUN_MS_ABSOLUTE_MODE,			// Function Code
+	HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
+	CHAR_F10,			// Minimum 	
 	//-----------------------------------
 	// Port Jump by Power Control
 	//-----------------------------------
@@ -778,11 +778,11 @@ HOTKEY_LEADING_KEY_START:
 			}
 			else
 			{				
-				HOTKEY_Function_Hotkey_Table = HOTKEY_FORK_CTRLD;//Ñ¡ÔñÈÈ¼üÆô¶¯µÄÐòÁÐ±í
+				HOTKEY_Function_Hotkey_Table = HOTKEY_FORK_CTRLD;//Ñ¡ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð±ï¿½
 			}	
 			/* start from normal condition */
 			//Change the modifiers keyfirst */			
-			if ((keycode >= 0xe4) && (keycode <= 0xe7))//ÐÞÊÎ¼üÍ³Ò»´¦Àí£¬¿ì½Ý¼üÊ±²»ÐèÒª·Ö±ðÖ§³Ö×óÓÒ Ctrl¡£
+			if ((keycode >= 0xe4) && (keycode <= 0xe7))//ï¿½ï¿½ï¿½Î¼ï¿½Í³Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¼ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Òªï¿½Ö±ï¿½Ö§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ctrlï¿½ï¿½
 			{				
 				keycode = keycode - 0x04;
 			}

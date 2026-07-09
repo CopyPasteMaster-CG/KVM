@@ -2160,7 +2160,9 @@ U8_T KVM_Console_Port_Jump(U8_T new_port)
 		{						
 			if (KVM_Power_Jump_Check(new_port,0)) 
 			{					
-				KVM_Port_Jump(new_port);									
+				KVM_Port_Jump(new_port);		
+				MouseY = Y_MAX/2;
+				MouseX = X_MAX/2;	
 				return 1;
 			}
 		}

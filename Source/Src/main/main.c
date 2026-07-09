@@ -25,6 +25,7 @@
 /* GLOBAL CONSTANT VARIABLES DECLARATIONS */
 #define VERSION_STRING "2.1.3.4"
 #define DATE_STRING    "2023-05-24"
+#define MAIN_HEARTBEAT_DEBUG 0
 
 /* GLOBAL VARIABLES DECLARATIONS */
 #ifdef DEVICE_GPIO_DEFINE
@@ -36,6 +37,9 @@ U8_T			ISR_FIFO_Rp,ISR_FIFO_Wp;
 
 
 /* STATIC VARIABLE DECLARATIONS  */
+#if (MAIN_HEARTBEAT_DEBUG)
+static U16_T Main_HeartbeatTimer;
+#endif
 /* LOCAL SUBPROGRAM DECLARATIONS */
 /* LOCAL SUBPROGRAM BODIES       */
 #if (KVM_INFORMATION_DISPLAY)
@@ -358,6 +362,13 @@ void main_loop(void)
 		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 		if (Task_MS_Period_Flag)
 		{
+#if (MAIN_HEARTBEAT_DEBUG)
+			if (++Main_HeartbeatTimer >= SWTIMER_COUNT_SECOND)
+			{
+				Main_HeartbeatTimer = 0;
+				printf("DBG: heartbeat\r\n");
+			}
+#endif
 			if (Task_MS_Period_Table_WP)
 			{
 				TASK_Period_MS_Maintain();
