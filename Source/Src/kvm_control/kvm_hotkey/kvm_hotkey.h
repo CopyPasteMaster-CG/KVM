@@ -126,6 +126,7 @@ typedef struct
 #define HOTKEY_FUN_KVM_PBP_MODE						0x32
 #define HOTKEY_FUN_KVM_4WIN_MODE					0x33
 #define HOTKEY_FUN_KVM_ONE_3_MODE					0x34
+#define HOTKEY_FUN_RETURN_LAST_MODE					0x36
 
 #define HOTKEY_FUN_ALL_SYNC							0x2D
 #define HOTKEY_FUN_KB_SYNC							0x2E

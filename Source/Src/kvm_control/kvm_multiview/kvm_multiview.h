@@ -59,7 +59,7 @@
 
 #define KVM_FRAME_HEAD1  0x55
 #define KVM_FRAME_HEAD2  0xAA
-
+extern U8_T  current_mode,last_mode;
 typedef enum
 {
     KVM_RX_HEAD1 = 0,
@@ -68,6 +68,7 @@ typedef enum
     KVM_RX_MODE,
     KVM_RX_CRC
 } KVM_RX_STATE;
+
 
 typedef struct
 {

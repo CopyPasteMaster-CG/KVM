@@ -1,47 +1,84 @@
-# Keil MDK 编译输出文件
-*.lst
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
 *.obj
-*.omf
-*.SBR
-*.MAP
-*.build_log.htm
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
 *.__i
 
-# Keil 项目配置文件
-*.uvgui.*
-*.uvoptx
-*.uvprojx.user
+# Precompiled Headers
+*.gch
+*.pch
 
-# 编译中间文件
-*.crf
-*.d
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+
+# Keil Generated output files in the sub-directories .\Listings and .\Objects
+*.lst
 *.o
+*.d
+*.crf
+*.lnp
 *.axf
 *.htm
-*.lnp
+*.build_log.htm
 *.dep
 *.iex
-
-# Map 文件
+*.i
+*_2i
+*.l2p
+*.fed
 *.map
+*.hex
+*.bin
+*.Bak
 
-# 其他编译产物
-*.elf
-*.lib
-*.exe
+#Keil Project screen layout file
+*.uvguix.*
+*.uvgui.*
+EventRecorderStub.scvd
 
+#JLINK file
+JLinkLog.txt
+*.dbgconf
+JLinkSettings.ini
 
-# 忽略 proj_KVM 目录下的编译产物
-Source/proj_KVM/*.obj
-Source/proj_KVM/*.lst
-Source/proj_KVM/*.omf
-Source/proj_KVM/*.SBR
-Source/proj_KVM/*.MAP
-Source/proj_KVM/*.build_log.htm
-Source/proj_KVM/kvm.uvgui.*
-Source/proj_KVM/kvm.uvopt
-# 系统文件
-Thumbs.db
-.DS_Store
-*.tmp
-*.bak

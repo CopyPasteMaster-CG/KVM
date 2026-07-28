@@ -35,6 +35,8 @@
 #define  MULTIVIEW_HDMI_SELECT			0x06
 #define  MULTIVIEW_AUDIO_SELECT		0x07
 
+//保存当前的显示模式和鼠标控制逻辑
+
 /* GLOBAL VARIABLES DECLARATIONS */
 bit	   MULTIVIEW_TimeOut_Pause=0;
 bit	   MULTIVIEW_TimeOut_Flag=0;
@@ -46,6 +48,10 @@ U8_T   TASK_MULTIVIEW_Receive_TimeOut_ActiveID;
 U16_T  MULTIVIEW_RxTail = 0;
 U16_T  MULTIVIEW_RxCount = 0;
 U16_T  MULTIVIEW_RxTail_Hold=0;
+
+U8_T  current_mode,last_mode;
+
+
 
 static KVM_RX_DATA kvm_rx;
 #define MULTIVIEW_UART_DEBUG 0
@@ -120,6 +126,8 @@ U8_T KVM_CRC8_Calculate(const U8_T *crcdata, U8_T length)
 
 void KVM_SET_mode(U8_T mode){
 
+    last_mode = current_mode;
+    current_mode = mode;
     switch (mode)
     {
     case KVM_MODE_PORT1_ONLY:
@@ -215,7 +223,7 @@ void KVM_UART_HandleFrame(U8_T cmd, U8_T mode)
         {
             if ((mode >= 0x01) && (mode <= 0x0F))
             {
-                //���ղ�����ģʽ
+                //���ղ�����ģʽ
                 KVM_SET_mode(mode);
 				printf("RX_mode\r\n");		
                

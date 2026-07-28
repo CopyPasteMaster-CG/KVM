@@ -119,6 +119,13 @@ CONST	U8_T HOTKEY_DESCRIPTOR_DEFAULT[]=
 	HOTKEY_FUN_KVM_ONE_3_MODE,				// Function Code
 	HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
 	CHAR_F5,	// Minimum
+	//-----------------------------------
+	// 6. return last mode
+	//-----------------------------------
+	3,		//Function Length
+	HOTKEY_FUN_RETURN_LAST_MODE,			// Function Code
+	HOTKEY_OP_FUNCTION0_CODE+HOTKEY_LEN_1,		// OP Code
+	CHAR_Z,			// Minimum 	
 	//-----------------------------------	
 	//  3.Mouse Relative Coordinates Mode
 	//-----------------------------------
@@ -731,14 +738,14 @@ void HOTKEY_Handle(U8_T keytype,U8_T keycode)
 	/* [1].Hotkey already actived */\	
 	//printf("t=%bx,c=%bx\n\r",keytype,keycode);
 
-	printf("HK in: type=%bx code=%bx idx=%bx status=%bx cMod=%bx table=%bx/%bx\n\r",
-    keytype,
-    keycode,
-    HOTKEY_Fork_Table_Index,
-    HOTKEY_Control_Status,
-    cModifiers,
-    HOTKEY_Function_Hotkey_Table[HOTKEY_Fork_Table_Index].Keytype,
-    HOTKEY_Function_Hotkey_Table[HOTKEY_Fork_Table_Index].Keycode);
+	// printf("HK in: type=%bx code=%bx idx=%bx status=%bx cMod=%bx table=%bx/%bx\n\r",
+    // keytype,
+    // keycode,
+    // HOTKEY_Fork_Table_Index,
+    // HOTKEY_Control_Status,
+    // cModifiers,
+    // HOTKEY_Function_Hotkey_Table[HOTKEY_Fork_Table_Index].Keytype,
+    // HOTKEY_Function_Hotkey_Table[HOTKEY_Fork_Table_Index].Keycode);
 	if (HOTKEY_Control_Status == KVM_HOTKEY_ACTIVE)
 	{
 		if (keytype & 0x01)		// KEY Break
@@ -782,7 +789,7 @@ HOTKEY_LEADING_KEY_START:
 			}	
 			/* start from normal condition */
 			//Change the modifiers keyfirst */			
-			if ((keycode >= 0xe4) && (keycode <= 0xe7))//���μ�ͳһ��������ݼ�ʱ����Ҫ�ֱ�֧������ Ctrl��
+			if ((keycode >= 0xe4) && (keycode <= 0xe7))//���μ�ͳһ��������ݼ�ʱ�����?�ֱ�֧������ Ctrl��
 			{				
 				keycode = keycode - 0x04;
 			}

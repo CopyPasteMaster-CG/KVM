@@ -698,7 +698,7 @@ void KM_SYNC_ModeSync_Control(U8_T syncmode)
 	{
 		//if (KVM_Flash.cSystemFlag2 & (SYSTEM_ALL_SYNC_MASK | SYSTEM_KB_SYNC_MASK | SYSTEM_MS_SYNC_MASK))	
 		{
-			printf("KM Sync Mode Stop\n\r");
+			//printf("KM Sync Mode Stop\n\r");
 			KVM_Flash.cSystemFlag2 &= ~(SYSTEM_ALL_SYNC_MASK | SYSTEM_KB_SYNC_MASK | SYSTEM_MS_SYNC_MASK);			
 			//KM_SYNC_KM_SyncModeLed(LED_OFF);
 			KM_SYNC_Select_Led_Control(KVM_CurrentHost);
@@ -1479,7 +1479,7 @@ U8_T KM_SYNC_Port_One_2(void)
  * Purpose :  
  * Params  :  
  * Returns : none
- * Note    : 获取下一次要跳转的端口，在这里加了对一大三小的屏幕的特殊处理
+ * Note    : 获取下一次�?�跳�?的�??口，在这里加了�?�一大三小的屏幕的特殊�?�理
  *---------------------------------------------------------------------------- */
 // U8_T KM_SYNC_Port(U8_T current_port,U8_T direction)
 // {
@@ -1539,7 +1539,7 @@ U8_T KM_SYNC_Port(U8_T current_port,U8_T direction)
 			else if ((Current_Roaming_Table == ONE_3_SCREEN_MODE) && (current_port == API_Current_Main_SCREEN))
 			{
 				nextport = KM_SYNC_Port_One_3();	
-				printf("CG:右 一大三小，主窗口 %bu\n",current_port);	
+				printf("CG:�? 一大三小，主窗�? %bu\n",current_port);	
 			}
 			else
 			{
@@ -1566,7 +1566,7 @@ U8_T KM_SYNC_Port(U8_T current_port,U8_T direction)
  * Purpose :  
  * Params  :  
  * Returns : none
- * Note    : 跳转前检查函数，查看端口是否连接，并调用数组里面的回调函数
+ * Note    : 跳转前�?�查函数，查看�?口是否连接，并调用数组里面的回调函数
  *-------------------------------------------------------------------------------- */
 U8_T KM_SYNC_Power_Status_Check(U8_T current_port,U8_T direction,U8_T call_fun)
 {
