@@ -133,53 +133,53 @@ void KVM_SET_mode(U8_T mode){
     case KVM_MODE_PORT1_ONLY:
         API_Set_Roaming_Mode(API_ROAMING_DISABLE);
         API_Set_Sync_Mode(API_SYNC_DISABLE);
-        KVM_Console_Port_Jump(3);
+        KVM_Console_Port_Jump(0);
         break;
     case KVM_MODE_PORT2_ONLY:
         API_Set_Roaming_Mode(API_ROAMING_DISABLE);
         API_Set_Sync_Mode(API_SYNC_DISABLE);
-        KVM_Console_Port_Jump(2);
+        KVM_Console_Port_Jump(1);
        
         break;
     case KVM_MODE_PORT3_ONLY:
         API_Set_Roaming_Mode(API_ROAMING_DISABLE);
         API_Set_Sync_Mode(API_SYNC_DISABLE);
-        KVM_Console_Port_Jump(1);
+        KVM_Console_Port_Jump(2);
         break;
     case KVM_MODE_PORT4_ONLY:
         API_Set_Roaming_Mode(API_ROAMING_DISABLE);
         API_Set_Sync_Mode(API_SYNC_DISABLE);
-        KVM_Console_Port_Jump(0);
+        KVM_Console_Port_Jump(3);
             break;
     case KVM_MODE_TWO_SMALL_MAIN_PORT1:
         API_SET_ONE_2_SCREEN_MODE(1);
-        API_Current_Main_SCREEN = 3;
-        KVM_Console_Port_Jump(3);
+        API_Current_Main_SCREEN = 0;
+        KVM_Console_Port_Jump(0);
             break;
     case KVM_MODE_TWO_SMALL_MAIN_PORT2:
         API_SET_ONE_2_SCREEN_MODE(2);
-        API_Current_Main_SCREEN = 2;
-        KVM_Console_Port_Jump(2);
+        API_Current_Main_SCREEN = 1;
+        KVM_Console_Port_Jump(1);
             break;
     case KVM_MODE_TWO_SMALL_MAIN_PORT3:
         API_SET_ONE_2_SCREEN_MODE(3);
-        API_Current_Main_SCREEN = 1;
-        KVM_Console_Port_Jump(1);
+        API_Current_Main_SCREEN = 2;
+        KVM_Console_Port_Jump(2);
             break;
     case KVM_MODE_PORT12_ONLY:
         API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
         API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
-        KVM_Console_Port_Jump(3);
+        KVM_Console_Port_Jump(0);
             break;
     case KVM_MODE_PORT34_ONLY:
         API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
         API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
-        KVM_Console_Port_Jump(1);
+        KVM_Console_Port_Jump(2);
             break;
     case KVM_MODE_PORT_ALL:
         API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
         API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
-        KVM_Console_Port_Jump(3);
+        KVM_Console_Port_Jump(0);
             break;
     case KVM_MODE_PORT_ALL_SYNC:
         API_Set_Roaming_Mode(API_ROAMING_DISABLE);					
@@ -188,23 +188,23 @@ void KVM_SET_mode(U8_T mode){
             break;
     case KVM_MODE_THREE_SMALL_MAIN_PORT1:
         API_SET_ONE_3_SCREEN_MODE(0);
-        API_Current_Main_SCREEN = 3;
-        KVM_Console_Port_Jump(3);
+        API_Current_Main_SCREEN = 0;
+        KVM_Console_Port_Jump(0);
             break;
     case KVM_MODE_THREE_SMALL_MAIN_PORT2:
         API_SET_ONE_3_SCREEN_MODE(1);
-        API_Current_Main_SCREEN = 2;
-        KVM_Console_Port_Jump(2);
-            break;
-    case KVM_MODE_THREE_SMALL_MAIN_PORT3:
-        API_SET_ONE_3_SCREEN_MODE(2);
         API_Current_Main_SCREEN = 1;
         KVM_Console_Port_Jump(1);
             break;
+    case KVM_MODE_THREE_SMALL_MAIN_PORT3:
+        API_SET_ONE_3_SCREEN_MODE(2);
+        API_Current_Main_SCREEN = 2;
+        KVM_Console_Port_Jump(2);
+            break;
     case KVM_MODE_THREE_SMALL_MAIN_PORT4:
         API_SET_ONE_3_SCREEN_MODE(3);
-        API_Current_Main_SCREEN = 0;
-        KVM_Console_Port_Jump(0);        
+        API_Current_Main_SCREEN = 3;
+        KVM_Console_Port_Jump(3);        
             break;
 
     default:

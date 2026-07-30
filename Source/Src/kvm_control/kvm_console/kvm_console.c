@@ -1112,9 +1112,9 @@ void TASK_KVM_Event_Control(void)
 				break;
 			
 			case  HOTKEY_FUN_RETURN_LAST_MODE:
-				printf("RETURN_LAST_MODE=%d\n\r",last_mode) ;
+				printf("RETURN_LAST_MODE=%bu\n\r",last_mode);
 				KVM_SET_mode(last_mode);
-				KVM_UART_SendFrame(KVM_CMD_SET_MODE,last_mode);								
+				KVM_UART_SendFrame(KVM_CMD_SET_MODE,current_mode);
 				break;
 
 			case  HOTKEY_FUN_MS_SYNC_MODE:

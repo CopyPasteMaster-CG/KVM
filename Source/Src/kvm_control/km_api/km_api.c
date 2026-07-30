@@ -50,25 +50,25 @@ API_Roaming_Mapping_Def	API_Roaming_One_2[4] =
 			0,  0,	0,		
 	
 		0,1, //Port 0 Left	
-		0,1, //Port 0 Right
+		1,1, //Port 0 Right
 		0,1, //Port 0 Up	
 		0,1, //Port 0 Down		
 		API_Roaming_1_2_Call, //call back function
 		//=============================	
-		3,1, //Port 1 Left	
+		0,1, //Port 1 Left	
 		1,1, //Port 1 Right			
-		2,1, //Port 1 Up	
-		1,1, //Port 1 Down		
+		1,1, //Port 1 Up	
+		2,1, //Port 1 Down		
 		API_Roaming_1_2_Call, //call back function
 		//=============================		
-		3,1, //Port 2 Left	
+		0,1, //Port 2 Left	
 		2,1, //Port 2 Right			
-		2,1, //Port 2 Up	
-		1,1, //Port 2 Down
+		1,1, //Port 2 Up	
+		2,1, //Port 2 Down
 		API_Roaming_1_2_Call, //call back function
 		//=============================					
 		3,1, //Port 3 Left	
-		2,1, //Port 3 Right
+		3,1, //Port 3 Right
 		3,1, //Port 3 Up	
 		3,1, //Port 3 Down
 		API_Roaming_1_2_Call, //call back function		
@@ -77,31 +77,58 @@ API_Roaming_Mapping_Def	API_Roaming_One_2[4] =
 	//--------------------------------
 	//Item 0: Main Port 1
 	//--------------------------------	 
-	//Left_up,Left_Down,Right_Up,Right_Down		
-			3,        
+				0,        
 		
-			2,  1,	0,		
+			1,  2,	3,		
 	
 		0,1, //Port 0 Left	
-		0,1, //Port 0 Right
+		1,1, //Port 0 Right
 		0,1, //Port 0 Up	
 		0,1, //Port 0 Down		
 		API_Roaming_1_2_Call, //call back function
 		//=============================	
-		3,1, //Port 1 Left	
+		0,1, //Port 1 Left	
 		1,1, //Port 1 Right			
-		2,1, //Port 1 Up	
-		1,1, //Port 1 Down		
+		1,1, //Port 1 Up	
+		2,1, //Port 1 Down		
 		API_Roaming_1_2_Call, //call back function
 		//=============================		
-		3,1, //Port 2 Left	
+		0,1, //Port 2 Left	
 		2,1, //Port 2 Right			
-		2,1, //Port 2 Up	
-		1,1, //Port 2 Down
+		1,1, //Port 2 Up	
+		2,1, //Port 2 Down
 		API_Roaming_1_2_Call, //call back function
 		//=============================					
 		3,1, //Port 3 Left	
-		2,1, //Port 3 Right
+		3,1, //Port 3 Right
+		3,1, //Port 3 Up	
+		3,1, //Port 3 Down
+		API_Roaming_1_2_Call, //call back function		
+	//Left_up,Left_Down,Right_Up,Right_Down		
+			1,        
+		
+		2,  0,	3,		
+	
+		1,1, //Port 0 Left	
+		0,1, //Port 0 Right
+		2,1, //Port 0 Up	
+		0,1, //Port 0 Down		
+		API_Roaming_1_2_Call, //call back function
+		//=============================	
+		1,1, //Port 1 Left	
+		2,1, //Port 1 Right			
+		1,1, //Port 1 Up	
+		1,1, //Port 1 Down		
+		API_Roaming_1_2_Call, //call back function
+		//=============================		
+		1,1, //Port 2 Left	
+		2,1, //Port 2 Right			
+		2,1, //Port 2 Up	
+		0,1, //Port 2 Down
+		API_Roaming_1_2_Call, //call back function
+		//=============================					
+		3,1, //Port 3 Left	
+		3,1, //Port 3 Right
 		3,1, //Port 3 Up	
 		3,1, //Port 3 Down
 		API_Roaming_1_2_Call, //call back function		
@@ -110,61 +137,37 @@ API_Roaming_Mapping_Def	API_Roaming_One_2[4] =
 	//--------------------------------	 
 	//Left_up,Left_Down,Right_Up,Right_Down		
 			2,        
-		1,	3,	0,		
+		0,	1,	3,		
 	
-		0,1, //Port 0 Left	
+		2,1, //Port 0 Left	
 		0,1, //Port 0 Right
 		0,1, //Port 0 Up	
-		0,1, //Port 0 Down		
+		1,1, //Port 0 Down		
 		API_Roaming_1_2_Call, //call back function
 		//=============================	
 		2,1, //Port 1 Left	
 		1,1, //Port 1 Right			
-		1,1, //Port 1 Up	
-		3,1, //Port 1 Down		
+		0,1, //Port 1 Up	
+		1,1, //Port 1 Down		
 		API_Roaming_1_2_Call, //call back function
 		//=============================		
 		2,1, //Port 2 Left	
-		1,1, //Port 2 Right			
+		0,1, //Port 2 Right			
 		2,1, //Port 2 Up	
 		2,1, //Port 2 Down
 		API_Roaming_1_2_Call, //call back function
 		//=============================					
-		2,1, //Port 3 Left	
+		3,1, //Port 3 Left	
 		3,1, //Port 3 Right
-		1,1, //Port 3 Up	
+		3,1, //Port 3 Up	
 		3,1, //Port 3 Down
 		API_Roaming_1_2_Call, //call back function		
 	//--------------------------------
 	//Item 2: Main Port 3
 	//--------------------------------	 
 	//Left_up,Left_Down,Right_Up,Right_Down		
-				 1,        
-		3,       2,     	  0,		
+				
 	
-		0,1, //Port 0 Left	
-		0,1, //Port 0 Right
-		0,1, //Port 0 Up	
-		0,1, //Port 0 Down		
-		API_Roaming_1_2_Call, //call back function
-		//=============================	
-		1,1, //Port 1 Left	
-		3,1, //Port 1 Right			
-		1,1, //Port 1 Up	
-		1,1, //Port 1 Down		
-		API_Roaming_1_2_Call, //call back function
-		//=============================		
-		1,1, //Port 2 Left	
-		2,1, //Port 2 Right			
-		3,1, //Port 2 Up	
-		2,1, //Port 2 Down
-		API_Roaming_1_2_Call, //call back function
-		//=============================					
-		1,1, //Port 3 Left	
-		3,1, //Port 3 Right
-		3,1, //Port 3 Up	
-		2,1, //Port 3 Down
-		API_Roaming_1_2_Call, //call back function		
 };
 
 
@@ -176,122 +179,122 @@ API_Roaming_Mapping_Def	API_Roaming_One_3[4] = //include 3 screen mode
 	//Item 0: Main Port 0
 	//--------------------------------	 
 	//Left_up,Left_Down,Right_Up,Right_Down		
-			3,        
-		2,  1,	0,		
-	
-		3,1, //Port 0 Left	
-		0,1, //Port 0 Right
-		1,1, //Port 0 Up	
-		0,1, //Port 0 Down		
-		API_Roaming_1_3_Call, //call back function
-		//=============================	
-		3,1, //Port 1 Left	
-		1,1, //Port 1 Right			
-		2,1, //Port 1 Up	
-		0,1, //Port 1 Down		
-		API_Roaming_1_3_Call, //call back function
-		//=============================		
-		3,1, //Port 2 Left	
-		2,1, //Port 2 Right			
-		2,1, //Port 2 Up	
-		1,1, //Port 2 Down
-		API_Roaming_1_3_Call, //call back function
-		//=============================					
-		3,1, //Port 3 Left	
-		2,1, //Port 3 Right
-		3,1, //Port 3 Up	
-		3,1, //Port 3 Down
-		API_Roaming_1_3_Call, //call back function		
-	//--------------------------------
-	//Item 1: Main Port 1
-	//--------------------------------	 
-	//Left_up,Left_Down,Right_Up,Right_Down		
-			2,        
-		1,	0,	3,		
-	
-		2,1, //Port 0 Left	
-		0,1, //Port 0 Right
-		1,1, //Port 0 Up	
-		3,1, //Port 0 Down		
-		API_Roaming_1_3_Call, //call back function
-		//=============================	
-		2,1, //Port 1 Left	
-		1,1, //Port 1 Right			
-		1,1, //Port 1 Up	
-		0,1, //Port 1 Down		
-		API_Roaming_1_3_Call, //call back function
-		//=============================		
-		2,1, //Port 2 Left	
-		1,1, //Port 2 Right			
-		2,1, //Port 2 Up	
-		2,1, //Port 2 Down
-		API_Roaming_1_3_Call, //call back function
-		//=============================					
-		2,1, //Port 3 Left	
-		3,1, //Port 3 Right
-		0,1, //Port 3 Up	
-		3,1, //Port 3 Down
-		API_Roaming_1_3_Call, //call back function		
-	//--------------------------------
-	//Item 2: Main Port 2
-	//--------------------------------	 
-	//Left_up,Left_Down,Right_Up,Right_Down		
-				 1,        
-		0,       3,     	  2,		
-	
-		1,1, //Port 0 Left	
-		0,1, //Port 0 Right
-		0,1, //Port 0 Up	
-		3,1, //Port 0 Down		
-		API_Roaming_1_3_Call, //call back function
-		//=============================	
-		1,1, //Port 1 Left	
-		0,1, //Port 1 Right			
-		1,1, //Port 1 Up	
-		1,1, //Port 1 Down		
-		API_Roaming_1_3_Call, //call back function
-		//=============================		
-		1,1, //Port 2 Left	
-		2,1, //Port 2 Right			
-		3,1, //Port 2 Up	
-		2,1, //Port 2 Down
-		API_Roaming_1_3_Call, //call back function
-		//=============================					
-		1,1, //Port 3 Left	
-		3,1, //Port 3 Right
-		0,1, //Port 3 Up	
-		2,1, //Port 3 Down
-		API_Roaming_1_3_Call, //call back function		
-		
-	//--------------------------------
-	//Item 3: Main Port 3
-	//--------------------------------	 
-	//Left_up,Left_Down,Right_Up,Right_Down		
 			0,        
-		3,	2,	1,		
+		1,  2,	3,		
 	
 		0,1, //Port 0 Left	
-		3,1, //Port 0 Right
+		1,1, //Port 0 Right
 		0,1, //Port 0 Up	
 		0,1, //Port 0 Down		
 		API_Roaming_1_3_Call, //call back function
 		//=============================	
 		0,1, //Port 1 Left	
 		1,1, //Port 1 Right			
-		2,1, //Port 1 Up	
-		1,1, //Port 1 Down		
+		1,1, //Port 1 Up	
+		2,1, //Port 1 Down		
 		API_Roaming_1_3_Call, //call back function
 		//=============================		
 		0,1, //Port 2 Left	
 		2,1, //Port 2 Right			
-		3,1, //Port 2 Up	
-		1,1, //Port 2 Down
+		1,1, //Port 2 Up	
+		3,1, //Port 2 Down
 		API_Roaming_1_3_Call, //call back function
 		//=============================					
 		0,1, //Port 3 Left	
 		3,1, //Port 3 Right
+		2,1, //Port 3 Up	
+		3,1, //Port 3 Down
+		API_Roaming_1_3_Call, //call back function		
+	//--------------------------------
+	//Item 1: Main Port 1
+	//--------------------------------	 
+	//Left_up,Left_Down,Right_Up,Right_Down		
+			1,        
+		2,	3,	0,		
+	
+		1,1, //Port 0 Left	
+		0,1, //Port 0 Right
+		3,1, //Port 0 Up	
+		0,1, //Port 0 Down		
+		API_Roaming_1_3_Call, //call back function
+		//=============================	
+		1,1, //Port 1 Left	
+		2,1, //Port 1 Right			
+		1,1, //Port 1 Up	
+		1,1, //Port 1 Down		
+		API_Roaming_1_3_Call, //call back function
+		//=============================		
+		1,1, //Port 2 Left	
+		2,1, //Port 2 Right			
+		2,1, //Port 2 Up	
+		3,1, //Port 2 Down
+		API_Roaming_1_3_Call, //call back function
+		//=============================					
+		1,1, //Port 3 Left	
+		3,1, //Port 3 Right
+		2,1, //Port 3 Up	
+		0,1, //Port 3 Down
+		API_Roaming_1_3_Call, //call back function		
+	//--------------------------------
+	//Item 2: Main Port 2
+	//--------------------------------	 
+	//Left_up,Left_Down,Right_Up,Right_Down		
+				 2,        
+		3,       0,     	  1,		
+	
+		2,1, //Port 0 Left	
+		0,1, //Port 0 Right
+		3,1, //Port 0 Up	
+		1,1, //Port 0 Down		
+		API_Roaming_1_3_Call, //call back function
+		//=============================	
+		2,1, //Port 1 Left	
+		1,1, //Port 1 Right			
+		0,1, //Port 1 Up	
+		1,1, //Port 1 Down		
+		API_Roaming_1_3_Call, //call back function
+		//=============================		
+		2,1, //Port 2 Left	
+		3,1, //Port 2 Right			
+		2,1, //Port 2 Up	
+		2,1, //Port 2 Down
+		API_Roaming_1_3_Call, //call back function
+		//=============================					
+		2,1, //Port 3 Left	
+		3,1, //Port 3 Right
 		3,1, //Port 3 Up	
-		2,1, //Port 3 Down
+		0,1, //Port 3 Down
+		API_Roaming_1_3_Call, //call back function		
+		
+	//--------------------------------
+	//Item 3: Main Port 3
+	//--------------------------------	 
+	//Left_up,Left_Down,Right_Up,Right_Down		
+			3,        
+		0,	1,	2,		
+	
+		3,1, //Port 0 Left	
+		0,1, //Port 0 Right
+		0,1, //Port 0 Up	
+		1,1, //Port 0 Down		
+		API_Roaming_1_3_Call, //call back function
+		//=============================	
+		3,1, //Port 1 Left	
+		1,1, //Port 1 Right			
+		0,1, //Port 1 Up	
+		2,1, //Port 1 Down		
+		API_Roaming_1_3_Call, //call back function
+		//=============================		
+		3,1, //Port 2 Left	
+		2,1, //Port 2 Right			
+		1,1, //Port 2 Up	
+		2,1, //Port 2 Down
+		API_Roaming_1_3_Call, //call back function
+		//=============================					
+		3,1, //Port 3 Left	
+		0,1, //Port 3 Right
+		3,1, //Port 3 Up	
+		3,1, //Port 3 Down
 		API_Roaming_1_3_Call, //call back function			
 };
 //-----------------------------------------------
@@ -378,45 +381,43 @@ API_Roaming_Mapping_Def	API_Roaming[5] = //include 3 screen mode	//daniel
 	//--------------------------------	
 #ifdef CROSS_JUMP_MAP0	
 	//Left_up,Left_Down,Right_Up,Right_Down		
-			3,        1,       2,     	  0,
-	//	3 <-> 2 
-	//  |  X  | 
-	//  1 <-> 0 
+	0,        1,       2,     	  3,
+
 
 		
 				// Port 0
-		1,1,   // Left -> 1
-		0,1,   // Right -> 0
-		2,1,   // Up -> 2
-		0,1,   // Down -> 0
+		0,1,   // Left -> 1
+		1,1,   // Right -> 0
+		0,1,   // Up -> 2
+		2,1,   // Down -> 0
 		API_Roaming_Quad_Call,
 
 		// Port 1
-		1,1,
 		0,1,
-		3,1,
 		1,1,
+		1,1,
+		3,1,
 		API_Roaming_Quad_Call,
 
 		// Port 2
+		2,1,
 		3,1,
-		2,1,
-		2,1,
 		0,1,
+		2,1,
 		API_Roaming_Quad_Call,
 
 		// Port 3
-		3,1,
 		2,1,
 		3,1,
 		1,1,
+		3,1,
 		API_Roaming_Quad_Call,
 			
 #endif /* #ifdef CROSS_JUMP_MAP0 */	
 
 #ifdef CROSS_JUMP_MAP1	
 	//Left_up,Left_Down,Right_Up,Right_Down		
-			0,        2,       1,     	  3,
+			0,        1,       2,     	  3,
 	//	0 <-> 1 
 	//  |  X  | 
 	//  2 <-> 3 
@@ -447,35 +448,35 @@ API_Roaming_Mapping_Def	API_Roaming[5] = //include 3 screen mode	//daniel
 #endif		
 		//双屏鼠标滑动设置
 		//Left_up,Left_Down,Right_Up,Right_Down		
-			3,        1,       2,     	  0,
+			0,        1,       2,     	  3,
 	//	3 <-> 2 
 	//  |  X  | 
 	//  1 <-> 0 
 
 				// Port 0
-		1,1,   // Left -> 1
-		0,1,   // Right -> 0
+		0,1,   // Left -> 1
+		1,1,   // Right -> 0
 		0,1,   // Up -> 2
 		0,1,   // Down -> 0
 		API_Roaming_Quad_Call,
 
 		// Port 1
-		1,1,
 		0,1,
+		1,1,
 		1,1,
 		1,1,
 		API_Roaming_Quad_Call,
 
 		// Port 2
-		3,1,
 		2,1,
+		3,1,
 		2,1,
 		2,1,
 		API_Roaming_Quad_Call,
 
 		// Port 3
-		3,1,
 		2,1,
+		3,1,
 		3,1,
 		3,1,
 		API_Roaming_Quad_Call,
@@ -1214,7 +1215,7 @@ void API_SET_ONE_3_SCREEN_MODE(U8_T main_port)
 	       sizeof(API_Roaming_Mapping_Def));
 	printf("one_3\r\n");
 	API_Set_Sync_Mode(API_SYNC_DISABLE);
-	API_Set_Roaming_Mode(API_ROAMING_ENABLE);			
+	API_Set_Roaming_Mode(API_ROAMING_ENABLE);	
 	API_Active_Roaming_Mapping(ONE_3_SCREEN_MODE);
 
 }
