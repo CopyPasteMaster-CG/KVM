@@ -50,7 +50,7 @@ U16_T  MULTIVIEW_RxCount = 0;
 U16_T  MULTIVIEW_RxTail_Hold=0;
 
 U8_T  current_mode,last_mode;
-
+U8_T  Sync_flag=0;
 
 
 static KVM_RX_DATA kvm_rx;
@@ -181,11 +181,6 @@ void KVM_SET_mode(U8_T mode){
         API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
         KVM_Console_Port_Jump(0);
             break;
-    case KVM_MODE_PORT_ALL_SYNC:
-        API_Set_Roaming_Mode(API_ROAMING_DISABLE);					
-        API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
-        API_Set_Sync_Mode(API_SYNC_ENABLE);
-            break;
     case KVM_MODE_THREE_SMALL_MAIN_PORT1:
         API_SET_ONE_3_SCREEN_MODE(0);
         API_Current_Main_SCREEN = 0;
@@ -206,7 +201,20 @@ void KVM_SET_mode(U8_T mode){
         API_Current_Main_SCREEN = 3;
         KVM_Console_Port_Jump(3);        
             break;
-
+    case KVM_MODE_PORT_ALL_SYNC:
+       Sync_flag ^= 1;
+       printf("Sync_flag:%bu\n\r",Sync_flag);
+       if (Sync_flag)
+       {
+           API_Set_Roaming_Mode(API_ROAMING_DISABLE);
+           API_Set_Sync_Mode(API_SYNC_ENABLE);
+       }
+       else
+       {
+           API_Set_Roaming_Mode(API_ROAMING_ENABLE);
+           API_Set_Sync_Mode(API_SYNC_DISABLE);
+       }
+       break;
     default:
         break;
     }
