@@ -139,7 +139,6 @@ void KVM_SET_mode(U8_T mode){
         API_Set_Roaming_Mode(API_ROAMING_DISABLE);
         API_Set_Sync_Mode(API_SYNC_DISABLE);
         KVM_Console_Port_Jump(1);
-       
         break;
     case KVM_MODE_PORT3_ONLY:
         API_Set_Roaming_Mode(API_ROAMING_DISABLE);
@@ -233,7 +232,7 @@ void KVM_UART_HandleFrame(U8_T cmd, U8_T mode)
             {
                 //���ղ�����ģʽ
                 KVM_SET_mode(mode);
-				printf("RX_mode\r\n");		
+				printf("CG RX_mode %02bx\r\n",mode);		
                
             }
             break;
