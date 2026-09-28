@@ -46,6 +46,7 @@
 
 #define KVM_MODE_PORT_ALL                0x0A
 #define KVM_MODE_PORT_ALL_SYNC           0x0B
+#define KVM_MODE_PORT_ALL_SYNC_disable   0x00
 
 #define KVM_MODE_THREE_SMALL_MAIN_PORT1  0x0C
 #define KVM_MODE_THREE_SMALL_MAIN_PORT2  0x0D

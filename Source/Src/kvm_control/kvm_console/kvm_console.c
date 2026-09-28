@@ -1055,8 +1055,8 @@ void TASK_KVM_Event_Control(void)
 						break;
 
 					case 1:
-						KVM_SET_mode(KVM_MODE_PORT_ALL_SYNC);
-						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_PORT_ALL_SYNC);
+						KVM_SET_mode(KVM_MODE_PORT_ALL);
+						KVM_UART_SendFrame(KVM_CMD_SET_MODE,KVM_MODE_PORT_ALL);
 						break;
 
 					default:
