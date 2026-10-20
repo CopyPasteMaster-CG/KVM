@@ -28,6 +28,7 @@
 #define ONE_3_SCREEN_MODE  		3	//zbb 2025/12/8
 #define ONE_2_SCREEN_MODE  		4
 
+
 #define CALL_BACK_ENABLE		1
 #define CALL_BACK_DISABLE		0
 
@@ -60,7 +61,7 @@ extern U8_T  Last_Relative_Coordinate[4];
 extern U8_T  Last_Keyboard_Data[4];
 
 extern U8_T  API_Current_Main_SCREEN;
-
+extern U8_T ONE_2_ONE_SCREEN_MODE;
 extern float API_One_3_Xf[2];
 extern U16_T API_One_3_X[2];
 
