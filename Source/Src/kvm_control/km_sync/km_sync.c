@@ -1444,17 +1444,17 @@ U8_T KM_SYNC_Port_One_3(void)
 	if (MouseY < one_quarter)
 	{
 		nextport = Roaming[Current_Roaming_Table]->Sequence[1];
-		printf("CG:三等分上\r\n");
+		//printf("CG:三等分上\r\n");
 	}					
 	else if (MouseY < three_quarter)
 	{
 		nextport = Roaming[Current_Roaming_Table]->Sequence[2];
-		printf("CG:三等分中\r\n");
+		//printf("CG:三等分中\r\n");
 	}
 	else
 	{
 		nextport = Roaming[Current_Roaming_Table]->Sequence[3];
-		printf("CG:三等分下\r\n");
+		//printf("CG:三等分下\r\n");
 	}
 	
 	return nextport;
@@ -1464,60 +1464,139 @@ U8_T KM_SYNC_Port_One_2(void)
 {
 	if (MouseY < (Y_MAX >> 1))
 	{
-		printf("CG:二等分上 %d\r\n", (Y_MAX >> 1));
+		//printf("CG:二等分上 %d\r\n", (Y_MAX >> 1));
 		return Roaming[Current_Roaming_Table]->Sequence[1];
 	}
 	else
 	{
-		printf("CG:二等分下 %d\r\n", (Y_MAX >> 1));
+		//printf("CG:二等分下 %d\r\n", (Y_MAX >> 1));
 		return Roaming[Current_Roaming_Table]->Sequence[2];
 	}
 	
 }
-/*----------------------------------------------------------------------------
- * U8_T KM_SYNC_Port(U8_T current_port,U8_T direction)
- * Purpose :  
- * Params  :  
- * Returns : none
- * Note    : 获取下一次�?�跳�?的�??口，在这里加了�?�一大三小的屏幕的特殊�?�理
- *---------------------------------------------------------------------------- */
-// U8_T KM_SYNC_Port(U8_T current_port,U8_T direction)
-// {
-// 	U8_T nextport;
-	
-// 	switch (direction)
-// 	{	
-// 		case ROAMING_LEFT:
-// 			nextport = Roaming[Current_Roaming_Table]->Edge.Item[current_port].Left.Portid;			
-// 			break;
-// 		case ROAMING_RIGHT:
-// 			nextport = Roaming[Current_Roaming_Table]->Edge.Item[current_port].Right.Portid;
-// 			break;
-// 		case ROAMING_TOP:
-// 			if ((Current_Roaming_Table == ONE_3_SCREEN_MODE) && (current_port == API_Current_Main_SCREEN))
-// 			{
-// 				nextport = KM_SYNC_Port_One_3();				
-// 			}
-// 			else
-// 			{	
-// 				nextport = Roaming[Current_Roaming_Table]->Edge.Item[current_port].Up.Portid;
-// 			}	
-// 			break;
-// 		case ROAMING_BOTTOM:
-// 			if ((Current_Roaming_Table == ONE_3_SCREEN_MODE) && (current_port == API_Current_Main_SCREEN))
-// 			{
-// 				nextport = KM_SYNC_Port_One_3();				
-// 			}
-// 			else
-// 			{
-// 				nextport = Roaming[Current_Roaming_Table]->Edge.Item[current_port].Down.Portid;
-// 			}	
-// 			break;
-// 	}	
-// 	return nextport;
-// }
- 
 
+ 
+// U8_T KM_SYNC_Port(U8_T current_port, U8_T direction)
+// {
+//     U8_T nextport;
+
+//     switch (direction)
+//     {
+//         case ROAMING_LEFT:
+//             if (Current_Roaming_Table == ONE_2_ONE_SCREEN_MODE)
+//             {
+//                 U8_T main_port;
+//                 U8_T small_top;
+//                 U8_T small_bottom;
+//                 U8_T right_main;
+
+//                 main_port    = Roaming[Current_Roaming_Table]->Sequence[0];
+//                 small_top    = Roaming[Current_Roaming_Table]->Sequence[1];
+//                 small_bottom = Roaming[Current_Roaming_Table]->Sequence[2];
+//                 right_main   = Roaming[Current_Roaming_Table]->Sequence[3];
+
+//                 /* 右侧新增大屏向左：进入上方或下方小屏 */
+//                 if (current_port == right_main)
+//                 {
+//                     if (MouseY < (Y_MAX >> 1))
+//                     {
+//                         nextport = small_top;
+//                     }
+//                     else
+//                     {
+//                         nextport = small_bottom;
+//                     }
+//                 }
+//                 else
+//                 {
+//                     nextport =
+//                         Roaming[Current_Roaming_Table]
+//                         ->Edge.Item[current_port].Left.Portid;
+//                 }
+//             }
+//             else
+//             {
+//                 nextport =
+//                     Roaming[Current_Roaming_Table]
+//                     ->Edge.Item[current_port].Left.Portid;
+//             }
+//             break;
+
+//         case ROAMING_RIGHT:
+//             if ((Current_Roaming_Table == ONE_2_SCREEN_MODE) &&
+//                 (current_port == API_Current_Main_SCREEN))
+//             {
+//                 nextport = KM_SYNC_Port_One_2();
+//             }
+//             else if ((Current_Roaming_Table == ONE_3_SCREEN_MODE) &&
+//                      (current_port == API_Current_Main_SCREEN))
+//             {
+//                 nextport = KM_SYNC_Port_One_3();
+//             }
+//             else if (Current_Roaming_Table == ONE_2_ONE_SCREEN_MODE)
+//             {
+//                 U8_T small_top;
+//                 U8_T small_bottom;
+
+//                 small_top =
+//                     Roaming[Current_Roaming_Table]->Sequence[1];
+
+//                 small_bottom =
+//                     Roaming[Current_Roaming_Table]->Sequence[2];
+
+//                 /* 左侧原大屏向右：根据鼠标位置进入小屏 */
+//                 if (current_port == API_Current_Main_SCREEN)
+//                 {
+//                     if (MouseY < (Y_MAX >> 1))
+//                     {
+//                         nextport = small_top;
+//                     }
+//                     else
+//                     {
+//                         nextport = small_bottom;
+//                     }
+//                 }
+//                 /* 两个小屏向右：进入新增大屏 */
+//                 else if ((current_port == small_top) ||
+//                          (current_port == small_bottom))
+//                 {
+//                     nextport =
+//                         Roaming[Current_Roaming_Table]->Sequence[3];
+//                 }
+//                 else
+//                 {
+//                     nextport =
+//                         Roaming[Current_Roaming_Table]
+//                         ->Edge.Item[current_port].Right.Portid;
+//                 }
+//             }
+//             else
+//             {
+//                 nextport =
+//                     Roaming[Current_Roaming_Table]
+//                     ->Edge.Item[current_port].Right.Portid;
+//             }
+//             break;
+
+//         case ROAMING_TOP:
+//             nextport =
+//                 Roaming[Current_Roaming_Table]
+//                 ->Edge.Item[current_port].Up.Portid;
+//             break;
+
+//         case ROAMING_BOTTOM:
+//             nextport =
+//                 Roaming[Current_Roaming_Table]
+//                 ->Edge.Item[current_port].Down.Portid;
+//             break;
+
+//         default:
+//             nextport = current_port;
+//             break;
+//     }
+
+//     return nextport;
+// }
 
 
 U8_T KM_SYNC_Port(U8_T current_port,U8_T direction)
@@ -1527,26 +1606,53 @@ U8_T KM_SYNC_Port(U8_T current_port,U8_T direction)
 	switch (direction)
 	{	
 		case ROAMING_LEFT:
-			nextport = Roaming[Current_Roaming_Table]->Edge.Item[current_port].Left.Portid;		
-			break;
-
-		case ROAMING_RIGHT:
-			if ((Current_Roaming_Table == ONE_2_SCREEN_MODE) && (current_port == API_Current_Main_SCREEN))
+		if ((Current_Roaming_Table == ONE_2_SCREEN_MODE) &&
+			(ONE_2_ONE_SCREEN_MODE == 1) &&
+			(current_port == 3))
+		{	//printf("ONE_2_ONE%u\n",ONE_2_ONE_SCREEN_MODE);
+			/* 右侧大屏向左，根据鼠标位置选择上、下小屏 */
+			if (MouseY < (Y_MAX >> 1))
 			{
-				nextport = KM_SYNC_Port_One_2();
-				printf("CG:ONE_2 right move, main port:%bu, MouseY:%d\n\r",current_port,MouseY);
-			}
-			else if ((Current_Roaming_Table == ONE_3_SCREEN_MODE) && (current_port == API_Current_Main_SCREEN))
-			{
-				nextport = KM_SYNC_Port_One_3();	
-				printf("CG:�? 一大三小，主窗�? %bu\n",current_port);	
+				nextport = Roaming[Current_Roaming_Table]->Sequence[1];
 			}
 			else
 			{
-				nextport = Roaming[Current_Roaming_Table]->Edge.Item[current_port].Right.Portid;
-				
-			}	
-			break;
+				nextport = Roaming[Current_Roaming_Table]->Sequence[2];
+			}
+		}
+		else
+		{
+			//printf("CG: nextport:%u\n",Roaming[Current_Roaming_Table]->Edge.Item[current_port].Left.Portid);
+			nextport =
+				Roaming[Current_Roaming_Table]->Edge.Item[current_port].Left.Portid;
+		}
+		break;
+
+		case ROAMING_RIGHT:
+
+		if ((Current_Roaming_Table == ONE_2_SCREEN_MODE) &&
+			(current_port == API_Current_Main_SCREEN))
+		{
+			nextport = KM_SYNC_Port_One_2();
+
+		}
+		else if ((Current_Roaming_Table == ONE_2_SCREEN_MODE) &&
+				(ONE_2_ONE_SCREEN_MODE == 1) &&
+				((current_port == Roaming[Current_Roaming_Table]->Sequence[1]) ||
+				(current_port == Roaming[Current_Roaming_Table]->Sequence[2])))
+		{
+			/* 两个小屏向右，进入新增大屏 */
+			nextport = 3;
+			//printf("\r\n 3 \r\n");
+		}
+		else
+		{
+			//printf("\r\n 4 nextport %u \r\n",Roaming[Current_Roaming_Table]->Edge.Item[current_port].Right.Portid);
+			nextport =
+				Roaming[Current_Roaming_Table]->Edge.Item[current_port].Right.Portid;
+		}
+
+		break;
 
 		case ROAMING_TOP:
 			nextport = Roaming[Current_Roaming_Table]->Edge.Item[current_port].Up.Portid;
@@ -1566,7 +1672,7 @@ U8_T KM_SYNC_Port(U8_T current_port,U8_T direction)
  * Purpose :  
  * Params  :  
  * Returns : none
- * Note    : 跳转前�?�查函数，查看�?口是否连接，并调用数组里面的回调函数
+ * Note    : 跳转前�?�查函数，查看�?口是否连接，并调用数组里面的回调函数
  *-------------------------------------------------------------------------------- */
 U8_T KM_SYNC_Power_Status_Check(U8_T current_port,U8_T direction,U8_T call_fun)
 {
@@ -1582,69 +1688,29 @@ KM_SYNC_Power_Status_Check_Start:
 		if (current_port_hold != nextport)
 		{
 			if (call_fun)
-			{ // call user define call back function
-				if (Roaming[Current_Roaming_Table]->Edge.Item[current_port].CallBack_FunctionP)
-				{
-					Current_Roaming_Direction = direction;
-					Roaming[Current_Roaming_Table]->Edge.Item[current_port].CallBack_FunctionP();
-				}					
-			}				
-			return nextport+1;
-		}	
-		else
-			return 0;
-	}				
-	else
-	{ //judge the corss move operation in quad screen mode
-		if (Current_Roaming_Table == QUAD_SCREEN_MODE)
-		{			
-			screen_position = Roaming[Current_Roaming_Table]->Sequence[current_port];
-			//printf("[D:%bu,S:%bu,X=%d,Y=%d]",direction,screen_position,MouseX,MouseY);
-			switch (screen_position)
 			{
-				case 0: //Left Up 
-					if ((direction == ROAMING_RIGHT) || (direction == ROAMING_BOTTOM))
-					{	
-						if ((MouseX >= ROAMING_CROSS_MARGIN_X[0]) &&  
-							(MouseY >= ROAMING_CROSS_MARGIN_Y[0]))
-						{
-							return nextport+1;
-						}
-					}													
-					break;
-				case 1: //Left Down
-					if ((direction == ROAMING_RIGHT) || (direction == ROAMING_TOP))
-					{	
-						if ((MouseX>= ROAMING_CROSS_MARGIN_X[1]) &&  
-							(MouseY <= ROAMING_CROSS_MARGIN_Y[1]))
-						{
-							return nextport+1;
-						}
-					}
-					break;
-				case 2: //Right Up
-					if ((direction == ROAMING_LEFT) || (direction == ROAMING_BOTTOM))
-					{	
-						if ((MouseX <= ROAMING_CROSS_MARGIN_X[2]) &&  
-							(MouseY >= ROAMING_CROSS_MARGIN_Y[2]))
-						{
-							return nextport+1;
-						}
-					}
-					break;
-				case 3: //Right Down
-					if ((direction == ROAMING_LEFT) || (direction == ROAMING_TOP))
-					{	
-						if ((MouseX <= ROAMING_CROSS_MARGIN_X[3]) &&  
-							(MouseY <= ROAMING_CROSS_MARGIN_Y[3]))
-						{
-							return nextport+1;
-						}
-					}
-					break;
-			}							
-		}			
-	}		
+				//printf("CG: current=%bu next=%bu dir=%bu\r\n",
+//					current_port,
+//					nextport,
+//					direction);
+
+				if (Roaming[Current_Roaming_Table]
+					->Edge.Item[current_port]
+					.CallBack_FunctionP)
+				{
+					//printf("CALLBACK\r\n");
+
+					Current_Roaming_Direction = direction;
+
+					Roaming[Current_Roaming_Table]
+						->Edge.Item[current_port]
+						.CallBack_FunctionP();
+				}
+			}
+
+			return nextport + 1;
+		}
+	}
 	current_port = nextport;
 	if (current_port_hold != current_port)
 	{
