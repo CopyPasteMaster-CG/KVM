@@ -1689,10 +1689,10 @@ KM_SYNC_Power_Status_Check_Start:
 		{
 			if (call_fun)
 			{
-				//printf("CG: current=%bu next=%bu dir=%bu\r\n",
-//					current_port,
-//					nextport,
-//					direction);
+				printf("CG: current=%bu next=%bu dir=%bu\r\n",
+					current_port,
+					nextport,
+					direction);
 
 				if (Roaming[Current_Roaming_Table]
 					->Edge.Item[current_port]
