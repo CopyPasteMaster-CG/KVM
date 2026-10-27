@@ -25,7 +25,7 @@
 #include "types.h"
 
 /* NAMING CONSTANT DECLARATIONS */
-#define API_ROAMING_TABLE_MAX			5
+#define API_ROAMING_TABLE_MAX			6
 //This is for Absolute Mouse setting --------------
 //#define POWER_LED_PIN		P2_5
 #define X_MAX				VHID_X_MAX

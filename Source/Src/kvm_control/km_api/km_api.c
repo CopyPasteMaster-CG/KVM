@@ -31,6 +31,7 @@ U8_T  Last_Absolute_Coordinate[6];
 U8_T  Last_Relative_Coordinate[4];
 U8_T  Last_Keyboard_Data[4];
 U8_T  API_Current_Main_SCREEN;
+U8_T  API_Current_Mode;
 U8_T  ONE_2_ONE_SCREEN_MODE;
 float API_One_3_Xf[2];
 U16_T API_One_3_X[2];
@@ -38,10 +39,10 @@ U16_T API_One_3_X[2];
 float API_One_3_Yf[2];
 U16_T API_One_3_Y[2];
 
-void 	API_Roaming_1_3_Call(void);
-void 	API_Roaming_1_2_Call(void);
-void 	API_Roaming_1_2_1_Call(void);
-
+void API_Roaming_1_3_Call(void);
+void API_Roaming_1_2_Call(void);
+void API_Roaming_1_2_1_Call(void);
+void API_Roaming_2_2_Call(void);
 
 API_Roaming_Mapping_Def	API_Roaming_One_2[4] = 
 {
@@ -53,7 +54,7 @@ API_Roaming_Mapping_Def	API_Roaming_One_2[4] =
 		0,1, //Port 0 Left	
 		1,1, //Port 0 Right
 		0,1, //Port 0 Up	
-		0,1, //Port 0 Down		
+		0,1, //Port 0 Down	
 		API_Roaming_1_2_1_Call, //call back function
 		//=============================	
 		0,1, //Port 1 Left	
@@ -168,10 +169,99 @@ API_Roaming_Mapping_Def	API_Roaming_One_2[4] =
 	//--------------------------------	 
 	//Left_up,Left_Down,Right_Up,Right_Down		
 				
+		//Item 0: Main Port 0 2——1——2  
+		// 		0,        
+		
+		// 	1,  2,	3,		
+	
+		// 0,1, //Port 0 Left	
+		// 1,1, //Port 0 Right
+		// 0,1, //Port 0 Up	
+		// 0,1, //Port 0 Down		
+		// API_Roaming_1_2_1_Call, //call back function
+		// //=============================	
+		// 0,1, //Port 1 Left	
+		// 2,1, //Port 1 Right			
+		// 1,1, //Port 1 Up	
+		// 1,1, //Port 1 Down		
+		// API_Roaming_1_2_1_Call, //call back function
+		// //=============================		
+		// 1,1, //Port 2 Left	
+		// 2,1, //Port 2 Right			
+		// 2,1, //Port 2 Up	
+		// 3,1, //Port 2 Down
+		// API_Roaming_1_2_1_Call, //call back function
+		// //=============================					
+		// 1,1, //Port 3 Left	
+		// 3,1, //Port 3 Right
+		// 2,1, //Port 3 Up	
+		// 3,1, //Port 3 Down
+		// API_Roaming_1_2_1_Call, //call back function		
 	
 };
 
-
+API_Roaming_Mapping_Def	API_Roaming_One_2_One[4] = 
+{
+		//Item 0: Main Port 0 2——1——2  
+				0,        
+		
+			1,  2,	3,		
+	
+		0,1, //Port 0 Left	
+		1,1, //Port 0 Right
+		0,1, //Port 0 Up	
+		0,1, //Port 0 Down		
+		API_Roaming_1_2_1_Call, //call back function
+		//=============================	
+		0,1, //Port 1 Left	
+		3,1, //Port 1 Right			
+		1,1, //Port 1 Up	
+		2,1, //Port 1 Down		
+		API_Roaming_1_2_1_Call, //call back function
+		//=============================		
+		0,1, //Port 2 Left	
+		3,1, //Port 2 Right			
+		1,1, //Port 2 Up	
+		2,1, //Port 2 Down
+		API_Roaming_1_2_1_Call, //call back function
+		//=============================					
+		1,1, //Port 3 Left	
+		3,1, //Port 3 Right
+		3,1, //Port 3 Up	
+		3,1, //Port 3 Down
+		API_Roaming_1_2_1_Call, //call back function	
+		
+			//Item 0: Main Port 0 2——1——2  
+				0,        
+		
+			1,  2,	3,		
+	
+		0,1, //Port 0 Left	
+		1,1, //Port 0 Right
+		0,1, //Port 0 Up	
+		0,1, //Port 0 Down		
+		API_Roaming_2_2_Call, //call back function
+		//=============================	
+		0,1, //Port 1 Left	
+		2,1, //Port 1 Right			
+		1,1, //Port 1 Up	
+		1,1, //Port 1 Down		
+		API_Roaming_2_2_Call, //call back function
+		//=============================		
+		1,1, //Port 2 Left	
+		2,1, //Port 2 Right			
+		2,1, //Port 2 Up	
+		3,1, //Port 2 Down
+		API_Roaming_2_2_Call, //call back function
+		//=============================					
+		1,1, //Port 3 Left	
+		3,1, //Port 3 Right
+		2,1, //Port 3 Up	
+		3,1, //Port 3 Down
+		API_Roaming_2_2_Call, //call back function		
+	
+	
+};
 
 
 API_Roaming_Mapping_Def	API_Roaming_One_3[4] = //include 3 screen mode
@@ -572,7 +662,7 @@ void API_Init(void)
 	API_Set_Roaming_Mapping(TWO_SCREEN_MODE  ,&API_Roaming[2]); //daniel
 
 	API_Set_Roaming_Mapping(ONE_2_SCREEN_MODE  ,&API_Roaming[4]);
-	
+	API_Set_Roaming_Mapping(HALF_ONE_2_SCREEN_MODE  ,&API_Roaming[5]);
 	//3.Default active Quad screen mode	
 	API_Active_Roaming_Mapping(QUAD_SCREEN_MODE);
 	
@@ -605,28 +695,28 @@ void API_Init(void)
 
 static void API_Debug_Print_Roaming_Map(U8_T main_port, API_Roaming_Mapping_Def *map)
 {
-//	U8_T i;
-//	
-////	printf("CG:API_Roaming[%bu]\n\r", main_port);
-//	printf("CG:Sequence=%bu,%bu,%bu,%bu\n\r",
-//	       map->Sequence[0],
-//	       map->Sequence[1],
-//	       map->Sequence[2],
-//	       map->Sequence[3]);
-//	
-////	for (i = 0; i < KVM_MAX_PORT; i++)
-////	{
-////		printf("CG:Port%bu L=%bu/%bu R=%bu/%bu U=%bu/%bu D=%bu/%bu\n\r",
-////		       i,
-////		       map->Edge.Item[i].Left.Portid,
-////		       map->Edge.Item[i].Left.Latency,
-////		       map->Edge.Item[i].Right.Portid,
-////		       map->Edge.Item[i].Right.Latency,
-////		       map->Edge.Item[i].Up.Portid,
-////		       map->Edge.Item[i].Up.Latency,
-////		       map->Edge.Item[i].Down.Portid,
-////		       map->Edge.Item[i].Down.Latency);
-////	}
+	U8_T i;
+	
+//	printf("CG:API_Roaming[%bu]\n\r", main_port);
+	// printf("CG:Sequence=%bu,%bu,%bu,%bu\n\r",
+	//        map->Sequence[0],
+	//        map->Sequence[1],
+	//        map->Sequence[2],
+	//        map->Sequence[3]);
+	
+	// for (i = 0; i < KVM_MAX_PORT; i++)
+	// {
+	// 	printf("CG:Port%bu L=%bu/%bu R=%bu/%bu U=%bu/%bu D=%bu/%bu\n\r",
+	// 	       i,
+	// 	       map->Edge.Item[i].Left.Portid,
+	// 	       map->Edge.Item[i].Left.Latency,
+	// 	       map->Edge.Item[i].Right.Portid,
+	// 	       map->Edge.Item[i].Right.Latency,
+	// 	       map->Edge.Item[i].Up.Portid,
+	// 	       map->Edge.Item[i].Up.Latency,
+	// 	       map->Edge.Item[i].Down.Portid,
+	// 	       map->Edge.Item[i].Down.Latency);
+	// }
 }
 
 /** ----------------------------------------------------------------------------
@@ -1183,23 +1273,25 @@ void API_Roaming_1_2_Call(void)
 	}
 }
 
-
 void API_Roaming_1_2_1_Call(void)
 {
     U16_T section_start;
     U8_T i;
-	printf("API_Roaming_1_2_1_Call");
+
+
     /*
      * =====================================================
-     * 1. 左侧大屏 -> 两个小屏
+     * 1. 大屏 -> 小屏
      * =====================================================
-     */
-    if ((KVM_CurrentHost == API_Current_Main_SCREEN) &&
-        (Current_Roaming_Direction == ROAMING_RIGHT))
+	 * */
+    if (((KVM_CurrentHost == API_Current_Main_SCREEN) &&
+         (Current_Roaming_Direction == ROAMING_RIGHT)) ||
+
+        ((KVM_CurrentHost ==
+          Roaming[Current_Roaming_Table]->Sequence[3]) &&
+         (Current_Roaming_Direction == ROAMING_LEFT)))
     {
-        /*
-         * 判断鼠标进入上面的小屏还是下面的小屏
-         */
+
         if (MouseY < (Y_MAX >> 1))
         {
             section_start = 0;
@@ -1209,15 +1301,6 @@ void API_Roaming_1_2_1_Call(void)
             section_start = (Y_MAX >> 1);
         }
 
-        /*
-         * 大屏 -> 小屏
-         *
-         * 大屏半区：
-         *     0 ~ Y_MAX/2
-         *
-         * 映射到小屏：
-         *     0 ~ Y_MAX
-         */
         MouseX = X_LEFT_EDGE;
         MouseY = (MouseY - section_start) * 2;
 
@@ -1234,10 +1317,10 @@ void API_Roaming_1_2_1_Call(void)
      *
      * 小屏2、3：
      *
-     * ROAMING_LEFT  -> 左侧大屏
-     * ROAMING_RIGHT -> 右侧大屏
+     *     ROAMING_LEFT  -> 左侧大屏
+     *     ROAMING_RIGHT -> 右侧大屏
      *
-     * 两种情况 Y 坐标转换完全一样。
+     * 两种情况 Y 坐标转换完全一样
      */
     else if ((KVM_CurrentHost != API_Current_Main_SCREEN) &&
              (KVM_CurrentHost !=
@@ -1246,9 +1329,7 @@ void API_Roaming_1_2_1_Call(void)
         if ((Current_Roaming_Direction == ROAMING_LEFT) ||
             (Current_Roaming_Direction == ROAMING_RIGHT))
         {
-            /*
-             * 判断当前是哪一个小屏
-             */
+
             for (i = 1; i < 3; i++)
             {
                 if (Roaming[Current_Roaming_Table]->Sequence[i]
@@ -1267,37 +1348,19 @@ void API_Roaming_1_2_1_Call(void)
                         section_start = (Y_MAX >> 1);
                     }
 
-                    /*
-                     * 小屏 -> 大屏
-                     *
-                     * 小屏：
-                     *     0 ~ Y_MAX
-                     *
-                     * 映射到大屏对应半区：
-                     *     0 ~ Y_MAX/2
-                     */
                     MouseY = section_start + (MouseY / 2);
 
                     if (MouseY > Y_MAX)
                     {
                         MouseY = Y_MAX;
                     }
-
-                    /*
-                     * 根据方向决定进入哪一个大屏
-                     */
                     if (Current_Roaming_Direction == ROAMING_LEFT)
                     {
-                        /*
-                         * 小屏 -> 左侧大屏
-                         */
+
                         MouseX = X_RIGHT_EDGE;
                     }
                     else
                     {
-                        /*
-                         * 小屏 -> 右侧大屏
-                         */
                         MouseX = X_LEFT_EDGE;
                     }
 
@@ -1306,21 +1369,21 @@ void API_Roaming_1_2_1_Call(void)
             }
         }
     }
+}
 
-    /*
-     * =====================================================
-     * 3. 右侧大屏 -> 两个小屏
-     * =====================================================
-     */
-    else if ((KVM_CurrentHost ==
-              Roaming[Current_Roaming_Table]->Sequence[3]) &&
-             (Current_Roaming_Direction == ROAMING_LEFT))
+
+
+
+
+void API_Roaming_2_2_Call(void)
+{
+    U16_T section_start;
+	U8_T i;
+
+    if (((KVM_CurrentHost ==API_Current_Main_SCREEN)) &&
+        (Current_Roaming_Direction == ROAMING_RIGHT))
     {
-        /*
-         * 根据右侧大屏上的 MouseY，
-         * 判断进入上面小屏还是下面小屏。
-         */
-        if (MouseY < (Y_MAX >> 1))
+         if (MouseY < (Y_MAX >> 1))
         {
             section_start = 0;
         }
@@ -1328,15 +1391,7 @@ void API_Roaming_1_2_1_Call(void)
         {
             section_start = (Y_MAX >> 1);
         }
-
-        /*
-         * 右侧大屏 -> 小屏
-         *
-         * 与左侧大屏 -> 小屏完全一样：
-         *
-         *     MouseY = (MouseY - section_start) * 2
-         */
-        MouseX = X_RIGHT_EDGE;
+		MouseX = X_LEFT_EDGE;
         MouseY = (MouseY - section_start) * 2;
 
         if (MouseY > Y_MAX)
@@ -1344,108 +1399,38 @@ void API_Roaming_1_2_1_Call(void)
             MouseY = Y_MAX;
         }
     }
+
+    else if (((KVM_CurrentHost ==
+               Roaming[Current_Roaming_Table]->Sequence[2]) ||
+              (KVM_CurrentHost ==
+               Roaming[Current_Roaming_Table]->Sequence[3])) &&
+             (Current_Roaming_Direction == ROAMING_LEFT))
+    {
+        for (i = 2; i < 4; i++)
+		{
+			if (Roaming[Current_Roaming_Table]->Sequence[i] == KVM_CurrentHost)
+			{
+				if (i == 2)
+				{
+					section_start = 0;
+				}
+				else
+				{
+					section_start = (Y_MAX >> 1);
+				}
+				
+				MouseX = X_RIGHT_EDGE;
+				MouseY = section_start + (MouseY / 2);
+				if (MouseY > Y_MAX)
+				{
+					MouseY = Y_MAX;
+				}
+				break;
+			}
+		}
+    }
 }
 
-// void API_Roaming_1_2_1_Call_(void)
-// {
-//     U16_T section_start;
-//     U8_T i;
-//     U8_T small_top;
-//     U8_T small_bottom;
-//     U8_T right_main;
-
-//     small_top =
-//         Roaming[Current_Roaming_Table]->Sequence[1];
-
-//     small_bottom =
-//         Roaming[Current_Roaming_Table]->Sequence[2];
-
-//     right_main =
-//         Roaming[Current_Roaming_Table]->Sequence[3];
-
-//     /*
-//      * 左侧大屏 -> 两个小屏
-//      * 小屏坐标系高度为 Y_MAX，因此纵坐标乘以 2。
-//      */
-//     if ((KVM_CurrentHost == API_Current_Main_SCREEN) &&
-//         (Current_Roaming_Direction == ROAMING_RIGHT))
-//     {
-//         if (MouseY < (Y_MAX >> 1))
-//         {
-//             section_start = 0;
-//         }
-//         else
-//         {
-//             section_start = (Y_MAX >> 1);
-//         }
-
-//         MouseX = X_LEFT_EDGE;
-//         MouseY = (MouseY - section_start) * 2;
-
-//         if (MouseY > Y_MAX)
-//         {
-//             MouseY = Y_MAX;
-//         }
-//     }
-
-
-//     else if ((Current_Roaming_Direction == ROAMING_LEFT) ||
-//              (Current_Roaming_Direction == ROAMING_RIGHT))
-//     {
-//         if ((KVM_CurrentHost == small_top) ||
-//             (KVM_CurrentHost == small_bottom))
-//         {
-//             if (KVM_CurrentHost == small_top)
-//             {
-//                 section_start = 0;
-//             }
-//             else
-//             {
-//                 section_start = (Y_MAX >> 1);
-//             }
-
-//             if (Current_Roaming_Direction == ROAMING_LEFT)
-//             {
-//                 /* 返回左侧原大屏 */
-//                 MouseX = X_RIGHT_EDGE;
-//                 MouseY = section_start + (MouseY / 2);
-//             }
-//             else
-//             {
-//                 /* 进入右侧新增大屏 */
-//                 MouseX = X_LEFT_EDGE;
-//                 MouseY = section_start + (MouseY / 2);
-//             }
-
-//             if (MouseY > Y_MAX)
-//             {
-//                 MouseY = Y_MAX;
-//             }
-//         }
-//     }
-
-
-//     else if ((KVM_CurrentHost == right_main) &&
-//              (Current_Roaming_Direction == ROAMING_LEFT))
-//     {
-//         if (MouseY < (Y_MAX >> 1))
-//         {
-//             section_start = 0;
-//         }
-//         else
-//         {
-//             section_start = (Y_MAX >> 1);
-//         }
-
-//         MouseX = X_RIGHT_EDGE;
-//         MouseY = (MouseY - section_start) * 2;
-
-//         if (MouseY > Y_MAX)
-//         {
-//             MouseY = Y_MAX;
-//         }
-//     }
-// }
 
 /** ------------------------------------------------------------------------------------------------------
  * Function Name: API_Roaming_Mapping2_Handle(U8_T Mapid,API_Roaming_Mapping_Def *Roaming)
@@ -1504,6 +1489,24 @@ void API_SET_ONE_2_SCREEN_MODE(U8_T main_port)
 	API_Set_Sync_Mode(API_SYNC_DISABLE);
 	API_Set_Roaming_Mode(API_ROAMING_ENABLE);
 	API_Active_Roaming_Mapping(ONE_2_SCREEN_MODE);
+}
+
+void API_SET_ONE_2_ONE_SCREEN_MODE(U8_T main_port,U8_T mode)
+{
+
+	if ((main_port < 0) || (main_port > 4))
+	{
+		return;
+	}
+	API_Debug_Print_Roaming_Map(main_port, &API_Roaming_One_2_One[main_port]);
+	
+	memcpy(&API_Roaming[mode],
+	       &API_Roaming_One_2_One[main_port],
+	       sizeof(API_Roaming_Mapping_Def));
+		   
+	API_Set_Sync_Mode(API_SYNC_DISABLE);
+	API_Set_Roaming_Mode(API_ROAMING_ENABLE);
+	API_Active_Roaming_Mapping(mode);
 }
 
 /* End of km_api.c */

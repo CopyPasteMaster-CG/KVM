@@ -153,27 +153,31 @@ void KVM_SET_mode(U8_T mode){
     case KVM_MODE_TWO_SMALL_MAIN_PORT1:
         API_SET_ONE_2_SCREEN_MODE(1);
         API_Current_Main_SCREEN = 0;
-        ONE_2_ONE_SCREEN_MODE=0;
         KVM_Console_Port_Jump(0);
             break;
     case KVM_MODE_TWO_SMALL_MAIN_PORT2:
         API_SET_ONE_2_SCREEN_MODE(2);
         API_Current_Main_SCREEN = 1;
-        ONE_2_ONE_SCREEN_MODE=0;
         KVM_Console_Port_Jump(1);
             break;
     case KVM_MODE_TWO_SMALL_MAIN_PORT3:
         API_SET_ONE_2_SCREEN_MODE(3);
         API_Current_Main_SCREEN = 2;
-        ONE_2_ONE_SCREEN_MODE=0;
         KVM_Console_Port_Jump(2);
             break;
     case KVM_MODE_TWO_SMALL_TWO_MAIN_PORT3:
-         API_SET_ONE_2_SCREEN_MODE(0);
+         API_SET_ONE_2_ONE_SCREEN_MODE(0,ONE_2_SCREEN_MODE);
         API_Current_Main_SCREEN = 0;
         ONE_2_ONE_SCREEN_MODE=1;
         KVM_Console_Port_Jump(0);
-            break;
+        break;
+    case KVM_MODE_HALF_MAIN_TWO_SMALL_PORT3:
+        API_SET_ONE_2_ONE_SCREEN_MODE(1,HALF_ONE_2_SCREEN_MODE);
+        API_Current_Main_SCREEN = 1;
+        ONE_2_ONE_SCREEN_MODE=2;
+        KVM_Console_Port_Jump(0);
+        break;
+            
     case KVM_MODE_PORT12_ONLY:
         API_Set_Roaming_Mode(API_ROAMING_ENABLE);					
         API_Active_Roaming_Mapping(TWO_SCREEN_MODE);
@@ -233,7 +237,7 @@ void KVM_UART_HandleFrame(U8_T cmd, U8_T mode)
     {
         case KVM_CMD_SET_MODE:
         {
-            if ((mode >= 0x01) && (mode <= 0x15))
+            if ((mode >= 0x01) && (mode <= 0x16))
             {
                 KVM_SET_mode(mode);
 				printf("CG RX_mode %02bx\r\n",mode);		

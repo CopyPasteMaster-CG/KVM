@@ -301,7 +301,7 @@ void KVM_03_BUZZER_CONFIGURATION(void){}
 		#ifdef KMLOG
 			#define KVM_BUZZER_SUPPORT                  0    
 		#else
-			#define KVM_BUZZER_SUPPORT                  1
+			#define KVM_BUZZER_SUPPORT                  0
 		#endif	
 	#endif	
 #endif
@@ -328,7 +328,7 @@ void KVM_04_CONSOLE_EDID_CONFIGURATION(void){}
 		#ifdef NO_EDID
 		#define SYSETM_CONSOLE_EDID_CONTROL_ENABLE	0   // Handle console monitor edid table	
 		#else
-		#define SYSETM_CONSOLE_EDID_CONTROL_ENABLE	1   // Handle console monitor edid table	
+		#define SYSETM_CONSOLE_EDID_CONTROL_ENABLE	0   // Handle console monitor edid table	
 		#endif /* #ifdef NO_EDID */
 	#endif
 #endif

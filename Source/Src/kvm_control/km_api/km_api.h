@@ -27,9 +27,10 @@
 #define TWO_SCREEN_MODE  		2	//daniel
 #define ONE_3_SCREEN_MODE  		3	//zbb 2025/12/8
 #define ONE_2_SCREEN_MODE  		4
-
+#define HALF_ONE_2_SCREEN_MODE  5
 
 #define CALL_BACK_ENABLE		1
+
 #define CALL_BACK_DISABLE		0
 
 #define CALL_BACK_RELATIVE_MOUSE_MASK	1
@@ -91,6 +92,7 @@ void API_Send_Mouse_Absolute(void);
 #endif /* #ifdef SYNC */
 void API_Roaming_Mapping2_Handle(U8_T main_port);
 
+void API_SET_ONE_2_ONE_SCREEN_MODE(U8_T main_port,U8_T mode);
 void API_SET_ONE_3_SCREEN_MODE(U8_T main_port);
 void API_SET_ONE_2_SCREEN_MODE(U8_T main_port);
 
